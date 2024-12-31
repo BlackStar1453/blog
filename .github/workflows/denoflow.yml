@@ -17,23 +17,6 @@ jobs:
       - uses: denoland/setup-deno@v1
         with:
           deno-version: v1.x
-      - run: make prod-load
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: ${{secrets.AWS_DEFAULT_REGION}}
-          AWS_ENDPOINT: ${{secrets.AWS_ENDPOINT}}
-      - run: deno run -A https://deno.land/x/denoflow/cli.ts run
-        env:
-          WEBMENTION_TOKEN: ${{secrets.WEBMENTION_TOKEN}}
-          WEBMENTION_APP_TOKEN: ${{secrets.WEBMENTION_APP_TOKEN}}
-        continue-on-error: true
-      - run: make prod-upload
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: ${{secrets.AWS_DEFAULT_REGION}}
-          AWS_ENDPOINT: ${{secrets.AWS_ENDPOINT}}
       - run: make install
       - name: Build Site
         run: make build
@@ -45,7 +28,6 @@ jobs:
           projectName: owen # e.g. 'my-project'
           directory: ./public # e.g. 'dist'
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-
       # - name: chown
       #   run: sudo chown -R $USER:$USER ./
       # - name: git config
@@ -68,3 +50,4 @@ jobs:
       #     branch: new-item
       #     delete-branch: true
       #     title: New item update
+
