@@ -11,6 +11,7 @@ jobs:
   denoflow:
     runs-on: ubuntu-latest
     concurrency: denoflow
+    environment: env
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
@@ -25,9 +26,18 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: owen # e.g. 'my-project'
+          projectName: blog # e.g. 'my-project'
           directory: ./public # e.g. 'dist'
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+      - name: Debug Environment
+        run: |
+          echo "Running in environment: ${{ env.GITHUB_ENV }}"
+          echo "Checking environment variables availability..."
+          if [ -n "${{ secrets.CLOUDFLARE_API_TOKEN }}" ]; then
+            echo "CLOUDFLARE_API_TOKEN is set"
+          else
+            echo "CLOUDFLARE_API_TOKEN is not set"
+          fi
       # - name: chown
       #   run: sudo chown -R $USER:$USER ./
       # - name: git config
