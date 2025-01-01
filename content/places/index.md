@@ -4,7 +4,7 @@ date: 2024-12-30
 updated: 2024-12-30
 taxonomies:
   categories:
-    - Notes
+    - Places
   tags:
     - Places
 ---
