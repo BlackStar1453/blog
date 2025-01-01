@@ -11,7 +11,7 @@ taxonomies:
     - Random Book
 ---
 
-- 电子邮件：`owen#owenyoung.com` (把`#`换成`@`)
+- 电子邮件：`yaozeng1999#gmail.com` (把`#`换成`@`)
 - Twitter [@Yao](https://x.com/Heraclitius)
 - Mastodon [@Yao](https://m.cmx.im/@Heracleitus)
 - Github [@Yao](https://github.com/BlackStar1453)

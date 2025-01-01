@@ -22,15 +22,15 @@ title: 侧边栏
 
 ## 我的阅读
 
-- [HN 最新](https://hnnew.buzzing.cc/)
+- [我在读什么](https://hnnew.buzzing.cc/)
 - [Buzzing](https://www.buzzing.cc/)
 - [值得阅读的别人的文章](https://clip.owenyoung.com/)
 
 ## 我的写作
 
-- [我的翻译](https://owenyoung.com/)
-- [我的小说](https://owenyoung.com/)
-- [我的诗歌](https://owenyoung.com/)
+- [我的翻译](/translations/)
+- [我的小说](/story/)
+- [我的诗歌](/poem/)
 
 
 ## 我的项目

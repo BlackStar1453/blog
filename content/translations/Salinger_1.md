@@ -1,7 +1,7 @@
 ---
 title: 洛伊丝·塔基特漫长的初度登场
-date: 2021-03-25
-updated: 2022-03-25
+date: 2023-06-28
+updated: 2023-06-28
 taxonomies:
   categories:
     - Translations
