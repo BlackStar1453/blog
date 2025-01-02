@@ -13,7 +13,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - run: make install
-      - run: make prod-load
       - name: Build Site
         run: make build
       # - name: Deploy
