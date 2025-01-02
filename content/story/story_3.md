@@ -1,12 +1,12 @@
 ---
 title: 言语
 date: 2023-06-28
-updated: 2025-01-01
+updated: 2023-06-28
 taxonomies:
   categories:
-    - Story
+    - 短篇
   tags:
-    - 短篇小说
+    - 短篇
 ---
 
 1

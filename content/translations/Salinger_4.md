@@ -4,10 +4,9 @@ date: 2021-03-25
 updated: 2023-06-28
 taxonomies:
   categories:
-    - Translations
+    - 翻译
   tags:
     - 塞林格
-    - 翻译
 ---
 
 塞林格的中文正式出版物只有四本（**《麦田里的守望者》（1951）、《九故事》（1953）、《弗兰妮与祖伊》（1961）、《抬高房梁，木匠们；西摩：小传》（1963）**，此外网上流传有他曾经发表在报刊上，但是未集结出版的二十一个早期作品（**TWENTY-ONE STORIES——The Complete Uncollected Short Stories of J. D. Salinger**）。我之前翻译了其中的几篇，这是其中较长的一篇（1947），现在借由ChatGPT又重新校对了一遍。

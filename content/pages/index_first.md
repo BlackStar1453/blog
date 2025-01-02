@@ -4,7 +4,6 @@ title: 首页
 
 ### 被最多人点击的笔记：
 
-- [探索互联网上高质量的内容](/content/sources.md)
 - [我的短想法](/content/thoughts.md)
 - [收集一些给人灵感的东西](/content/inspires.md)
 - [读书笔记](/content/blog/books/_index.md)

@@ -4,7 +4,7 @@ date: 2023-06-28
 updated: 2025-01-01
 taxonomies:
   categories:
-    - poem
+    - 诗歌
   tags:
     - 诗歌
 ---

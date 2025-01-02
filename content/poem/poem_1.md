@@ -2,9 +2,10 @@
 title: 养活我需要很多爱、鸡蛋和番茄
 date: 2023-06-28
 updated: 2023-06-28
+author: Yao
 taxonomies:
   categories:
-    - poem
+    - 诗歌
   tags:
     - 诗歌
 ---
