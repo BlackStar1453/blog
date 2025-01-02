@@ -5,7 +5,7 @@ updated: 2023-03-15
 draft: true
 taxonomies:
   categories:
-    - Random
+    - AI
   tags:
     - AI
 ---
