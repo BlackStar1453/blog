@@ -67,7 +67,7 @@
       <details open class="py">
       <summary class="by">{{ trans(key="label_thoughts_title",lang=lang) | markdown(inline=true) | safe }}<a href="#thoughts" id="thoughts" class="zola-anchor">🔗</a>
       </summary>
-      {% set thoughts_page = get_page(path="thoughts" ~ file_lang_path ~ ".md",lang=lang) %}
+      {% set thoughts_page = get_page(path="thoughts/index" ~ file_lang_path ~ ".md",lang=lang) %}
       <div class="articles">
         {{ thoughts_page.summary | safe }}
         <p class="no-border">{{ trans(key="label_all_thoughts",lang=lang) | markdown(inline=true) | safe }}</p>

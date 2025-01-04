@@ -16,7 +16,7 @@ title: 侧边栏
 ## 导航
 
 - [读书笔记](/blog/books/)
-- [短想法](/content/thoughts.md)
+- [短想法](/content/thoughts/index.md)
 - [收集](/content/quotes.md)
 - [本站源码](https://github.com/theowenyoung/blog)
 
