@@ -8,7 +8,7 @@ taxonomies:
   tags:
     - Fiction
 extra:
-  rating: 10
+  rating: 7.5
   author: 骆以军
 ---
 

@@ -4,9 +4,8 @@ date: 2024-12-22
 updated: 2024-12-22
 taxonomies:
   categories:
-    - Journal
+    - 日记
   tags:
-    - Journal
     - 2024
 ---
 
