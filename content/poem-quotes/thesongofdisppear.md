@@ -1,7 +1,7 @@
 ---
 title: 隐身术之歌
-date: 2005-03-15
-updated: 2005-03-15
+date: 2018-03-15
+updated: 2018-03-15
 taxonomies:
   categories:
     - 诗歌摘录
