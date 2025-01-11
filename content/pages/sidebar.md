@@ -20,12 +20,6 @@ title: 侧边栏
 - [收集](/content/quotes.md)
 - [本站源码](https://github.com/theowenyoung/blog)
 
-## 我的阅读
-
-- [我在读什么](https://hnnew.buzzing.cc/)
-- [Buzzing](https://www.buzzing.cc/)
-- [值得阅读的别人的文章](https://clip.owenyoung.com/)
-
 ## 我的写作
 
 - [我的翻译](/translations/)
