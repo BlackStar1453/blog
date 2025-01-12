@@ -5,8 +5,8 @@ title: 侧边栏
 ## 重要链接
 
 - [RSS 订阅地址](/atom.xml)
-- [Twitter 主页](https://twitter.com/OwenYoungZh)
-- [Mastodon 主页](https://cmx.im/)
+- [Twitter 主页](https://x.com/Heraclitius)
+- [Mastodon 主页](https://m.cmx.im/@Heracleitus)
 
 ## 关于
 
@@ -29,6 +29,4 @@ title: 侧边栏
 
 ## 我的项目
 
-- [GPT-Tutor](https://tutorchatgpt.com/)
-
-## 我想要开发或者找到这样的项目
+- [GPT-Tutor](/content/ai-%20learning/gpt-tutor/index.md)

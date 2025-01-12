@@ -41,9 +41,9 @@ bio = "Web developer, I like reading and explore the internet, so I have collect
 # disqus = "disqus-user"
 
 ### SOCIAL MEDIA
-# https://github.com/theYaoyoung/blog/edit/main/content/blog/indieweb.en.md
-edit_url_prefix = "https://github.com/theYaoyoung/blog/edit/main/content/"
-github_user = "theYaoyoung"
+# https://github.com/BlackStar1453/blog/edit/main/content/blog/indieweb.en.md
+edit_url_prefix = "https://github.com/BlackStar1453/blog/edit/main/content/"
+github_user = "BlackStar1453"
 image = "https://www.yaoyaoyao111.com/heading.jpg"
 "label_action_in-reply-to" = "replied"
 "label_action_like-of" = "liked"
@@ -51,7 +51,7 @@ image = "https://www.yaoyaoyao111.com/heading.jpg"
 "label_action_reply-to" = "replied"
 "label_action_repost-of" = "reposted"
 "label_action_rsvp" = "answered"
-twitter_user = "TheYaoYoung"
+twitter_user = "BlackStar1453"
 webmention_path = "webmentions"
 ### I18N WORDS
 
