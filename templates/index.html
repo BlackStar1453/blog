@@ -52,13 +52,15 @@
 {% endblock%}
 {% block main -%}
   {% set_global note_pages = [] -%}
-  {% set_global all_blog_pages = get_section(path="blog/_index"~file_lang_path~".md") -%}
+  {% set_global all_blog_pages = [] -%}
   {% set all_categories = get_taxonomy(kind="categories",lang=lang) -%}
   {% for cat in all_categories.items -%}
+    {% set_global all_blog_pages = all_blog_pages | concat(with=cat.pages) -%}
     {% if cat.name == "Notes" -%}
       {% set_global note_pages = cat.pages | sort(attribute="updated") | reverse -%}
     {% endif -%}
   {% endfor -%}
+  {% set_global all_blog_pages = all_blog_pages | sort(attribute="updated") | reverse -%}
   <div class="index-page py">
 
       {% set index_first = get_page(path="pages/index_first"~file_lang_path~".md") %}
@@ -77,16 +79,16 @@
         <summary class="by ">{{ trans(key="label_new_posts_list_title",lang=lang) | markdown(inline=true) | safe }}:
       </summary>
       <div class="articles h-feed hfeed">
-        {% for page in all_blog_pages.pages | slice(start=0,end=3) %}
+        {% for page in all_blog_pages | slice(start=0,end=3) %}
           {{ macro::post_max(page=page,index=loop.index) }}
         {% endfor %}
       </div>
       </details>
-      {%if all_blog_pages.pages | slice(start=3) | length > 0%}
+      {%if all_blog_pages | slice(start=3) | length > 0%}
         <details class="py">
           <summary class="by text">{{ trans(key="label_all_posts",lang=lang) | markdown(inline=true) | safe }}</summary>
           <ul>
-            {% for page in all_blog_pages.pages | slice(start=3) %}
+            {% for page in all_blog_pages | slice(start=3) %}
             <li>{{ macro::post_min(page=page) }}</li>
             {% endfor %}
           </ul>
@@ -139,16 +141,24 @@
       <script defer src="{{ get_url(path="site/js/docs-searchbar.min.js", trailing_slash=false,cachebust=true) | safe }}"></script>
       <script>
         document.addEventListener('DOMContentLoaded', function () {
-          docsSearchBar({
-            hostUrl: '{{ config.extra.meilisearch_url | safe }}',
-            apiKey: '{{ config.extra.meilisearch_api_key | safe }}',
-            indexUid: 'owen-blog',
-            inputSelector: '#search-bar-input',
-            meilisearchOptions: {
-              limit: 10
-            },
-            debug: false, // Set debug to true if you want to inspect the dropdown
-          })
+          // Check if search input exists before initializing
+          const searchInput = document.querySelector('#search-bar-input');
+          if (searchInput && typeof docsSearchBar === 'function') {
+            try {
+              docsSearchBar({
+                hostUrl: '{{ config.extra.meilisearch_url | safe }}',
+                apiKey: '{{ config.extra.meilisearch_api_key | safe }}',
+                indexUid: 'owen-blog',
+                inputSelector: '#search-bar-input',
+                meilisearchOptions: {
+                  limit: 10
+                },
+                debug: false, // Set debug to true if you want to inspect the dropdown
+              });
+            } catch (error) {
+              console.warn('Search initialization failed:', error);
+            }
+          }
         });
       </script>
     {% endif %}

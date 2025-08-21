@@ -117,19 +117,28 @@
 {% block before_body_end -%}
 
 <script>
-  document.getElementById('copyButton').addEventListener('click', function(event) {
-    event.preventDefault();
-    var text = '《{{ page.title }}》 ' + window.location.href;
-    var textArea = document.createElement('textarea');
-    textArea.textContent = text;
-    document.body.append(textArea);
-    textArea.select();
-    document.execCommand('copy');
-    document.body.removeChild(textArea);
-    document.getElementById('copyStatus').textContent = '已复制 ✅';
-    setTimeout(function() {
-      document.getElementById('copyStatus').textContent = '';
-    }, 1500);
-  });
+  // Check if copyButton exists before adding event listener
+  const copyButton = document.getElementById('copyButton');
+  if (copyButton) {
+    copyButton.addEventListener('click', function(event) {
+      event.preventDefault();
+      var text = '《{{ page.title }}》 ' + window.location.href;
+      var textArea = document.createElement('textarea');
+      textArea.textContent = text;
+      document.body.append(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+
+      // Check if copyStatus exists before updating it
+      const copyStatus = document.getElementById('copyStatus');
+      if (copyStatus) {
+        copyStatus.textContent = '已复制 ✅';
+        setTimeout(function() {
+          copyStatus.textContent = '';
+        }, 1500);
+      }
+    });
+  }
 </script>
 {% endblock before_body_end -%}
