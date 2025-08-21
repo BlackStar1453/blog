@@ -29,4 +29,5 @@ title: 侧边栏
 
 ## 我的项目
 
+- [Elick](https://elick.it.com/) - AI驱动的外语阅读学习工具
 - [GPT-Tutor](/content/ai-%20learning/gpt-tutor/index.md)
