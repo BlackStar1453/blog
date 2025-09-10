@@ -3,6 +3,7 @@
 # 添加短想法到 thoughts/index.md 的脚本
 # 使用方法: ./add-thought.sh "你的短想法内容" [日期时间]
 # 日期时间格式: YYYY-MM-DD 或 YYYY-MM-DD HH:MM
+# 使用示例: ./scripts/add-thought.sh "你的短想法内容" [日期时间]
 
 set -e
 
@@ -104,8 +105,10 @@ else
     current_month=$(date +%m | sed 's/^0*//')
 fi
 
-# 创建新的想法条目
-new_thought="> ${thought_content}
+# 创建新的想法条目，处理多行文本
+# 将每一行都添加引用符号
+formatted_content=$(echo "$thought_content" | sed 's/^/> /' | sed 's/$//')
+new_thought="${formatted_content}
 >
 > - ${current_month_day}"
 
