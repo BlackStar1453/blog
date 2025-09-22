@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 自动git提交脚本
-# 使用方法: ./auto-commit.sh [提交信息] [选项]
+# 使用方法: ./scripts/auto-commit.sh [提交信息] [选项]
 
 set -e
 
