@@ -64,3 +64,35 @@ Then add the admin api key to [github actions secrets](https://github.com/theowe
 Then, change the `config.toml` -> `meilisearch_api_key` to the user search api key with the above result.
 
 In the future, the [build workflow](https://github.com/theowenyoung/blog/blob/main/.github/workflows/build.yml) will take care of the search indexing automatically.
+
+### Audio player
+
+Use the `audio_player` shortcode to embed tracks in any Markdown document. The player is powered by [APlayer](https://aplayer.js.org/) and works with local assets placed under the `static/` directory or remote files hosted on a CDN.
+
+```tera
+{{ audio_player(src="/media/song.mp3", title="Song title", artist="Artist name") }}
+```
+
+You can pass additional options when needed:
+
+```tera
+{{ audio_player(
+    src="https://cdn.example.com/audio/podcast.mp3",
+    title="Episode 1",
+    artist="Podcast Channel",
+    cover="/media/covers/episode-1.jpg",
+    lrc="/media/captions/episode-1.lrc",
+    autoplay=false,
+    loop="none",
+    preload="metadata",
+    fixed=false,
+    mini=false,
+    list_folded=false,
+    mutex=true,
+    volume=0.7,
+) }}
+```
+
+Only the `src` parameter is required. When `src` points to a relative path, it is resolved via `get_url`, so both `/media/example.mp3` (from `static/media/example.mp3`) and full CDN URLs work out of the box. Optional fields such as `cover` and `lrc` are also resolved in the same way, making it easy to reference artwork or lyric files that live alongside your audio.
+
+The APlayer assets that power the shortcode are vendored locally under `static/site/vendor/aplayer`. To update them, download a newer release into that folder (for example via `curl -L https://cdn.jsdelivr.net/npm/aplayer@<version>/dist/APlayer.min.{js,css}`) before running `make build`. If the JavaScript bundle cannot be loaded at runtime, the shortcode falls back to a native `<audio>` element so visitors can still listen to the track.

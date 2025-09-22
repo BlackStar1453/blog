@@ -137,6 +137,7 @@
 
   {% endblock main -%}
   {% block before_body_end %}
+    {{ super() }}
     {% if config.extra.meilisearch_url %}
       <script defer src="{{ get_url(path="site/js/docs-searchbar.min.js", trailing_slash=false,cachebust=true) | safe }}"></script>
       <script>

@@ -115,53 +115,30 @@
 {% endblock sidebar %}
 
 {% block before_body_end -%}
-<!-- Mermaid.js for diagram rendering -->
-<script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    mermaid.initialize({
-      startOnLoad: true,
-      theme: 'default',
-      themeVariables: {
-        primaryColor: '#e1f5fe',
-        primaryTextColor: '#333',
-        primaryBorderColor: '#1976d2',
-        lineColor: '#666',
-        secondaryColor: '#f0f8e6',
-        tertiaryColor: '#fff3e0'
-      },
-      flowchart: {
-        useMaxWidth: true,
-        htmlLabels: true,
-        curve: 'basis'
-      }
-    });
-  });
-</script>
+  {{ super() }}
+  <script>
+    // Check if copyButton exists before adding event listener
+    const copyButton = document.getElementById('copyButton');
+    if (copyButton) {
+      copyButton.addEventListener('click', function(event) {
+        event.preventDefault();
+        var text = '《{{ page.title }}》 ' + window.location.href;
+        var textArea = document.createElement('textarea');
+        textArea.textContent = text;
+        document.body.append(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
 
-<script>
-  // Check if copyButton exists before adding event listener
-  const copyButton = document.getElementById('copyButton');
-  if (copyButton) {
-    copyButton.addEventListener('click', function(event) {
-      event.preventDefault();
-      var text = '《{{ page.title }}》 ' + window.location.href;
-      var textArea = document.createElement('textarea');
-      textArea.textContent = text;
-      document.body.append(textArea);
-      textArea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textArea);
-
-      // Check if copyStatus exists before updating it
-      const copyStatus = document.getElementById('copyStatus');
-      if (copyStatus) {
-        copyStatus.textContent = '已复制 ✅';
-        setTimeout(function() {
-          copyStatus.textContent = '';
-        }, 1500);
-      }
-    });
-  }
-</script>
+        // Check if copyStatus exists before updating it
+        const copyStatus = document.getElementById('copyStatus');
+        if (copyStatus) {
+          copyStatus.textContent = '已复制 ✅';
+          setTimeout(function() {
+            copyStatus.textContent = '';
+          }, 1500);
+        }
+      });
+    }
+  </script>
 {% endblock before_body_end -%}
