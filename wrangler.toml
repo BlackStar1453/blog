@@ -1,0 +1,6 @@
+# Cloudflare Pages configuration
+# This project uses GitHub Actions for building, not Cloudflare Pages build system
+# The build command is intentionally empty to skip building
+
+[build]
+command = ""
