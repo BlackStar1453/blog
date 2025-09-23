@@ -483,13 +483,11 @@
             var ap = new window.APlayer(config.options);
             config.node.setAttribute('data-aplayer-initialized', 'true');
 
-            // Force expand fixed player if it's in narrow mode
+            // Force expand fixed player directly
             if (config.options.fixed && ap.mode && ap.mode.toggle && typeof ap.mode.toggle === 'function') {
-              // Check if player is in narrow mode and expand it
+              // Directly expand the player without checking narrow state
               setTimeout(function () {
-                if (ap.template && ap.template.container && ap.template.container.classList.contains('aplayer-narrow')) {
-                  ap.mode.toggle();
-                }
+                ap.mode.toggle();
               }, 100);
             }
 
