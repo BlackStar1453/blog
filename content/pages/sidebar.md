@@ -31,3 +31,5 @@ title: 侧边栏
 
 - [Elick](https://elick.it.com/) - AI驱动的外语阅读学习工具
 - [GPT-Tutor](/content/ai-%20learning/gpt-tutor/index.md)
+- [Poemtab](https://github.com/BlackStar1453/poemtab) - 浏览器插件，新标签页显示诗歌
+- [Chat-With-Card](/projects/chat-with-card/) - Anki插件，AI对话增强学习卡片
