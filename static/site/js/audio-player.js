@@ -338,6 +338,58 @@
         resolve(fallback);
       });
     });
+
+    function __bytesToDataURL(mime, bytes) {
+      if (!bytes || !bytes.length) return null;
+      var chunk = 0x8000, out = [];
+      for (var i = 0; i < bytes.length; i += chunk) {
+        out.push(String.fromCharCode.apply(null, bytes.subarray(i, i + chunk)));
+      }
+      var base64 = (typeof btoa === 'function' ? btoa : (window && window.btoa).bind(window))(out.join(''));
+      return 'data:' + (mime || 'image/jpeg') + ';base64,' + base64;
+    }
+
+    function __loadJsMediaTags(callback) {
+      try {
+        if (typeof window !== 'undefined' && window.jsmediatags) { callback(true); return; }
+        var url = (typeof window !== 'undefined' && window.__JSMEDIATAGS_URL) || 'https://cdn.jsdelivr.net/npm/jsmediatags@3.9.7/dist/jsmediatags.min.js';
+        var existing = document.querySelector('script[data-jsmediatags-script]');
+        if (existing) {
+          existing.addEventListener('load', function () { callback(!!window.jsmediatags); });
+          existing.addEventListener('error', function () { callback(false); });
+          return;
+        }
+        var s = document.createElement('script');
+        s.src = url;
+        s.async = true;
+        s.setAttribute('data-jsmediatags-script', 'true');
+        s.onload = function () { callback(!!window.jsmediatags); };
+        s.onerror = function () { if (s.parentNode) s.parentNode.removeChild(s); callback(false); };
+        document.head.appendChild(s);
+      } catch (e) { callback(false); }
+    }
+
+    function __coverFromJsMediaTags(url) {
+      return new Promise(function (resolve) {
+        __loadJsMediaTags(function (ok) {
+          if (!ok || !window || !window.jsmediatags) { resolve(null); return; }
+          try {
+            window.jsmediatags.read(url, {
+              onSuccess: function (tag) {
+                try {
+                  var pic = tag && tag.tags && tag.tags.picture;
+                  if (!pic || !pic.data || !pic.data.length) { resolve(null); return; }
+                  var bytes = (pic.data instanceof Uint8Array) ? pic.data : new Uint8Array(pic.data);
+                  resolve(__bytesToDataURL(pic.format || 'image/jpeg', bytes));
+                } catch (e) { resolve(null); }
+              },
+              onError: function () { resolve(null); }
+            });
+          } catch (e) { resolve(null); }
+        });
+      });
+    }
+
   }
 
   function __updateAPlayerCover(ap, url) {
@@ -365,11 +417,22 @@
       var fetchFn = (typeof window !== 'undefined') ? window.__fetchCoverFromAudio : null;
       if (typeof fetchFn !== 'function') return;
       item.__coverFetched = true;
-      __apWithTimeout(fetchFn(item.url), 2500, null).then(function (dataUrl) {
+      __apWithTimeout(__coverFromJsMediaTags(item.url), 2500, null).then(function (dataUrl) {
         if (dataUrl) {
           item.cover = dataUrl;
           __updateAPlayerCover(ap, dataUrl);
+          return null;
         }
+        if (typeof fetchFn === 'function') {
+          return __apWithTimeout(fetchFn(item.url), 2500, null).then(function (url2) {
+            if (url2) {
+              item.cover = url2;
+              __updateAPlayerCover(ap, url2);
+            }
+            return null;
+          });
+        }
+        return null;
       });
     } catch (e) { /* noop */ }
   }
