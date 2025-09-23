@@ -266,6 +266,12 @@
     });
   }
 
+  // Expose cover fetcher for lazy, on-demand usage by audio-player.js
+  if (typeof window !== 'undefined') {
+    try { window.__fetchCoverFromAudio = fetchCoverFromAudio; } catch (e) { }
+  }
+
+
   // Utility: promise with timeout; resolves fallback on timeout/error to avoid UI blocking
   function withTimeout(promise, ms, fallback) {
     return new Promise(function (resolve) {
@@ -297,27 +303,14 @@
       return Promise.resolve(audios);
     }
     var resolvedDefault = defaultCover ? joinUrl(baseUrl, defaultCover) : '';
-    var tasks = audios.map(function (audio) {
-      if (audio.cover) {
-        return Promise.resolve(audio);
+    for (var i = 0; i < audios.length; i++) {
+      var a = audios[i];
+      if (!a.cover && resolvedDefault) {
+        a.cover = resolvedDefault;
       }
-      return withTimeout(fetchCoverFromAudio(audio.url), COVER_FETCH_TIMEOUT_MS, null).then(function (dataUrl) {
-        if (dataUrl) {
-          audio.cover = dataUrl;
-        } else if (resolvedDefault) {
-          audio.cover = resolvedDefault;
-        }
-        return audio;
-      }).catch(function () {
-        if (resolvedDefault && !audio.cover) {
-          audio.cover = resolvedDefault;
-        }
-        return audio;
-      });
-    });
-    return Promise.all(tasks).then(function () {
-      return audios;
-    });
+    }
+    // 不再预取所有歌曲封面，初始化不阻塞
+    return Promise.resolve(audios);
   }
 
   function createAudioEntry(entry, baseUrl, allowedExtensions) {
@@ -617,16 +610,6 @@
     fetchManifest(candidates)
       .then(function (raw) {
         var audios = normaliseManifest(raw, baseUrl, extensions);
-        var needsCover = false;
-        for (var i = 0; i < audios.length; i++) {
-          if (!audios[i].cover) {
-            needsCover = true;
-            break;
-          }
-        }
-        if (needsCover) {
-          updateStatus(node, '正在解析歌曲封面…', false);
-        }
         return ensureCovers(audios, baseUrl, defaultCover).then(function (prepared) {
           initialisePlayer(node, prepared);
         });

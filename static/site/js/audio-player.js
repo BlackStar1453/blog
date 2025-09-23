@@ -317,6 +317,64 @@
     return [collection];
   }
 
+  // Lazy cover fetching for current track only
+  function __apWithTimeout(promise, ms, fallback) {
+    return new Promise(function (resolve) {
+      var settled = false;
+      var timer = setTimeout(function () {
+        if (settled) return;
+        settled = true;
+        resolve(fallback);
+      }, ms);
+      promise.then(function (v) {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        resolve(v);
+      }).catch(function () {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        resolve(fallback);
+      });
+    });
+  }
+
+  function __updateAPlayerCover(ap, url) {
+    try {
+      if (!ap || !url) return;
+      var container = ap.container || (ap.options && ap.options.container);
+      if (!container || !container.querySelector) return;
+      var pic = container.querySelector('.aplayer-pic');
+      if (pic) {
+        try { pic.style.backgroundImage = 'url("' + url + '")'; } catch (e) { }
+        var img = pic.querySelector('img');
+        if (img) { img.src = url; }
+      }
+    } catch (e) { /* noop */ }
+  }
+
+  function __tryUpdateCurrentCover(ap, index) {
+    try {
+      if (!ap || !ap.list || !ap.list.audios) return;
+      var i = (typeof index === 'number') ? index : ap.list.index;
+      if (typeof i !== 'number' || i < 0 || i >= ap.list.audios.length) return;
+      var item = ap.list.audios[i];
+      if (!item || item.__coverFetched) return;
+      if (item.cover && /^data:/i.test(item.cover)) { item.__coverFetched = true; return; }
+      var fetchFn = (typeof window !== 'undefined') ? window.__fetchCoverFromAudio : null;
+      if (typeof fetchFn !== 'function') return;
+      item.__coverFetched = true;
+      __apWithTimeout(fetchFn(item.url), 2500, null).then(function (dataUrl) {
+        if (dataUrl) {
+          item.cover = dataUrl;
+          __updateAPlayerCover(ap, dataUrl);
+        }
+      });
+    } catch (e) { /* noop */ }
+  }
+
+
   function initializePlayers(targetNodes) {
     if (typeof document === 'undefined') {
       return;
@@ -375,6 +433,14 @@
                 }
               }
             } catch (e) { /* noop */ }
+
+            // Lazy fetch cover for current track only (no prefetch for entire list)
+            try {
+              ap.on('listswitch', function (idx) { __tryUpdateCurrentCover(ap, idx); });
+              ap.on('play', function () { __tryUpdateCurrentCover(ap); });
+              __tryUpdateCurrentCover(ap, ap.list && ap.list.index);
+            } catch (e) { /* noop */ }
+
           } catch (error) {
             console.warn('Failed to initialize audio player', error);
             renderNativeFallback(config);
