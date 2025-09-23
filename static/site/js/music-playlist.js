@@ -476,17 +476,7 @@
       }
       var url = urls[index];
 
-      // Create AbortController for this specific request
-      var controller = new AbortController();
-      var timeoutId = setTimeout(function () {
-        controller.abort();
-      }, 10000); // 10 second timeout per URL
-
-      return fetch(url, {
-        credentials: 'omit',
-        signal: controller.signal
-      }).then(function (response) {
-        clearTimeout(timeoutId);
+      return fetch(url, { credentials: 'omit' }).then(function (response) {
         if (!response.ok) {
           throw new Error('HTTP ' + response.status);
         }
@@ -496,7 +486,6 @@
         }
         return response.text();
       }).catch(function (error) {
-        clearTimeout(timeoutId);
         console.warn('Failed to fetch manifest from', url, error);
         return attempt(index + 1);
       });
