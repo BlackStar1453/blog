@@ -5,6 +5,77 @@
     {{ minutes }}
   {% endif %}
 {% endmacro get_reading_time %}
+
+{% macro music_playlist_block(source, manifest="", title="", preload="metadata", loop="none", order="", autoplay=false, fixed=false, mini=false, list_folded=false, mutex=false, volume="", extensions="mp3,ogg,flac,wav", theme="") %}
+  {%- set raw_source = source | default(value="") | trim -%}
+  {%- if raw_source == "" -%}
+    <p class="aplayer-error">Playlist source is required.</p>
+  {%- else -%}
+    {%- set manifest_value = manifest | default(value="") | trim -%}
+    {%- set playlist_title = title | default(value="") | trim -%}
+    {%- set preload_mode = preload | default(value="metadata") | trim | lower -%}
+    {%- if preload_mode not in ["none", "metadata", "auto"] -%}
+      {%- set preload_mode = "metadata" -%}
+    {%- endif -%}
+    {%- set loop_mode = loop | default(value="none") | trim | lower -%}
+    {%- if loop_mode not in ["one", "all", "none"] -%}
+      {%- set loop_mode = "none" -%}
+    {%- endif -%}
+    {%- set order_mode = order | default(value="") | trim | lower -%}
+
+    {%- set autoplay_value = "false" -%}
+    {%- if autoplay == true or autoplay == 1 or autoplay == "1" or autoplay == "true" or autoplay == "True" or autoplay == "yes" or autoplay == "Yes" or autoplay == "on" or autoplay == "On" -%}
+      {%- set autoplay_value = "true" -%}
+    {%- endif -%}
+
+    {%- set fixed_value = "false" -%}
+    {%- if fixed == true or fixed == 1 or fixed == "1" or fixed == "true" or fixed == "True" or fixed == "yes" or fixed == "Yes" or fixed == "on" or fixed == "On" -%}
+      {%- set fixed_value = "true" -%}
+    {%- endif -%}
+
+    {%- set mini_value = "false" -%}
+    {%- if mini == true or mini == 1 or mini == "1" or mini == "true" or mini == "True" or mini == "yes" or mini == "Yes" or mini == "on" or mini == "On" -%}
+      {%- set mini_value = "true" -%}
+    {%- endif -%}
+
+    {%- set list_folded_value = "false" -%}
+    {%- if list_folded == true or list_folded == 1 or list_folded == "1" or list_folded == "true" or list_folded == "True" or list_folded == "yes" or list_folded == "Yes" or list_folded == "on" or list_folded == "On" -%}
+      {%- set list_folded_value = "true" -%}
+    {%- endif -%}
+
+    {%- set mutex_value = "false" -%}
+    {%- if mutex == true or mutex == 1 or mutex == "1" or mutex == "true" or mutex == "True" or mutex == "yes" or mutex == "Yes" or mutex == "on" or mutex == "On" -%}
+      {%- set mutex_value = "true" -%}
+    {%- endif -%}
+
+    {%- set volume_value = volume | default(value="") | trim -%}
+    {%- set extensions_value = extensions | default(value="mp3,ogg,flac,wav") | trim -%}
+    {%- set theme_value = theme | default(value="") | trim -%}
+
+    <div class="music-playlist js-music-playlist"
+         data-playlist-source="{{ raw_source }}"
+         {% if manifest_value != "" %}data-playlist-manifest="{{ manifest_value }}"{% endif %}
+         {% if playlist_title != "" %}data-playlist-title="{{ playlist_title }}"{% endif %}
+         data-preload="{{ preload_mode }}"
+         data-loop="{{ loop_mode }}"
+         {% if order_mode != "" %}data-order="{{ order_mode }}"{% endif %}
+         data-autoplay="{{ autoplay_value }}"
+         data-fixed="{{ fixed_value }}"
+         data-mini="{{ mini_value }}"
+         data-list-folded="{{ list_folded_value }}"
+         data-mutex="{{ mutex_value }}"
+         data-extensions="{{ extensions_value }}"
+         {% if volume_value != "" %}data-volume="{{ volume_value }}"{% endif %}
+         {% if theme_value != "" %}data-theme="{{ theme_value }}"{% endif %}>
+      {% if playlist_title != "" %}<h3 class="music-playlist-title">{{ playlist_title }}</h3>{% endif %}
+      <p class="music-playlist-status">正在加载歌单……</p>
+      <noscript>
+        <p class="music-playlist-error">需要启用 JavaScript 才能加载歌单。</p>
+      </noscript>
+    </div>
+  {%- endif -%}
+{% endmacro music_playlist_block %}
+
 {% macro post_max(page,index) %}
   <article class="h-entry hentry feed-entry">
     <div class="display-none p-author h-card vcard">

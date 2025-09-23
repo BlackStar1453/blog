@@ -1,0 +1,74 @@
+{%- import "macros.html" as macro -%}
+{%- if source is not defined -%}
+  <p class="aplayer-error">Playlist source is required.</p>
+{%- else -%}
+  {%- set playlist_manifest = "" -%}
+  {%- if manifest is defined -%}
+    {%- set playlist_manifest = manifest -%}
+  {%- endif -%}
+  {%- set playlist_title = "" -%}
+  {%- if title is defined -%}
+    {%- set playlist_title = title -%}
+  {%- endif -%}
+  {%- set playlist_preload = "metadata" -%}
+  {%- if preload is defined -%}
+    {%- set playlist_preload = preload -%}
+  {%- endif -%}
+  {%- set playlist_loop = "none" -%}
+  {%- if loop is defined -%}
+    {%- set playlist_loop = loop -%}
+  {%- endif -%}
+  {%- set playlist_order = "" -%}
+  {%- if order is defined -%}
+    {%- set playlist_order = order -%}
+  {%- endif -%}
+  {%- set playlist_autoplay = false -%}
+  {%- if autoplay is defined -%}
+    {%- set playlist_autoplay = autoplay -%}
+  {%- endif -%}
+  {%- set playlist_fixed = false -%}
+  {%- if fixed is defined -%}
+    {%- set playlist_fixed = fixed -%}
+  {%- endif -%}
+  {%- set playlist_mini = false -%}
+  {%- if mini is defined -%}
+    {%- set playlist_mini = mini -%}
+  {%- endif -%}
+  {%- set playlist_list_folded = false -%}
+  {%- if list_folded is defined -%}
+    {%- set playlist_list_folded = list_folded -%}
+  {%- endif -%}
+  {%- set playlist_mutex = false -%}
+  {%- if mutex is defined -%}
+    {%- set playlist_mutex = mutex -%}
+  {%- endif -%}
+  {%- set playlist_volume = "" -%}
+  {%- if volume is defined -%}
+    {%- set playlist_volume = volume -%}
+  {%- endif -%}
+  {%- set playlist_extensions = "mp3,ogg,flac,wav" -%}
+  {%- if extensions is defined -%}
+    {%- set playlist_extensions = extensions -%}
+  {%- endif -%}
+  {%- set playlist_theme = "" -%}
+  {%- if theme is defined -%}
+    {%- set playlist_theme = theme -%}
+  {%- endif -%}
+
+  {{ macro::music_playlist_block(
+    source=source,
+    manifest=playlist_manifest,
+    title=playlist_title,
+    preload=playlist_preload,
+    loop=playlist_loop,
+    order=playlist_order,
+    autoplay=playlist_autoplay,
+    fixed=playlist_fixed,
+    mini=playlist_mini,
+    list_folded=playlist_list_folded,
+    mutex=playlist_mutex,
+    volume=playlist_volume,
+    extensions=playlist_extensions,
+    theme=playlist_theme
+  ) }}
+{%- endif -%}

@@ -1,0 +1,99 @@
+{%- set raw_src = src | default(value="") -%}
+{%- if raw_src == "" and body is defined -%}
+  {%- set raw_src = body | trim -%}
+{%- endif -%}
+{%- set raw_src = raw_src | trim -%}
+{%- if raw_src == "" -%}
+  <p class="aplayer-error">Audio source is required.</p>
+{%- else -%}
+  {%- if raw_src is matching("^(https?:)?//") or raw_src is matching("^/") -%}
+    {%- set audio_url = raw_src -%}
+  {%- else -%}
+    {%- set audio_url = get_url(path=raw_src, trailing_slash=false) -%}
+  {%- endif -%}
+  {%- set display_name = title | default(value=raw_src | split(pat="/") | last) | trim -%}
+  {%- set audio_artist = artist | default(value="") | trim -%}
+  {%- set cover_url = "" -%}
+  {%- if cover -%}
+    {%- set cover_candidate = cover | trim -%}
+    {%- if cover_candidate is matching("^(https?:)?//") or cover_candidate is matching("^/") -%}
+      {%- set cover_url = cover_candidate -%}
+    {%- else -%}
+      {%- set cover_url = get_url(path=cover_candidate, trailing_slash=false) -%}
+    {%- endif -%}
+  {%- endif -%}
+  {%- set lrc_url = "" -%}
+  {%- if lrc -%}
+    {%- set lrc_candidate = lrc | trim -%}
+    {%- if lrc_candidate is matching("^(https?:)?//") or lrc_candidate is matching("^/") -%}
+      {%- set lrc_url = lrc_candidate -%}
+    {%- else -%}
+      {%- set lrc_url = get_url(path=lrc_candidate, trailing_slash=false) -%}
+    {%- endif -%}
+  {%- endif -%}
+  {%- set preload_mode = preload | default(value="metadata") | trim | lower -%}
+  {%- if preload_mode not in ["none", "metadata", "auto"] -%}
+    {%- set preload_mode = "metadata" -%}
+  {%- endif -%}
+  {%- set loop_mode = loop | default(value="none") | trim | lower -%}
+  {%- if loop_mode not in ["one", "all", "none"] -%}
+    {%- set loop_mode = "none" -%}
+  {%- endif -%}
+  {%- set order_mode = order | default(value="") | trim | lower -%}
+  {%- set autoplay_value = "false" -%}
+  {%- if autoplay is defined and autoplay in [true, 1, "1", "true", "True", "yes", "Yes", "on", "On"] -%}
+    {%- set autoplay_value = "true" -%}
+  {%- endif -%}
+  {%- set fixed_value = "false" -%}
+  {%- if fixed is defined and fixed in [true, 1, "1", "true", "True", "yes", "Yes", "on", "On"] -%}
+    {%- set fixed_value = "true" -%}
+  {%- endif -%}
+  {%- set mini_value = "false" -%}
+  {%- if mini is defined and mini in [true, 1, "1", "true", "True", "yes", "Yes", "on", "On"] -%}
+    {%- set mini_value = "true" -%}
+  {%- endif -%}
+  {%- set list_folded_value = "false" -%}
+  {%- if list_folded is defined and list_folded in [true, 1, "1", "true", "True", "yes", "Yes", "on", "On"] -%}
+    {%- set list_folded_value = "true" -%}
+  {%- endif -%}
+  {%- set mutex_value = "false" -%}
+  {%- if mutex is defined and mutex in [true, 1, "1", "true", "True", "yes", "Yes", "on", "On"] -%}
+    {%- set mutex_value = "true" -%}
+  {%- endif -%}
+  {%- set volume_value = volume | default(value="") | trim -%}
+  {%- set display_name_json = display_name | json_encode -%}
+  {%- set audio_artist_json = audio_artist | json_encode -%}
+  {%- set audio_url_json = audio_url | json_encode -%}
+  {%- set audio_data = '{' -%}
+  {%- set audio_data = audio_data ~ '"name":' ~ display_name_json -%}
+  {%- set audio_data = audio_data ~ ',"artist":' ~ audio_artist_json -%}
+  {%- set audio_data = audio_data ~ ',"url":' ~ audio_url_json -%}
+  {%- if cover_url != "" -%}
+    {%- set cover_url_json = cover_url | json_encode -%}
+    {%- set audio_data = audio_data ~ ',"cover":' ~ cover_url_json -%}
+  {%- endif -%}
+  {%- if lrc_url != "" -%}
+    {%- set lrc_url_json = lrc_url | json_encode -%}
+    {%- set audio_data = audio_data ~ ',"lrc":' ~ lrc_url_json -%}
+  {%- endif -%}
+  {%- set audio_data = audio_data ~ '}' -%}
+  <div class="aplayer js-audio-player"
+       data-audio='{{ audio_data | safe }}'
+       data-preload="{{ preload_mode }}"
+       data-loop="{{ loop_mode }}"
+       {% if theme %}data-theme="{{ theme }}"{% endif %}
+       {% if order_mode != "" %}data-order="{{ order_mode }}"{% endif %}
+       data-autoplay="{{ autoplay_value }}"
+       data-fixed="{{ fixed_value }}"
+       data-mini="{{ mini_value }}"
+       data-list-folded="{{ list_folded_value }}"
+       data-mutex="{{ mutex_value }}"
+       {% if volume_value != "" %}data-volume="{{ volume_value }}"{% endif %}>
+    <noscript>
+      <audio controls preload="{{ preload_mode }}">
+        <source src="{{ audio_url }}" type="audio/mpeg"/>
+        {{ display_name }}
+      </audio>
+    </noscript>
+  </div>
+{%- endif -%}

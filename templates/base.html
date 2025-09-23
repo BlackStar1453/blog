@@ -233,10 +233,21 @@
     </div>
     <div id="bottom"></div>
     {% block before_body_end -%}
+    <script>
+      window.__AUDIO_PLAYER_ASSETS__ = {
+        css: "{{ get_url(path="site/vendor/aplayer/APlayer.min.css", trailing_slash=false, cachebust=true) | safe }}",
+        js: "{{ get_url(path="site/vendor/aplayer/APlayer.min.js", trailing_slash=false, cachebust=true) | safe }}"
+      };
+    </script>
+    <script defer src="{{ get_url(path="site/js/audio-player.js", trailing_slash=false, cachebust=true) | safe }}"></script>
+    <script defer src="{{ get_url(path="site/js/music-playlist.js", trailing_slash=false, cachebust=true) | safe }}"></script>
     <!-- Mermaid.js for diagram rendering -->
-    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
     <script>
       document.addEventListener('DOMContentLoaded', function() {
+        if (typeof mermaid === 'undefined') {
+          return;
+        }
         mermaid.initialize({
           startOnLoad: true,
           theme: 'default',
