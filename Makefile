@@ -96,3 +96,7 @@ task:
 .PHONY: cronserve
 cronserve:
 	deno run --watch  -A ./scripts/cronbin/serve.js
+
+.PHONY: extract-covers
+extract-covers:
+	node ./scripts/extract-covers.js
