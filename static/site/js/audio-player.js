@@ -296,16 +296,47 @@
     }
   }
 
-  document.addEventListener('DOMContentLoaded', function () {
-    var nodeList = document.querySelectorAll('.js-audio-player');
-    if (!nodeList || !nodeList.length) {
+  function toArray(collection) {
+    if (!collection) {
+      return [];
+    }
+    if (Array.isArray(collection)) {
+      return collection;
+    }
+    if (typeof collection.length === 'number') {
+      try {
+        return Array.prototype.slice.call(collection);
+      } catch (error) {
+        var result = [];
+        for (var i = 0; i < collection.length; i++) {
+          result.push(collection[i]);
+        }
+        return result;
+      }
+    }
+    return [collection];
+  }
+
+  function initializePlayers(targetNodes) {
+    if (typeof document === 'undefined') {
+      return;
+    }
+
+    var nodes;
+    if (targetNodes) {
+      nodes = toArray(targetNodes);
+    } else {
+      nodes = toArray(document.querySelectorAll('.js-audio-player'));
+    }
+
+    if (!nodes.length) {
       return;
     }
 
     var configs = [];
-    for (var i = 0; i < nodeList.length; i++) {
-      var node = nodeList[i];
-      if (node.getAttribute('data-aplayer-initialized') === 'true') {
+    for (var i = 0; i < nodes.length; i++) {
+      var node = nodes[i];
+      if (!node || node.getAttribute('data-aplayer-initialized') === 'true') {
         continue;
       }
       var config = extractPlayerOptions(node);
@@ -322,8 +353,8 @@
 
     loadAssets(assets, function (loaded) {
       if (loaded && typeof window !== 'undefined' && typeof window.APlayer !== 'undefined') {
-        for (var i = 0; i < configs.length; i++) {
-          var config = configs[i];
+        for (var j = 0; j < configs.length; j++) {
+          var config = configs[j];
           if (config.node.getAttribute('data-aplayer-initialized') === 'true') {
             continue;
           }
@@ -336,10 +367,45 @@
           }
         }
       } else {
-        for (var j = 0; j < configs.length; j++) {
-          renderNativeFallback(configs[j]);
+        for (var k = 0; k < configs.length; k++) {
+          renderNativeFallback(configs[k]);
         }
       }
     });
+  }
+
+  function scheduleInitialization(targetNodes) {
+    if (typeof document === 'undefined') {
+      return;
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function onReady() {
+        document.removeEventListener('DOMContentLoaded', onReady);
+        initializePlayers(targetNodes);
+      });
+      return;
+    }
+    initializePlayers(targetNodes);
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    initializePlayers();
   });
+
+  document.addEventListener('audio-player-refresh', function (event) {
+    var detail = event && event.detail ? event.detail : null;
+    if (detail && detail.nodes) {
+      initializePlayers(detail.nodes);
+      return;
+    }
+    if (event && event.target && event.target.classList && event.target.classList.contains('js-audio-player')) {
+      initializePlayers([event.target]);
+      return;
+    }
+    initializePlayers();
+  });
+
+  if (typeof window !== 'undefined') {
+    window.__initializeAudioPlayers = scheduleInitialization;
+  }
 })();
