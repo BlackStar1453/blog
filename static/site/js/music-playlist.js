@@ -607,8 +607,12 @@
 
     updateStatus(node, '正在加载歌单…', false);
 
-    fetchManifest(candidates)
+    withTimeout(fetchManifest(candidates), 8000, '__TIMEOUT__')
       .then(function (raw) {
+        if (raw === '__TIMEOUT__') {
+          updateStatus(node, '加载超时，请稍后重试。', true);
+          return;
+        }
         var audios = normaliseManifest(raw, baseUrl, extensions);
         return ensureCovers(audios, baseUrl, defaultCover).then(function (prepared) {
           initialisePlayer(node, prepared);

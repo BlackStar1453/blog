@@ -497,12 +497,7 @@
               }
             } catch (e) { /* noop */ }
 
-            // Lazy fetch cover for current track only (no prefetch for entire list)
-            try {
-              ap.on('listswitch', function (idx) { __tryUpdateCurrentCover(ap, idx); });
-              ap.on('play', function () { __tryUpdateCurrentCover(ap); });
-              __tryUpdateCurrentCover(ap, ap.list && ap.list.index);
-            } catch (e) { /* noop */ }
+            // Cover extraction disabled for simplicity and reliability on static hosting.
 
           } catch (error) {
             console.warn('Failed to initialize audio player', error);
