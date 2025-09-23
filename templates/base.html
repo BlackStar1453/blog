@@ -151,7 +151,7 @@
         {% endblock header %}
         <div class="main-zone relative">
           <div class="main">
-            <div class="main-inner">
+            <div class="main-inner" id="pjax-root">
               {% block main %}{% endblock main %}
             </div>
           </div>
@@ -231,6 +231,19 @@
       </div>
       {% endblock body_zone -%}
     </div>
+      {{ macro::music_playlist_block(
+        source="/media/",
+        manifest="music_playlist.json",
+        title="Now Playing",
+        preload="metadata",
+        list_folded=false,
+        fixed=true,
+        mini=false,
+        autoplay=true,
+        mutex=true,
+        default_cover="/media/playlist-cover.svg"
+      ) }}
+
     <div id="bottom"></div>
     {% block before_body_end -%}
     <script>
@@ -241,6 +254,8 @@
     </script>
     <script defer src="{{ get_url(path="site/js/audio-player.js", trailing_slash=false, cachebust=true) | safe }}"></script>
     <script defer src="{{ get_url(path="site/js/music-playlist.js", trailing_slash=false, cachebust=true) | safe }}"></script>
+    <script defer src="{{ get_url(path="site/js/pjax.js", trailing_slash=false, cachebust=true) | safe }}"></script>
+
     <!-- Mermaid.js for diagram rendering -->
     <script defer src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
     <script>

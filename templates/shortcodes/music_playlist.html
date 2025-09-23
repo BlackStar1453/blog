@@ -54,6 +54,10 @@
   {%- if theme is defined -%}
     {%- set playlist_theme = theme -%}
   {%- endif -%}
+  {%- set playlist_default_cover = "" -%}
+  {%- if default_cover is defined -%}
+    {%- set playlist_default_cover = default_cover -%}
+  {%- endif -%}
 
   {{ macro::music_playlist_block(
     source=source,
@@ -69,6 +73,7 @@
     mutex=playlist_mutex,
     volume=playlist_volume,
     extensions=playlist_extensions,
-    theme=playlist_theme
+    theme=playlist_theme,
+    default_cover=playlist_default_cover
   ) }}
 {%- endif -%}

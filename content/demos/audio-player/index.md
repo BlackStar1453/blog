@@ -4,6 +4,7 @@ description: 显示如何在文章中嵌入 audio_player 短代码的实际示�
 language: zh
 date: 2025-09-23
 updated: 2025-09-23
+draft: true
 taxonomies:
   categories:
     - Demos
@@ -88,18 +89,19 @@ taxonomies:
 
 ## 生成歌单播放列表
 
-当 CDN 中有一个专门的 `music` 文件夹时，可以使用新的 `music_playlist` 短代码让页面自动读取歌单并生成播放列表。示例：
+当你把歌单清单放在仓库的 `static/media/music_playlist.json` 中时，可以让 `music_playlist` 短代码直接从本地静态资源读取数据：
 
 
 {{ music_playlist(
-  source="https://assets.elick.it.com/music/",
-  manifest="playlist.json",
-  title="CDN 歌曲示例",
-  list_folded=false
+  source="/media/",
+  manifest="music_playlist.json",
+  title="本地歌单示例",
+  list_folded=false,
+  default_cover="/media/playlist-cover.svg"
 ) }}
 
 
-其中 `source` 指向包含音频的 CDN 目录，`manifest` 是歌单清单文件（默认会尝试 `playlist.json`、`index.json`、`list.json`，也可以自定义文件名）。清单应上传到 CDN 中，例如 `https://assets.elick.it.com/cdn/music/playlist.json`，格式可以是：
+其中 `source` 指向包含音频与歌单清单的本地目录，`manifest` 是歌单文件名（默认会尝试 `playlist.json`、`index.json`、`list.json`，也可以自定义）。清单内容可以是：
 
 ```json
 [
@@ -116,6 +118,8 @@ taxonomies:
 ]
 ```
 
+播放器会在歌单加载后自动尝试读取每首 MP3 的 ID3 封面（APIC）。只要音频文件能通过浏览器请求且包含嵌入封面，就会显示原始专辑图；若音频缺少封面或因跨域限制无法读取（例如 CDN 未开启 CORS 或 Range 请求），则使用 `default_cover` 所指定的占位图。你也可以在条目中显式提供 `cover`/`pic`/`image` 字段来覆盖这一行为。
+
 也支持仅包含文件名的数组形式，例如：
 
 ```json
@@ -125,6 +129,8 @@ taxonomies:
 ]
 ```
 
-构建后访问页面，若网络请求成功返回并列出了歌曲（状态提示为“共加载 N 首歌曲”），即可点击列表播放；若提示无法加载，请确认歌单 JSON 可以在浏览器直接访问且已启用跨域。
+构建后访问页面，若状态提示为“共加载 N 首歌曲”，表示歌单已经正常读取；若提示无法加载，请确认 `static/media/music_playlist.json` 已复制到站点输出目录并能在浏览器中访问。
+
+如果仍需要从 CDN 或其它远程存储加载，只需把 `source` 改为对应的远程目录，并保证歌单文件支持跨域请求。想要统一的封面占位图，可通过 `default_cover="/media/playlist-cover.svg"` 这样的参数设置；若歌单条目中提供了 `cover`/`pic`/`image` 字段，则会优先生效。
 
 保存页面后重新运行 `zola serve` 并刷新页面即可验证播放器是否生效。

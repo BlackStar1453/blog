@@ -73,7 +73,7 @@
 
   function loadAssets(assets, callback) {
     if (typeof callback !== 'function') {
-      callback = function () {};
+      callback = function () { };
     }
     ensureStylesheet(assets && assets.css);
 
@@ -359,8 +359,22 @@
             continue;
           }
           try {
-            new window.APlayer(config.options);
+            var ap = new window.APlayer(config.options);
             config.node.setAttribute('data-aplayer-initialized', 'true');
+            // Best-effort autoplay when requested
+            try {
+              if (config.options.autoplay) {
+                if (ap.list && typeof ap.list.switch === 'function') {
+                  ap.list.switch(0);
+                }
+                var playPromise = ap.play();
+                if (playPromise && typeof playPromise.catch === 'function') {
+                  playPromise.catch(function () {
+                    // Likely blocked by browser autoplay policy; ignore silently
+                  });
+                }
+              }
+            } catch (e) { /* noop */ }
           } catch (error) {
             console.warn('Failed to initialize audio player', error);
             renderNativeFallback(config);
