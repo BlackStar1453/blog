@@ -1016,12 +1016,26 @@ ul.text-sm:lang(en) {
 }
 
 /* Ensure APlayer is expanded by default */
-.aplayer {
-  /* Force the player to be in expanded state */
+.aplayer.aplayer-fixed {
+  /* Force fixed player to stay expanded, not narrow */
+  width: 400px !important;
 }
 
-.aplayer.aplayer-narrow {
-  /* Override narrow/collapsed state if needed */
+.aplayer.aplayer-fixed.aplayer-narrow {
+  /* Override narrow/collapsed state - force expanded */
+  width: 400px !important;
+}
+
+.aplayer.aplayer-fixed.aplayer-narrow .aplayer-info {
+  /* Show info panel even in narrow state */
+  display: block !important;
+  transform: scaleX(1) !important;
+  -webkit-transform: scaleX(1) !important;
+}
+
+.aplayer.aplayer-fixed.aplayer-narrow .aplayer-body {
+  /* Ensure body is full width when expanded */
+  width: 400px !important;
 }
 
 .aplayer .aplayer-list {
