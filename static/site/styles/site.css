@@ -1015,29 +1015,7 @@ ul.text-sm:lang(en) {
   border-radius: 0.5rem;
 }
 
-/* Ensure APlayer is expanded by default */
-.aplayer.aplayer-fixed {
-  /* Force fixed player to stay expanded, not narrow */
-  width: 400px !important;
-}
-
-.aplayer.aplayer-fixed.aplayer-narrow {
-  /* Override narrow/collapsed state - force expanded */
-  width: 400px !important;
-}
-
-.aplayer.aplayer-fixed.aplayer-narrow .aplayer-info {
-  /* Show info panel even in narrow state */
-  display: block !important;
-  transform: scaleX(1) !important;
-  -webkit-transform: scaleX(1) !important;
-}
-
-.aplayer.aplayer-fixed.aplayer-narrow .aplayer-body {
-  /* Ensure body is full width when expanded */
-  width: 400px !important;
-}
-
+/* Ensure APlayer playlist is visible when list_folded=false */
 .aplayer .aplayer-list {
   /* Ensure playlist is visible by default when list_folded=false */
   display: block !important;
