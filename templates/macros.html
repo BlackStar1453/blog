@@ -6,7 +6,7 @@
   {% endif %}
 {% endmacro get_reading_time %}
 
-{% macro music_playlist_block(source, manifest="", title="", preload="metadata", loop="none", order="", autoplay=false, fixed=false, mini=false, list_folded=false, mutex=false, volume="", extensions="mp3,ogg,flac,wav", theme="") %}
+{% macro music_playlist_block(source, manifest="", title="", preload="metadata", loop="none", order="", autoplay=false, fixed=false, mini=false, list_folded=false, mutex=false, volume="", extensions="mp3,ogg,flac,wav", theme="", default_cover="") %}
   {%- set raw_source = source | default(value="") | trim -%}
   {%- if raw_source == "" -%}
     <p class="aplayer-error">Playlist source is required.</p>
@@ -51,6 +51,7 @@
     {%- set volume_value = volume | default(value="") | trim -%}
     {%- set extensions_value = extensions | default(value="mp3,ogg,flac,wav") | trim -%}
     {%- set theme_value = theme | default(value="") | trim -%}
+    {%- set default_cover_value = default_cover | default(value="") | trim -%}
 
     <div class="music-playlist js-music-playlist"
          data-playlist-source="{{ raw_source }}"
@@ -65,6 +66,7 @@
          data-list-folded="{{ list_folded_value }}"
          data-mutex="{{ mutex_value }}"
          data-extensions="{{ extensions_value }}"
+         {% if default_cover_value != "" %}data-default-cover="{{ default_cover_value }}"{% endif %}
          {% if volume_value != "" %}data-volume="{{ volume_value }}"{% endif %}
          {% if theme_value != "" %}data-theme="{{ theme_value }}"{% endif %}>
       {% if playlist_title != "" %}<h3 class="music-playlist-title">{{ playlist_title }}</h3>{% endif %}

@@ -75,6 +75,225 @@
     return [value];
   }
 
+  function parseSynchsafeInteger(bytes, offset) {
+    return (bytes[offset] << 21) |
+      (bytes[offset + 1] << 14) |
+      (bytes[offset + 2] << 7) |
+      bytes[offset + 3];
+  }
+
+  function parseFrameSize(bytes, offset, version) {
+    if (version === 4) {
+      return parseSynchsafeInteger(bytes, offset);
+    }
+    return (bytes[offset] << 24) |
+      (bytes[offset + 1] << 16) |
+      (bytes[offset + 2] << 8) |
+      bytes[offset + 3];
+  }
+
+  function decodeBytes(bytes, label) {
+    if (!bytes || !bytes.length) {
+      return '';
+    }
+    if (typeof TextDecoder !== 'undefined') {
+      try {
+        var decoder = new TextDecoder(label, { fatal: false });
+        return decoder.decode(bytes);
+      } catch (error) {
+        // fall back to manual decoding
+      }
+    }
+    var result = '';
+    for (var i = 0; i < bytes.length; i++) {
+      result += String.fromCharCode(bytes[i]);
+    }
+    return result;
+  }
+
+  function readNullTerminated(bytes, offset, limit, encoding) {
+    var cursor = offset;
+    var label;
+    if (encoding === 0) {
+      label = 'latin1';
+      while (cursor < limit && bytes[cursor] !== 0) {
+        cursor++;
+      }
+      var value = decodeBytes(bytes.subarray(offset, cursor), label);
+      return {
+        value: value,
+        nextOffset: cursor < limit ? cursor + 1 : limit
+      };
+    }
+    if (encoding === 3) {
+      label = 'utf-8';
+      while (cursor < limit && bytes[cursor] !== 0) {
+        cursor++;
+      }
+      var utf8Value = decodeBytes(bytes.subarray(offset, cursor), label);
+      return {
+        value: utf8Value,
+        nextOffset: cursor < limit ? cursor + 1 : limit
+      };
+    }
+
+    // UTF-16 (with or without BOM)
+    label = encoding === 1 ? 'utf-16' : 'utf-16be';
+    while (cursor + 1 < limit && !(bytes[cursor] === 0 && bytes[cursor + 1] === 0)) {
+      cursor += 2;
+    }
+    var valueBytes = bytes.subarray(offset, Math.min(cursor, limit));
+    var decoded = decodeBytes(valueBytes, label);
+    return {
+      value: decoded,
+      nextOffset: Math.min(limit, cursor + 2)
+    };
+  }
+
+  function bytesToDataUrl(mime, bytes) {
+    if (!bytes || !bytes.length) {
+      return null;
+    }
+    var chunkSize = 0x8000;
+    var chunks = [];
+    for (var i = 0; i < bytes.length; i += chunkSize) {
+      chunks.push(String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize)));
+    }
+    var binary = chunks.join('');
+    var encoder = null;
+    if (typeof btoa === 'function') {
+      encoder = btoa;
+    } else if (typeof window !== 'undefined' && typeof window.btoa === 'function') {
+      encoder = window.btoa.bind(window);
+    }
+    if (!encoder) {
+      return null;
+    }
+    var base64 = encoder(binary);
+    return 'data:' + (mime || 'image/jpeg') + ';base64,' + base64;
+  }
+
+  function extractCoverFromId3(buffer) {
+    if (!buffer || buffer.byteLength < 10) {
+      return null;
+    }
+    var bytes = new Uint8Array(buffer);
+    if (bytes[0] !== 0x49 || bytes[1] !== 0x44 || bytes[2] !== 0x33) { // "ID3"
+      return null;
+    }
+    var version = bytes[3];
+    var flags = bytes[5];
+    var tagSize = parseSynchsafeInteger(bytes, 6);
+    var offset = 10;
+
+    if (flags & 0x40) { // extended header
+      if (version === 4) {
+        var extendedSize = parseSynchsafeInteger(bytes, offset);
+        offset += 4 + extendedSize;
+      } else if (version === 3) {
+        var size = (bytes[offset] << 24) |
+          (bytes[offset + 1] << 16) |
+          (bytes[offset + 2] << 8) |
+          bytes[offset + 3];
+        offset += 4 + size;
+      }
+    }
+
+    var limit = Math.min(bytes.length, offset + tagSize);
+    while (offset + 10 <= limit) {
+      var frameId = String.fromCharCode(bytes[offset], bytes[offset + 1], bytes[offset + 2], bytes[offset + 3]);
+      if (!/^[A-Z0-9]{4}$/.test(frameId)) {
+        break;
+      }
+      var frameSize = parseFrameSize(bytes, offset + 4, version);
+      if (!frameSize || frameSize < 1) {
+        break;
+      }
+      var frameStart = offset + 10;
+      var frameEnd = frameStart + frameSize;
+      if (frameEnd > limit) {
+        break;
+      }
+
+      if (frameId === 'APIC') {
+        var encoding = bytes[frameStart];
+        var cursor = frameStart + 1;
+        var mimeInfo = readNullTerminated(bytes, cursor, frameEnd, 0);
+        var mime = mimeInfo.value || 'image/jpeg';
+        cursor = mimeInfo.nextOffset;
+
+        if (cursor >= frameEnd) {
+          return null;
+        }
+        cursor += 1; // skip picture type byte
+
+        var descriptionInfo = readNullTerminated(bytes, cursor, frameEnd, encoding);
+        cursor = descriptionInfo.nextOffset;
+
+        if (cursor >= frameEnd) {
+          return null;
+        }
+
+        var imageBytes = bytes.subarray(cursor, frameEnd);
+        return bytesToDataUrl(mime, imageBytes);
+      }
+
+      offset = frameEnd;
+    }
+
+    return null;
+  }
+
+  var COVER_FETCH_RANGE = 262144;
+
+  function fetchCoverFromAudio(url) {
+    if (!url || typeof fetch !== 'function') {
+      return Promise.resolve(null);
+    }
+    return fetch(url, {
+      method: 'GET',
+      headers: { Range: 'bytes=0-' + (COVER_FETCH_RANGE - 1) },
+      credentials: 'omit'
+    }).then(function (response) {
+      if (!response.ok) {
+        return null;
+      }
+      return response.arrayBuffer();
+    }).then(function (buffer) {
+      return extractCoverFromId3(buffer);
+    }).catch(function () {
+      return null;
+    });
+  }
+
+  function ensureCovers(audios, baseUrl, defaultCover) {
+    if (!audios.length) {
+      return Promise.resolve(audios);
+    }
+    var resolvedDefault = defaultCover ? joinUrl(baseUrl, defaultCover) : '';
+    var tasks = audios.map(function (audio) {
+      if (audio.cover) {
+        return Promise.resolve(audio);
+      }
+      return fetchCoverFromAudio(audio.url).then(function (dataUrl) {
+        if (dataUrl) {
+          audio.cover = dataUrl;
+        } else if (resolvedDefault) {
+          audio.cover = resolvedDefault;
+        }
+        return audio;
+      }).catch(function () {
+        if (resolvedDefault && !audio.cover) {
+          audio.cover = resolvedDefault;
+        }
+        return audio;
+      });
+    });
+    return Promise.all(tasks).then(function () {
+      return audios;
+    });
+  }
+
   function createAudioEntry(entry, baseUrl, allowedExtensions) {
     if (!entry) {
       return null;
@@ -90,11 +309,12 @@
         return null;
       }
       var meta = parseMetaFromFilename(raw);
-      return {
+      var audioFromString = {
         url: url,
         name: meta.name,
         artist: meta.artist
       };
+      return audioFromString;
     }
 
     if (typeof entry === 'object') {
@@ -120,8 +340,9 @@
         name: String(name).trim() || 'Audio',
         artist: String(artist).trim()
       };
-      if (entry.cover) {
-        audio.cover = joinUrl(baseUrl, String(entry.cover).trim());
+      var coverSource = entry.cover || entry.pic || entry.image || entry.cover_url || entry.coverUrl;
+      if (coverSource) {
+        audio.cover = joinUrl(baseUrl, String(coverSource).trim());
       }
       if (entry.lrc || entry.lyrics) {
         audio.lrc = joinUrl(baseUrl, String(entry.lrc || entry.lyrics).trim());
@@ -352,6 +573,7 @@
     var baseUrl = node.getAttribute('data-playlist-source') || '';
     var manifestAttr = node.getAttribute('data-playlist-manifest') || '';
     var extensions = parseExtensions(node.getAttribute('data-extensions'));
+    var defaultCover = (node.getAttribute('data-default-cover') || '').trim();
 
     if (!baseUrl) {
       updateStatus(node, '缺少播放源地址。', true);
@@ -364,16 +586,28 @@
       return;
     }
 
-    updateStatus(node, '正在从远程加载歌单…', false);
+    updateStatus(node, '正在加载歌单…', false);
 
     fetchManifest(candidates)
       .then(function (raw) {
         var audios = normaliseManifest(raw, baseUrl, extensions);
-        initialisePlayer(node, audios);
+        var needsCover = false;
+        for (var i = 0; i < audios.length; i++) {
+          if (!audios[i].cover) {
+            needsCover = true;
+            break;
+          }
+        }
+        if (needsCover) {
+          updateStatus(node, '正在解析歌曲封面…', false);
+        }
+        return ensureCovers(audios, baseUrl, defaultCover).then(function (prepared) {
+          initialisePlayer(node, prepared);
+        });
       })
       .catch(function (error) {
         console.warn('Failed to load playlist', error);
-        updateStatus(node, '无法加载歌单，请检查 CDN 是否提供 playlist.json。', true);
+        updateStatus(node, '无法加载歌单，请确认指定路径下的歌单文件可访问。', true);
       });
   }
 
@@ -397,4 +631,40 @@
       init();
     }
   }
+
+  // Allow re-initialization after PJAX/content swap
+  document.addEventListener('music-playlist-refresh', function (event) {
+    var root = event && event.detail && event.detail.root ? event.detail.root : null;
+    var nodes;
+    if (root && root.querySelectorAll) {
+      nodes = root.querySelectorAll('.js-music-playlist');
+    } else if (typeof document !== 'undefined') {
+      nodes = document.querySelectorAll('.js-music-playlist');
+    }
+    if (!nodes || !nodes.length) {
+      return;
+    }
+    for (var i = 0; i < nodes.length; i++) {
+      loadPlaylist(nodes[i]);
+    }
+  });
+
+  if (typeof window !== 'undefined') {
+    window.__initializeMusicPlaylists = function (target) {
+      var root = (target && target.querySelectorAll) ? target : null;
+      var nodes;
+      if (root) {
+        nodes = root.querySelectorAll('.js-music-playlist');
+      } else if (typeof document !== 'undefined') {
+        nodes = document.querySelectorAll('.js-music-playlist');
+      }
+      if (!nodes || !nodes.length) {
+        return;
+      }
+      for (var i = 0; i < nodes.length; i++) {
+        loadPlaylist(nodes[i]);
+      }
+    };
+  }
+
 })();
