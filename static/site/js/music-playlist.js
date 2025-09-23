@@ -475,7 +475,18 @@
         return Promise.reject(new Error('Unable to fetch playlist manifest.'));
       }
       var url = urls[index];
-      return fetch(url, { credentials: 'omit' }).then(function (response) {
+
+      // Create AbortController for this specific request
+      var controller = new AbortController();
+      var timeoutId = setTimeout(function () {
+        controller.abort();
+      }, 10000); // 10 second timeout per URL
+
+      return fetch(url, {
+        credentials: 'omit',
+        signal: controller.signal
+      }).then(function (response) {
+        clearTimeout(timeoutId);
         if (!response.ok) {
           throw new Error('HTTP ' + response.status);
         }
@@ -484,7 +495,9 @@
           return response.json();
         }
         return response.text();
-      }).catch(function () {
+      }).catch(function (error) {
+        clearTimeout(timeoutId);
+        console.warn('Failed to fetch manifest from', url, error);
         return attempt(index + 1);
       });
     };
