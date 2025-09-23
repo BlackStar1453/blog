@@ -1,17 +1,13 @@
 @charset "UTF-8";
+
 @font-face {
   font-family: "et-book";
   src:
-    url("/site/fonts/et-book/et-book-roman-line-figures/et-book-roman-line-figures.woff2")
-      format("woff2"),
-    url("/site/fonts/et-book/et-book-roman-line-figures/et-book-roman-line-figures.eot?#iefix")
-      format("embedded-opentype"),
-    url("/site/fonts/et-book/et-book-roman-line-figures/et-book-roman-line-figures.woff")
-      format("woff"),
-    url("/site/fonts/et-book/et-book-roman-line-figures/et-book-roman-line-figures.ttf")
-      format("truetype"),
-    url("/site/fonts/et-book/et-book-roman-line-figures/et-book-roman-line-figures.svg#etbookromanosf")
-      format("svg");
+    url("/site/fonts/et-book/et-book-roman-line-figures/et-book-roman-line-figures.woff2") format("woff2"),
+    url("/site/fonts/et-book/et-book-roman-line-figures/et-book-roman-line-figures.eot?#iefix") format("embedded-opentype"),
+    url("/site/fonts/et-book/et-book-roman-line-figures/et-book-roman-line-figures.woff") format("woff"),
+    url("/site/fonts/et-book/et-book-roman-line-figures/et-book-roman-line-figures.ttf") format("truetype"),
+    url("/site/fonts/et-book/et-book-roman-line-figures/et-book-roman-line-figures.svg#etbookromanosf") format("svg");
   font-weight: normal;
   font-style: normal;
   unicode-range: U+0025-00FF;
@@ -20,16 +16,11 @@
 @font-face {
   font-family: "et-book";
   src:
-    url("/site/fonts/et-book/et-book-display-italic-old-style-figures/et-book-display-italic-old-style-figures.woff2")
-      format("woff2"),
-    url("/site/fonts/et-book/et-book-display-italic-old-style-figures/et-book-display-italic-old-style-figures.eot?#iefix")
-      format("embedded-opentype"),
-    url("/site/fonts/et-book/et-book-display-italic-old-style-figures/et-book-display-italic-old-style-figures.woff")
-      format("woff"),
-    url("/site/fonts/et-book/et-book-display-italic-old-style-figures/et-book-display-italic-old-style-figures.ttf")
-      format("truetype"),
-    url("/site/fonts/et-book/et-book-display-italic-old-style-figures/et-book-display-italic-old-style-figures.svg#etbookromanosf")
-      format("svg");
+    url("/site/fonts/et-book/et-book-display-italic-old-style-figures/et-book-display-italic-old-style-figures.woff2") format("woff2"),
+    url("/site/fonts/et-book/et-book-display-italic-old-style-figures/et-book-display-italic-old-style-figures.eot?#iefix") format("embedded-opentype"),
+    url("/site/fonts/et-book/et-book-display-italic-old-style-figures/et-book-display-italic-old-style-figures.woff") format("woff"),
+    url("/site/fonts/et-book/et-book-display-italic-old-style-figures/et-book-display-italic-old-style-figures.ttf") format("truetype"),
+    url("/site/fonts/et-book/et-book-display-italic-old-style-figures/et-book-display-italic-old-style-figures.svg#etbookromanosf") format("svg");
   font-weight: normal;
   font-style: italic;
   unicode-range: U+0025-00FF;
@@ -38,20 +29,16 @@
 @font-face {
   font-family: "et-book";
   src:
-    url("/site/fonts/et-book/et-book-bold-line-figures/et-book-bold-line-figures.woff2")
-      format("woff2"),
-    url("/site/fonts/et-book/et-book-bold-line-figures/et-book-bold-line-figures.eot?#iefix")
-      format("embedded-opentype"),
-    url("/site/fonts/et-book/et-book-bold-line-figures/et-book-bold-line-figures.woff")
-      format("woff"),
-    url("/site/fonts/et-book/et-book-bold-line-figures/et-book-bold-line-figures.ttf")
-      format("truetype"),
-    url("/site/fonts/et-book/et-book-bold-line-figures/et-book-bold-line-figures.svg#etbookromanosf")
-      format("svg");
+    url("/site/fonts/et-book/et-book-bold-line-figures/et-book-bold-line-figures.woff2") format("woff2"),
+    url("/site/fonts/et-book/et-book-bold-line-figures/et-book-bold-line-figures.eot?#iefix") format("embedded-opentype"),
+    url("/site/fonts/et-book/et-book-bold-line-figures/et-book-bold-line-figures.woff") format("woff"),
+    url("/site/fonts/et-book/et-book-bold-line-figures/et-book-bold-line-figures.ttf") format("truetype"),
+    url("/site/fonts/et-book/et-book-bold-line-figures/et-book-bold-line-figures.svg#etbookromanosf") format("svg");
   font-weight: bold;
   font-style: normal;
   unicode-range: U+0025-00FF;
 }
+
 html,
 body,
 p,
@@ -90,6 +77,7 @@ input,
 select {
   margin: 0;
 }
+
 div {
   box-sizing: border-box;
 }
@@ -111,6 +99,7 @@ table {
   border-spacing: 0;
   margin-bottom: 1.4em;
 }
+
 td,
 th {
   padding: 0.5em;
@@ -191,6 +180,7 @@ html {
     --colors-quote-hover-background: hsl(226, 15%, 20%);
   }
 }
+
 body {
   color: var(--colors-text);
   background-color: var(--colors-background);
@@ -212,6 +202,7 @@ h3 {
   line-height: 1;
   position: relative;
 }
+
 h4,
 h5,
 h6 {
@@ -230,6 +221,7 @@ h6 {
 .bold {
   font-weight: 600;
 }
+
 .mb-absolute {
   margin-bottom: -0.8rem;
 }
@@ -259,9 +251,11 @@ h6 {
   bottom: 0;
   right: 0;
 }
+
 .tweet-box .overlay:hover {
   background-color: var(--colors-quote-hover-background);
 }
+
 .tweet-box .inner {
   position: relative;
   pointer-events: none;
@@ -272,18 +266,21 @@ h6 {
   pointer-events: all;
   position: relative;
 }
+
 p.tweet-content {
   line-height: 1.5rem !important;
   padding-right: 2rem;
   margin-bottom: 0.6rem;
   font-size: 0.9rem !important;
 }
+
 .tweet-content a:link,
 .tweet-content a:visited {
   -webkit-text-decoration: none;
   text-decoration: none;
   color: rgb(27, 149, 224);
 }
+
 .tweet-avatar-wrapper {
   margin-right: 0.5rem;
   margin-bottom: 0;
@@ -291,6 +288,7 @@ p.tweet-content {
   min-width: 48px;
   border-radius: 9999px;
 }
+
 .tweet-icon {
   box-sizing: border-box;
   margin: 0;
@@ -301,6 +299,7 @@ p.tweet-content {
   right: 0;
   top: 0.2rem;
 }
+
 .tweet-icon-svg {
   width: 25px;
   height: 25px;
@@ -320,6 +319,7 @@ h2 {
 .feed-entry h2 {
   font-size: 1.125rem;
 }
+
 .feed-entry h2.entry-title {
   font-size: 1.6rem;
   font-style: normal;
@@ -330,6 +330,7 @@ h2 {
   font-size: 1.05rem;
   font-style: normal;
 }
+
 .feed-entry p,
 li,
 ul,
@@ -337,6 +338,7 @@ ol {
   font-size: 1rem;
   line-height: 1.8rem;
 }
+
 h3 {
   font-size: 1.375rem;
   font-style: italic;
@@ -345,9 +347,11 @@ h3 {
 article {
   margin-bottom: 4rem;
 }
+
 article:last-child {
   margin-bottom: 0;
 }
+
 pre {
   background-color: var(--colors-quote-background);
   margin-top: 0px;
@@ -364,7 +368,7 @@ code {
   background-color: var(--colors-code-background);
 }
 
-pre > code {
+pre>code {
   font-size: 0.9rem;
   display: block;
 }
@@ -374,7 +378,7 @@ pre code {
 }
 
 code,
-pre > code {
+pre>code {
   font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
   font-size: 1rem;
   line-height: 1.42;
@@ -396,7 +400,7 @@ ul {
   margin-bottom: 0.8rem;
 }
 
-ul > details > summary {
+ul>details>summary {
   margin-left: -1.4rem;
 }
 
@@ -448,6 +452,7 @@ ul {
   font-size: 1.15rem;
   line-height: 2rem;
 }
+
 p {
   line-height: 2.1rem;
 }
@@ -505,6 +510,7 @@ input[type="search"] {
 
   /* -webkit-border-radius: 0px; */
 }
+
 .display-block {
   display: block;
 }
@@ -523,18 +529,22 @@ input[type="search"]:focus {
 .meilisearch-autocomplete {
   display: block !important;
 }
+
 .meilisearch-autocomplete .dsb-dropdown-menu {
   max-height: 400px;
   overflow-y: auto;
   min-width: 300px;
   width: 100%;
 }
+
 input:focus:not(:focus-visible) {
   border: 2px solid var(--colors-text);
 }
+
 input:focus-visible {
   border: 2px solid var(--colors-blue);
 }
+
 .no-underline {
   text-decoration: none;
 }
@@ -542,9 +552,11 @@ input:focus-visible {
 .meilisearch-autocomplete {
   display: block;
 }
+
 a {
   word-break: break-all;
 }
+
 a:link,
 a:visited {
   -webkit-transition: color 200ms ease;
@@ -564,10 +576,12 @@ a:visited {
 .sidebar a:visited {
   text-decoration: none;
 }
+
 .sidebar {
   overflow-x: visible;
   padding-bottom: 1.4rem;
 }
+
 .no-underline:hover,
 a:hover {
   color: var(--colors-primary);
@@ -679,6 +693,7 @@ a.muted,
   padding-top: 1.4rem;
   padding-bottom: 1.4rem;
 }
+
 .pt0 {
   padding-top: 0;
 }
@@ -686,9 +701,11 @@ a.muted,
 .pb0 {
   padding-bottom: 0;
 }
+
 .flex-shrink-0 {
   flex-shrink: 0;
 }
+
 .py-sm {
   padding-top: 0.5rem;
   padding-bottom: 0.5rem;
@@ -713,10 +730,12 @@ a.muted,
   padding-left: 1.4rem;
   padding-right: 1.4rem;
 }
+
 .px-2xl {
   padding-left: 5rem;
   padding-right: 5rem;
 }
+
 .pr-sm {
   padding-right: 0.5rem;
 }
@@ -768,6 +787,7 @@ li.inline {
 .text-bigger {
   font-size: 1rem;
 }
+
 .text-lg {
   font-size: 1.5rem;
 }
@@ -779,6 +799,7 @@ li.inline {
 .text-sm p {
   font-size: 0.9rem;
 }
+
 p.text-sm:lang(en),
 dl.text-sm:lang(en),
 ol.text-sm:lang(en),
@@ -793,6 +814,7 @@ ul.text-sm:lang(en) {
 .pb-lg {
   padding-bottom: 3rem;
 }
+
 .pb-sm {
   padding-bottom: 0.5rem;
 }
@@ -804,6 +826,7 @@ ul.text-sm:lang(en) {
 .no-toc {
   width: auto;
 }
+
 .text-center {
   text-align: center;
 }
@@ -861,19 +884,23 @@ ul.text-sm:lang(en) {
   padding-left: 1.4rem;
   padding-right: 1.4rem;
 }
+
 .header {
   padding-top: 1.4rem;
   max-width: 74rem;
   margin: 0 auto;
 }
-.post-header {
-}
+
+.post-header {}
+
 .header-inner {
   max-width: 52rem;
 }
+
 .mt {
   margin-top: 1.4rem;
 }
+
 .mb-lg {
   margin-bottom: 2.4rem;
 }
@@ -882,6 +909,7 @@ ul.text-sm:lang(en) {
   .navbar {
     position: fixed;
   }
+
   .nav-divider {
     border-top: 2px solid var(--colors-divider);
     width: 24px;
@@ -921,18 +949,22 @@ ul.text-sm:lang(en) {
 }
 
 @media (min-width: 52rem) {
+
   h1::after,
   h2::after,
   h3::after {
     background-color: var(--colors-background);
   }
+
   .main {
     margin-right: 19rem;
   }
+
   .main-inner {
     max-width: 44rem;
     padding: 0;
   }
+
   .no-toc {
     width: 20rem;
   }
@@ -967,6 +999,7 @@ ul.text-sm:lang(en) {
     border: none;
   }
 }
+
 .index-intro {
   font-size: 1rem;
 }
@@ -980,6 +1013,25 @@ ul.text-sm:lang(en) {
 .audio-player-native-cover {
   max-width: 14rem;
   border-radius: 0.5rem;
+}
+
+/* Ensure APlayer is expanded by default */
+.aplayer {
+  /* Force the player to be in expanded state */
+}
+
+.aplayer.aplayer-narrow {
+  /* Override narrow/collapsed state if needed */
+}
+
+.aplayer .aplayer-list {
+  /* Ensure playlist is visible by default when list_folded=false */
+  display: block !important;
+}
+
+.aplayer.aplayer-withlist .aplayer-list {
+  /* Ensure list is shown when player has list */
+  display: block !important;
 }
 
 .audio-player-native-list {
