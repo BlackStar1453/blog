@@ -266,6 +266,32 @@
     });
   }
 
+  // Utility: promise with timeout; resolves fallback on timeout/error to avoid UI blocking
+  function withTimeout(promise, ms, fallback) {
+    return new Promise(function (resolve) {
+      var settled = false;
+      var timer = setTimeout(function () {
+        if (settled) return;
+        settled = true;
+        resolve(fallback);
+      }, ms);
+      promise.then(function (value) {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        resolve(value);
+      }).catch(function () {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        resolve(fallback);
+      });
+    });
+  }
+
+  var COVER_FETCH_TIMEOUT_MS = 2500;
+
+
   function ensureCovers(audios, baseUrl, defaultCover) {
     if (!audios.length) {
       return Promise.resolve(audios);
@@ -275,7 +301,7 @@
       if (audio.cover) {
         return Promise.resolve(audio);
       }
-      return fetchCoverFromAudio(audio.url).then(function (dataUrl) {
+      return withTimeout(fetchCoverFromAudio(audio.url), COVER_FETCH_TIMEOUT_MS, null).then(function (dataUrl) {
         if (dataUrl) {
           audio.cover = dataUrl;
         } else if (resolvedDefault) {
