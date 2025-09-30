@@ -20,6 +20,62 @@ from dataclasses import dataclass
 import urllib.request
 import urllib.parse
 
+# 加载 .env 文件
+def load_env_file(env_path: str = '.env'):
+    """加载 .env 文件中的环境变量"""
+    if os.path.exists(env_path):
+        with open(env_path, 'r', encoding='utf-8') as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith('#') and '=' in line:
+                    key, value = line.split('=', 1)
+                    os.environ[key.strip()] = value.strip()
+
+# 在导入时加载环境变量
+load_env_file()
+
+def check_and_install_dependencies():
+    """检查并提示安装依赖库"""
+    import sys
+    import subprocess
+
+    missing_deps = []
+
+    try:
+        import macnotesapp
+    except ImportError:
+        missing_deps.append("macnotesapp")
+
+    try:
+        import rich
+    except ImportError:
+        missing_deps.append("rich")
+
+    try:
+        import markdownify
+    except ImportError:
+        missing_deps.append("markdownify")
+
+    if missing_deps:
+        print(f"❌ 缺少必要的依赖库: {', '.join(missing_deps)}")
+        print(f"📍 当前Python路径: {sys.executable}")
+        print(f"📍 当前Python版本: {sys.version}")
+        print()
+        print("🔧 解决方案:")
+        print("1. 运行自动安装脚本:")
+        print("   ./scripts/setup-dependencies.sh")
+        print()
+        print("2. 手动安装:")
+        print(f"   {sys.executable} -m pip install macnotesapp rich markdownify")
+        print()
+        print("3. 如果使用Homebrew Python:")
+        print("   /opt/homebrew/bin/python3 -m pip install macnotesapp rich markdownify")
+        print("   /opt/homebrew/bin/python3 sync_multi_tag_notes.py")
+        exit(1)
+
+# 检查依赖
+check_and_install_dependencies()
+
 try:
     from macnotesapp import NotesApp
     from rich.console import Console
@@ -27,8 +83,8 @@ try:
     from rich.table import Table
     from rich import print as rprint
 except ImportError as e:
-    print(f"缺少必要的依赖库: {e}")
-    print("请运行: python3 -m pip install macnotesapp rich")
+    print(f"❌ 导入失败: {e}")
+    print("请运行依赖安装脚本: ./scripts/setup-dependencies.sh")
     exit(1)
 
 # 配置日志
@@ -159,9 +215,11 @@ class MultiTagSyncer:
                 logger.warning(f"备忘录数据路径不存在: {notes_path}")
                 return None
 
-            # 切换到 parser 目录
+            # 保存原始工作目录
             original_cwd = os.getcwd()
-            os.chdir(parser_dir)
+
+            # 获取绝对路径
+            parser_dir_abs = parser_dir.resolve()
 
             try:
                 # 设置 Ruby 路径（如果使用 Homebrew）
@@ -169,9 +227,10 @@ class MultiTagSyncer:
                 if Path("/opt/homebrew/opt/ruby/bin").exists():
                     env["PATH"] = f"/opt/homebrew/opt/ruby/bin:{env.get('PATH', '')}"
 
-                # 运行 notes_cloud_ripper.rb
+                # 运行 notes_cloud_ripper.rb（在parser目录中）
                 cmd = [
-                    "ruby", "notes_cloud_ripper.rb",
+                    "ruby",
+                    str(parser_dir_abs / "notes_cloud_ripper.rb"),
                     "--mac", str(notes_path),
                     "--one-output-folder"
                 ]
@@ -181,15 +240,16 @@ class MultiTagSyncer:
                     env=env,
                     capture_output=True,
                     text=True,
-                    timeout=300  # 5分钟超时
+                    timeout=300,  # 5分钟超时
+                    cwd=str(parser_dir_abs)  # 在parser目录中执行
                 )
 
                 if result.returncode != 0:
                     logger.error(f"apple_cloud_notes_parser 执行失败: {result.stderr}")
                     return None
 
-                # 查找生成的 JSON 文件
-                json_dir = parser_dir / "output/notes_rip/json"
+                # 查找生成的 JSON 文件（使用绝对路径）
+                json_dir = parser_dir_abs / "output/notes_rip/json"
                 if json_dir.exists():
                     json_files = list(json_dir.glob("all_notes_*.json"))
                     if json_files:
@@ -200,8 +260,9 @@ class MultiTagSyncer:
                 logger.warning("未找到生成的 JSON 文件")
                 return None
 
-            finally:
-                os.chdir(original_cwd)
+            except Exception as e:
+                logger.error(f"执行过程中出错: {e}")
+                return None
 
         except subprocess.TimeoutExpired:
             logger.error("apple_cloud_notes_parser 执行超时")
@@ -450,14 +511,20 @@ end tell'''
             logger.warning(f"删除备忘录异常: {e}")
             return False
 
-    def extract_tags_from_content(self, content: str) -> List[str]:
-        """从内容中提取所有标签（基于正文的兜底方案）"""
-        tag_pattern = r'#([a-zA-Z0-9\u4e00-\u9fff]+)'
-        tags = re.findall(tag_pattern, content or "", re.IGNORECASE)
-        return [f"#{tag.lower()}" for tag in tags]
+    # 已移除 extract_tags_from_content 方法
+    # 根据设计要求，标签只应从备忘录元数据字段中提取，不从正文内容解析
 
     def extract_tags_from_note(self, note) -> List[str]:
-        """仅使用 JSON 提供的 hashtags（若提供）；否则仅尝试元数据字段；不再从正文解析标签。"""
+        """
+        从备忘录的元数据字段中提取标签。
+
+        设计说明：
+        1. 优先使用 Apple Cloud Notes Parser 提供的 JSON hashtags 数据
+        2. 如果没有 JSON 数据，则尝试从备忘录对象的元数据字段中提取
+        3. 不从正文内容中解析标签 - 如果元数据中没有标签，说明该备忘录不需要处理
+
+        返回：标签列表，如果没有找到标签则返回空列表
+        """
         # 如提供 JSON 映射，则仅按映射取值
         if getattr(self, 'hashtags_map', None):
             try:

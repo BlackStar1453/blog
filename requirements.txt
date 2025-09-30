@@ -1,0 +1,14 @@
+# 备忘录同步脚本依赖库
+# 使用方法: python3 -m pip install -r requirements.txt
+
+# macOS备忘录访问库
+macnotesapp>=0.7.0
+
+# 富文本终端输出库
+rich>=12.0.0
+
+# HTML转Markdown库
+markdownify>=0.11.0
+
+# HTTP请求库（用于Mastodon API）
+requests>=2.25.0
