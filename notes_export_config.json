@@ -1,0 +1,51 @@
+{
+  "default_settings": {
+    "output_dir": "exported_notes",
+    "organize_by": "date",
+    "include_index": true,
+    "include_metadata": true,
+    "include_protected": false
+  },
+  "presets": {
+    "recent": {
+      "description": "导出最近30天的备忘录",
+      "days": 30,
+      "organize_by": "date"
+    },
+    "work": {
+      "description": "导出工作相关备忘录",
+      "keywords": ["工作", "项目", "会议", "任务"],
+      "organize_by": "folder"
+    },
+    "personal": {
+      "description": "导出个人备忘录",
+      "keywords": ["个人", "想法", "日记", "感想"],
+      "organize_by": "date"
+    },
+    "long_notes": {
+      "description": "导出长备忘录（>1000字）",
+      "min_length": 1000,
+      "organize_by": "length"
+    },
+    "short_notes": {
+      "description": "导出短备忘录（<100字）",
+      "max_length": 100,
+      "organize_by": "length"
+    }
+  },
+  "filters": {
+    "exclude_keywords": ["密码", "私人", "临时"],
+    "exclude_folders": ["垃圾箱", "已删除"],
+    "min_length_default": 0,
+    "max_length_default": null
+  },
+  "output_settings": {
+    "filename_max_length": 100,
+    "date_format": "%Y-%m-%d %H:%M",
+    "markdown_options": {
+      "heading_style": "ATX",
+      "bullets": "-",
+      "strip_tags": ["script", "style"]
+    }
+  }
+}

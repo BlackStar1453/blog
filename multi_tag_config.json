@@ -1,0 +1,311 @@
+{
+  "version": "1.0.0",
+  "description": "多标签识别和处理配置文件",
+  "default_handler": {
+    "type": "thought",
+    "script": "scripts/add-thought.sh",
+    "description": "默认处理方式：添加到thoughts"
+  },
+  "tag_handlers": {
+    "#thought": {
+      "type": "thought",
+      "script": "scripts/add-thought.sh",
+      "target_file": "content/thoughts/index.md",
+      "description": "短想法和随想",
+      "aliases": [
+        "#想法",
+        "#思考"
+      ]
+    },
+    "#日记": {
+      "type": "journal",
+      "script": "scripts/add-journal.sh",
+      "target_path": "content/blog/journals/",
+      "template": "scripts/templates/journal.md.tmpl",
+      "description": "个人日记和生活记录",
+      "aliases": [
+        "#diary",
+        "#journal",
+        "#生活"
+      ]
+    },
+    "#读书": {
+      "type": "book",
+      "script": "scripts/add-book-note.sh",
+      "target_path": "content/blog/books/",
+      "template": "scripts/templates/book.md.tmpl",
+      "description": "读书笔记和书评",
+      "aliases": [
+        "#book",
+        "#阅读",
+        "#书评"
+      ]
+    },
+    "#诗歌": {
+      "type": "poem",
+      "script": "scripts/add-poem.sh",
+      "target_path": "content/poem/",
+      "template": "scripts/templates/poem.md.tmpl",
+      "description": "原创诗歌作品",
+      "aliases": [
+        "#poem",
+        "#poetry",
+        "#诗"
+      ]
+    },
+    "#故事": {
+      "type": "story",
+      "script": "scripts/add-story.sh",
+      "target_path": "content/story/",
+      "template": "scripts/templates/story.md.tmpl",
+      "description": "原创故事和小说",
+      "aliases": [
+        "#story",
+        "#小说",
+        "#fiction"
+      ]
+    },
+    "#旅行": {
+      "type": "travel",
+      "script": "scripts/add-travel.sh",
+      "target_path": "content/blog/traveling/",
+      "template": "scripts/templates/travel.md.tmpl",
+      "description": "旅行记录和游记",
+      "aliases": [
+        "#travel",
+        "#游记",
+        "#旅游"
+      ]
+    },
+    "#翻译": {
+      "type": "translation",
+      "script": "scripts/add-translation.sh",
+      "target_path": "content/translations/",
+      "template": "scripts/templates/translation.md.tmpl",
+      "description": "翻译作品",
+      "aliases": [
+        "#translation",
+        "#译文"
+      ]
+    },
+    "#技术": {
+      "type": "tech",
+      "script": "scripts/add-tech-article.sh",
+      "target_path": "content/blog/",
+      "template": "scripts/templates/tech.md.tmpl",
+      "description": "技术文章和笔记",
+      "aliases": [
+        "#tech",
+        "#programming",
+        "#code",
+        "#开发"
+      ]
+    },
+    "#引用": {
+      "type": "quote",
+      "script": "scripts/add-quote.sh",
+      "target_path": "content/article-quotes/",
+      "template": "scripts/templates/quote.md.tmpl",
+      "description": "文章引用和摘录",
+      "aliases": [
+        "#quote",
+        "#摘录",
+        "#摘抄"
+      ]
+    },
+    "#随笔": {
+      "type": "essay",
+      "script": "scripts/add-essay.sh",
+      "target_path": "content/blog/",
+      "template": "scripts/templates/essay.md.tmpl",
+      "description": "随笔和散文",
+      "aliases": [
+        "#essay",
+        "#散文",
+        "#文章"
+      ]
+    },
+    "#分享": {
+      "type": "share",
+      "script": "scripts/add-share.sh",
+      "target_path": "content/blog/shares/",
+      "template": "scripts/templates/share.md.tmpl",
+      "description": "有趣内容分享",
+      "aliases": [
+        "#share",
+        "#推荐",
+        "#链接"
+      ]
+    },
+    "#图片": {
+      "type": "image",
+      "script": "scripts/add-image.sh",
+      "target_path": "content/blog/images/",
+      "template": "scripts/templates/image.md.tmpl",
+      "description": "图片内容和图文记录",
+      "aliases": [
+        "#image",
+        "#图文",
+        "#照片"
+      ]
+    }
+  },
+  "processing_options": {
+    "case_sensitive": false,
+    "allow_multiple_tags": true,
+    "priority_order": [
+      "#日记",
+      "#读书",
+      "#诗歌",
+      "#故事",
+      "#旅行",
+      "#翻译",
+      "#技术",
+      "#引用",
+      "#随笔",
+      "#分享",
+      "#图片",
+      "#thought"
+    ],
+    "content_processing": {
+      "remove_tags": true,
+      "clean_whitespace": true,
+      "preserve_formatting": true
+    }
+  },
+  "file_naming": {
+    "journal": "{date}.md",
+    "book": "{title-slug}.md",
+    "poem": "poem_{counter}.md",
+    "story": "story_{counter}.md",
+    "travel": "{date}.md",
+    "translation": "{title-slug}.md",
+    "tech": "{title-slug}.md",
+    "quote": "quotes_{counter}.md",
+    "essay": "{title-slug}.md",
+    "share": "{date}-{title-slug}.md",
+    "image": "{date}-{title-slug}.md",
+    "thought": "append_to_index"
+  },
+  "metadata_templates": {
+    "journal": {
+      "categories": [
+        "日记"
+      ],
+      "tags": [
+        "日记",
+        "生活"
+      ]
+    },
+    "book": {
+      "categories": [
+        "Books"
+      ],
+      "tags": [
+        "Books",
+        "阅读"
+      ],
+      "extra": {
+        "rating": 6,
+        "author": ""
+      }
+    },
+    "poem": {
+      "categories": [
+        "诗歌"
+      ],
+      "tags": [
+        "诗歌",
+        "原创"
+      ]
+    },
+    "story": {
+      "categories": [
+        "故事"
+      ],
+      "tags": [
+        "故事",
+        "原创",
+        "小说"
+      ]
+    },
+    "travel": {
+      "categories": [
+        "旅行"
+      ],
+      "tags": [
+        "旅行",
+        "游记"
+      ]
+    },
+    "translation": {
+      "categories": [
+        "翻译"
+      ],
+      "tags": [
+        "翻译",
+        "文学"
+      ]
+    },
+    "tech": {
+      "categories": [
+        "技术"
+      ],
+      "tags": [
+        "技术",
+        "编程"
+      ]
+    },
+    "quote": {
+      "categories": [
+        "引用"
+      ],
+      "tags": [
+        "引用",
+        "摘录"
+      ]
+    },
+    "essay": {
+      "categories": [
+        "随笔"
+      ],
+      "tags": [
+        "随笔",
+        "散文"
+      ]
+    },
+    "share": {
+      "categories": [
+        "分享"
+      ],
+      "tags": [
+        "分享",
+        "推荐",
+        "链接"
+      ]
+    },
+    "image": {
+      "categories": [
+        "图片"
+      ],
+      "tags": [
+        "图片",
+        "图文",
+        "照片"
+      ]
+    }
+  },
+  "notification_settings": {
+    "enabled": true,
+    "success_sound": "Glass",
+    "error_sound": "Basso",
+    "show_content_preview": true,
+    "max_preview_length": 50
+  },
+  "logging": {
+    "level": "INFO",
+    "include_content": false,
+    "max_log_size": "10MB",
+    "rotate_logs": true
+  }
+}

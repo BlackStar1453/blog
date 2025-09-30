@@ -8,6 +8,13 @@ export CURRENT_SECOND=$(date +%S)
 
 my_dir="$(dirname "$0")"
 
+# 生成 URL 友好的 slug
+function generate_slug() {
+    local title="$1"
+    # 转换为小写，替换空格和特殊字符为连字符，移除多余的连字符
+    echo "$title" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/-\+/-/g' | sed 's/^-\|-$//g'
+}
+
 # template functions
 function template() {
   template_path="$1"
