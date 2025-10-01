@@ -23,7 +23,7 @@ mkdir -p "$TARGET_DIR"
 
 # 生成文件名
 DATE=$(date +%Y-%m-%d)
-DATETIME=$(date +%Y-%m-%dT%H:%M:%S%z)
+DATETIME=$(date +%Y-%m-%dT%H:%M:%S)
 TIMESTAMP=$(date +%H%M%S)
 
 # 生成 slug: 保留中文、字母、数字,其他字符替换为 -

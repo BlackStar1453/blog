@@ -762,8 +762,8 @@ end tell'''
         try:
             title = tagged_note.title or "无标题"
             date = tagged_note.modification_date or tagged_note.creation_date or datetime.now()
-            # 使用完整的 ISO 8601 格式
-            date_str = date.strftime("%Y-%m-%dT%H:%M:%S+08:00")
+            # 使用 ISO 8601 格式(不含时区)
+            date_str = date.strftime("%Y-%m-%dT%H:%M:%S")
             updated_str = date.strftime("%Y-%m-%d")
             slug = self._slugify(title) or date.strftime("%Y%m%d%H%M")
             out_dir = Path("content/blog")
