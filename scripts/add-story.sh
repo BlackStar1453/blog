@@ -41,7 +41,7 @@ FILEPATH="$TARGET_DIR/$FILENAME"
 cat > "$FILEPATH" << EOF
 ---
 title: "$TITLE"
-date: $(date +"%Y-%m-%d")
+date: $(date +"%Y-%m-%dT%H:%M:%S%z")
 type: "story"
 tags: ["故事", "创作"]
 draft: false

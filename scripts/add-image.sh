@@ -94,13 +94,27 @@ if [[ "$CONTENT" == *"#图片"* ]]; then
 fi
 
 # 生成前置元数据
+# 获取当前时间信息
+CURRENT_YEAR=$(date +%Y)
+CURRENT_MONTH=$(date +%m)
+CURRENT_DAY=$(date +%d)
+CURRENT_HOUR=$(date +%H)
+CURRENT_MINUTE=$(date +%M)
+CURRENT_SECOND=$(date +%S)
+
 FRONTMATTER=$(cat << EOF
-+++
-title = "$TITLE"
-date = $(date +%Y-%m-%dT%H:%M:%S%z)
-categories = ["图片"]
-tags = ["图片", "图文", "照片"]
-+++
+---
+title: "$TITLE"
+date: ${CURRENT_YEAR}-${CURRENT_MONTH}-${CURRENT_DAY}T${CURRENT_HOUR}:${CURRENT_MINUTE}:${CURRENT_SECOND}+08:00
+updated: ${CURRENT_YEAR}-${CURRENT_MONTH}-${CURRENT_DAY}
+taxonomies:
+  categories:
+    - 图片
+  tags:
+    - 图片
+    - 图文
+    - 照片
+---
 
 EOF
 )

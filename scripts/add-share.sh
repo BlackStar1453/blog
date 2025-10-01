@@ -23,6 +23,7 @@ mkdir -p "$TARGET_DIR"
 
 # 生成文件名
 DATE=$(date +%Y-%m-%d)
+DATETIME=$(date +%Y-%m-%dT%H:%M:%S%z)
 # 简单的 slug 生成函数
 SLUG=$(echo "$TITLE" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/--*/-/g' | sed 's/^-\|-$//g')
 FILENAME="${DATE}-${SLUG}.md"
@@ -41,7 +42,7 @@ LINKS=$(echo "$CONTENT" | grep -oE 'https?://[^\s]+' | head -5 || true)
 cat > "$FILEPATH" << EOF
 ---
 title: "$TITLE"
-date: $DATE
+date: $DATETIME
 updated: $DATE
 taxonomies:
   categories:

@@ -27,6 +27,7 @@ CLEANED_CONTENT=$(echo "$CONTENT" | sed 's/#[[:alpha:]]*[[:space:]]*//g' | sed '
 
 # 生成文件名（使用日期和标题）
 DATE=$(date +"%Y-%m-%d")
+DATETIME=$(date +"%Y-%m-%dT%H:%M:%S%z")
 SAFE_TITLE=$(echo "$TITLE" | sed 's/[^a-zA-Z0-9]/-/g' | sed 's/--*/-/g' | sed 's/^-\|-$//g')
 FILENAME="${DATE}-${SAFE_TITLE}.md"
 
@@ -50,7 +51,7 @@ else
     cat > "$FILEPATH" << EOF
 ---
 title: "$TITLE"
-date: $DATE
+date: $DATETIME
 type: "travel"
 tags: ["旅行", "游记"]
 location: ""
