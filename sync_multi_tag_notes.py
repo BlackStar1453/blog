@@ -17,8 +17,9 @@ from pathlib import Path
 from typing import List, Dict, Optional, Set, Tuple
 from dataclasses import dataclass
 
-import urllib.request
-import urllib.parse
+# 导入新的独立模块
+from extract_notes import NotesExtractor
+from mastodon_poster import MastodonPoster
 
 # 加载 .env 文件
 def load_env_file(env_path: str = '.env'):
@@ -98,48 +99,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-class MastodonPoster:
-    """Mastodon 发帖工具（使用标准库实现）"""
-    def __init__(self):
-        self.raw_base = os.getenv("MASTODON_BASE_URL", "")
-        self.token = os.getenv("MASTODON_ACCESS_TOKEN", "")
-        self.visibility = os.getenv("MASTODON_VISIBILITY", "direct")
-
-    def _instance_origin(self) -> Optional[str]:
-        try:
-            if not self.raw_base:
-                return None
-            # 取协议+域名部分；如果传来带 /home 之类路径，自动截断
-            p = urllib.parse.urlparse(self.raw_base)
-            if p.scheme and p.netloc:
-                return f"{p.scheme}://{p.netloc}"
-            # 如果直接是域名或裸路径，做一次兜底
-            if self.raw_base.startswith("http"):
-                return self.raw_base.rstrip("/")
-            return f"https://{self.raw_base.strip('/')}"
-        except Exception:
-            return None
-
-    def post_status(self, text: str) -> bool:
-        origin = self._instance_origin()
-        if not origin or not self.token:
-            return False
-        try:
-            endpoint = f"{origin}/api/v1/statuses"
-            data = urllib.parse.urlencode({
-                "status": text,
-                "visibility": self.visibility or "public",
-                "language": "zh"
-            }).encode("utf-8")
-            req = urllib.request.Request(endpoint, data=data, method="POST")
-            req.add_header("Authorization", f"Bearer {self.token}")
-            req.add_header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
-            with urllib.request.urlopen(req, timeout=10) as resp:
-                return 200 <= resp.status < 300
-        except Exception as e:
-            logger.warning(f"Mastodon API 调用失败: {e}")
-            return False
-
 @dataclass
 class TaggedNote:
     """带标签的备忘录数据结构"""
@@ -181,96 +140,24 @@ class MultiTagSyncer:
         self.delete_original = delete_original
         self.auto_extract = auto_extract
 
+        # 初始化独立模块
+        self.notes_extractor = NotesExtractor()
+        self.mastodon_poster = MastodonPoster()
+
         # 加载配置
         self.load_config()
 
         # 加载已处理的备忘录状态
         self.load_state()
 
-        # 如果启用自动提取且没有提供 hashtags JSON 路径，运行 apple_cloud_notes_parser
+        # 如果启用自动提取且没有提供 hashtags JSON 路径，运行提取器
         if self.auto_extract and not self.hashtags_json_path:
-            self.hashtags_json_path = self._run_apple_cloud_notes_parser()
+            self.console.print("🔍 正在运行 Apple Cloud Notes Parser 提取备忘录数据...", style="blue")
+            self.hashtags_json_path = self.notes_extractor.run_parser()
 
         # 加载 hashtags 映射（可选）
         if self.hashtags_json_path:
             self._load_hashtags_map()
-
-    def _run_apple_cloud_notes_parser(self) -> Optional[str]:
-        """运行 apple_cloud_notes_parser 提取备忘录数据"""
-        try:
-            import subprocess
-            import os
-            from pathlib import Path
-
-            parser_dir = Path("apple_cloud_notes_parser")
-            if not parser_dir.exists():
-                logger.warning("apple_cloud_notes_parser 目录不存在，跳过自动提取")
-                return None
-
-            self.console.print("🔍 正在运行 Apple Cloud Notes Parser 提取备忘录数据...", style="blue")
-
-            # 备忘录数据路径
-            notes_path = Path.home() / "Library/Group Containers/group.com.apple.notes"
-            if not notes_path.exists():
-                logger.warning(f"备忘录数据路径不存在: {notes_path}")
-                return None
-
-            # 保存原始工作目录
-            original_cwd = os.getcwd()
-
-            # 获取绝对路径
-            parser_dir_abs = parser_dir.resolve()
-
-            try:
-                # 设置 Ruby 路径（如果使用 Homebrew）
-                env = os.environ.copy()
-                if Path("/opt/homebrew/opt/ruby/bin").exists():
-                    env["PATH"] = f"/opt/homebrew/opt/ruby/bin:{env.get('PATH', '')}"
-
-                # 运行 notes_cloud_ripper.rb（在parser目录中）
-                cmd = [
-                    "ruby",
-                    str(parser_dir_abs / "notes_cloud_ripper.rb"),
-                    "--mac", str(notes_path),
-                    "--one-output-folder"
-                ]
-
-                result = subprocess.run(
-                    cmd,
-                    env=env,
-                    capture_output=True,
-                    text=True,
-                    timeout=300,  # 5分钟超时
-                    cwd=str(parser_dir_abs)  # 在parser目录中执行
-                )
-
-                if result.returncode != 0:
-                    logger.error(f"apple_cloud_notes_parser 执行失败: {result.stderr}")
-                    return None
-
-                # 查找生成的 JSON 文件（使用绝对路径）
-                json_dir = parser_dir_abs / "output/notes_rip/json"
-                if json_dir.exists():
-                    json_files = list(json_dir.glob("all_notes_*.json"))
-                    if json_files:
-                        # 按修改时间排序,使用最新的文件
-                        json_file = sorted(json_files, key=lambda p: p.stat().st_mtime, reverse=True)[0]
-                        self.console.print(f"✅ 成功提取备忘录数据: {json_file}", style="green")
-                        return str(json_file)
-
-                logger.warning("未找到生成的 JSON 文件")
-                return None
-
-            except Exception as e:
-                logger.error(f"执行过程中出错: {e}")
-                return None
-
-        except subprocess.TimeoutExpired:
-            logger.error("apple_cloud_notes_parser 执行超时")
-            return None
-        except Exception as e:
-            logger.error(f"运行 apple_cloud_notes_parser 失败: {e}")
-            return None
 
     def load_config(self) -> None:
         """加载配置文件"""
@@ -472,8 +359,6 @@ class MultiTagSyncer:
     def _post_to_mastodon(self, note_type: str, title: str, content: str, created_file_path: Optional[str]) -> None:
         """根据类型发帖到 Mastodon。thought 直接发内容，其他类型发 摘要+URL"""
         try:
-            if not hasattr(self, "mastodon_poster"):
-                self.mastodon_poster = MastodonPoster()
             if note_type == "thought":
                 text = re.sub(r"\s+", " ", content).strip()[:480]
                 if not text:
