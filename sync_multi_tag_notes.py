@@ -253,7 +253,8 @@ class MultiTagSyncer:
                 if json_dir.exists():
                     json_files = list(json_dir.glob("all_notes_*.json"))
                     if json_files:
-                        json_file = json_files[0]  # 使用第一个找到的文件
+                        # 按修改时间排序,使用最新的文件
+                        json_file = sorted(json_files, key=lambda p: p.stat().st_mtime, reverse=True)[0]
                         self.console.print(f"✅ 成功提取备忘录数据: {json_file}", style="green")
                         return str(json_file)
 
@@ -324,6 +325,17 @@ class MultiTagSyncer:
         except Exception as e:
             logger.error(f"保存状态失败: {e}")
 
+    def clean_state(self, current_note_ids: Set[str]) -> None:
+        """清理状态文件中已不存在的备忘录 ID"""
+        try:
+            removed = self.processed_notes - current_note_ids
+            if removed:
+                logger.info(f"清理 {len(removed)} 个已删除备忘录的状态")
+                self.processed_notes = self.processed_notes & current_note_ids
+                self.save_state()
+        except Exception as e:
+            logger.error(f"清理状态失败: {e}")
+
     def _load_hashtags_map(self) -> None:
         """从 apple_cloud_notes_parser 的 all_notes_*.json 读取 hashtags 映射"""
         try:
@@ -335,7 +347,13 @@ class MultiTagSyncer:
                 data = json.load(f)
             notes = data.get('notes') or {}
             count = 0
+            skipped_deleted = 0
             for key, note_obj in notes.items():
+                # 跳过已删除或在废纸篓中的备忘录
+                if note_obj.get('trashed') or note_obj.get('deleted'):
+                    skipped_deleted += 1
+                    continue
+
                 hashtags = note_obj.get('hashtags') or []
                 if not hashtags:
                     continue
@@ -349,7 +367,7 @@ class MultiTagSyncer:
                 for k in keys:
                     self.hashtags_map[k] = norm
                 count += 1
-            logger.info(f"加载 JSON hashtags 映射完成：{count} 条")
+            logger.info(f"加载 JSON hashtags 映射完成：{count} 条 (跳过已删除: {skipped_deleted})")
         except Exception as e:
             logger.warning(f"加载 JSON hashtags 失败: {e}")
 
@@ -819,6 +837,10 @@ end tell'''
         if not tagged_notes:
             self.console.print("❌ 没有找到带标签的备忘录", style="yellow")
             return results
+
+        # 清理状态文件中已删除的备忘录
+        current_note_ids = {note.id for note in tagged_notes}
+        self.clean_state(current_note_ids)
 
         # 处理每个带标签的备忘录
         with Progress() as progress:
