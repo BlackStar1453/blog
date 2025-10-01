@@ -74,25 +74,13 @@ if [ -n "$custom_datetime" ]; then
             exit 1
         fi
 
-        # 如果包含时间，提取时间部分用于显示
-        if echo "$custom_datetime" | grep -q ' '; then
-            time_part=$(echo "$custom_datetime" | cut -d' ' -f2)
-            display_time="$time_part"
-        else
-            display_time=""
-        fi
-
         current_date="$target_date"
         current_year=$(echo "$target_date" | cut -d'-' -f1)
         current_month=$(echo "$target_date" | cut -d'-' -f2 | sed 's/^0*//')
         current_day=$(echo "$target_date" | cut -d'-' -f3 | sed 's/^0*//')
 
-        # 格式化月日显示
-        if [ -n "$display_time" ]; then
-            current_month_day=$(printf "%02d.%02d %s" "$current_month" "$current_day" "$display_time")
-        else
-            current_month_day=$(printf "%02d.%02d" "$current_month" "$current_day")
-        fi
+        # 格式化日期显示为 YYYY.MM.DD 格式
+        current_month_day=$(printf "%04d.%02d.%02d" "$current_year" "$current_month" "$current_day")
     else
         echo "错误: 日期时间格式不正确。请使用 YYYY-MM-DD 或 YYYY-MM-DD HH:MM 格式"
         exit 1
@@ -100,9 +88,11 @@ if [ -n "$custom_datetime" ]; then
 else
     # 使用当前日期和时间
     current_date=$(date +%Y-%m-%d)
-    current_month_day=$(date +%m.%d)
     current_year=$(date +%Y)
     current_month=$(date +%m | sed 's/^0*//')
+    current_day=$(date +%d | sed 's/^0*//')
+    # 格式化日期显示为 YYYY.MM.DD 格式
+    current_month_day=$(printf "%04d.%02d.%02d" "$current_year" "$current_month" "$current_day")
 fi
 
 # 创建新的想法条目，处理多行文本
