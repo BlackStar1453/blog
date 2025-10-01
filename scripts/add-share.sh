@@ -24,15 +24,37 @@ mkdir -p "$TARGET_DIR"
 # 生成文件名
 DATE=$(date +%Y-%m-%d)
 DATETIME=$(date +%Y-%m-%dT%H:%M:%S%z)
-# 简单的 slug 生成函数
-SLUG=$(echo "$TITLE" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/--*/-/g' | sed 's/^-\|-$//g')
+TIMESTAMP=$(date +%H%M%S)
+
+# 生成 slug: 保留中文、字母、数字,其他字符替换为 -
+# 使用 Python 处理中文字符
+SLUG=$(python3 -c "
+import re
+import sys
+title = sys.argv[1]
+# 替换空格为短横线
+slug = re.sub(r'\s+', '-', title)
+# 保留中文、字母、数字和短横线
+slug = re.sub(r'[^\u4e00-\u9fa5a-zA-Z0-9-]', '', slug)
+# 移除多余的短横线
+slug = re.sub(r'-+', '-', slug)
+slug = slug.strip('-')
+# 限制长度
+print(slug[:50] if slug else '')
+" "$TITLE")
+
+# 如果 slug 为空,使用时间戳
+if [ -z "$SLUG" ]; then
+    SLUG="share-${TIMESTAMP}"
+fi
+
 FILENAME="${DATE}-${SLUG}.md"
 FILEPATH="$TARGET_DIR/$FILENAME"
 
-# 检查文件是否已存在
+# 如果文件已存在,添加时间戳后缀
 if [ -f "$FILEPATH" ]; then
-    echo "文件已存在: $FILEPATH" >&2
-    exit 1
+    FILENAME="${DATE}-${SLUG}-${TIMESTAMP}.md"
+    FILEPATH="$TARGET_DIR/$FILENAME"
 fi
 
 # 提取链接（如果有的话）

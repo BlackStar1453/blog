@@ -28,8 +28,26 @@ CLEANED_CONTENT=$(echo "$CONTENT" | sed 's/#[[:alpha:]]*[[:space:]]*//g' | sed '
 # 生成文件名（使用日期和标题）
 DATE=$(date +"%Y-%m-%d")
 DATETIME=$(date +"%Y-%m-%dT%H:%M:%S%z")
-SAFE_TITLE=$(echo "$TITLE" | sed 's/[^a-zA-Z0-9]/-/g' | sed 's/--*/-/g' | sed 's/^-\|-$//g')
-FILENAME="${DATE}-${SAFE_TITLE}.md"
+TIMESTAMP=$(date +"%H%M%S")
+
+# 生成 slug: 保留中文、字母、数字
+SLUG=$(python3 -c "
+import re
+import sys
+title = sys.argv[1]
+slug = re.sub(r'\s+', '-', title)
+slug = re.sub(r'[^\u4e00-\u9fa5a-zA-Z0-9-]', '', slug)
+slug = re.sub(r'-+', '-', slug)
+slug = slug.strip('-')
+print(slug[:50] if slug else '')
+" "$TITLE")
+
+# 如果 slug 为空,使用时间戳
+if [ -z "$SLUG" ]; then
+    SLUG="travel-${TIMESTAMP}"
+fi
+
+FILENAME="${DATE}-${SLUG}.md"
 
 # 目标目录
 TARGET_DIR="content/blog/travels"
@@ -37,6 +55,12 @@ mkdir -p "$TARGET_DIR"
 
 # 生成文件路径
 FILEPATH="$TARGET_DIR/$FILENAME"
+
+# 如果文件已存在,添加时间戳后缀
+if [ -f "$FILEPATH" ]; then
+    FILENAME="${DATE}-${SLUG}-${TIMESTAMP}.md"
+    FILEPATH="$TARGET_DIR/$FILENAME"
+fi
 
 # 检查模板文件
 TEMPLATE_FILE="scripts/templates/travel.md.tmpl"

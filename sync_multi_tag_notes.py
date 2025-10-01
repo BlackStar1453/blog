@@ -771,6 +771,12 @@ end tell'''
             filename = f"{date.strftime('%Y-%m-%d')}-{slug}.md"
             out_path = out_dir / filename
 
+            # 如果文件已存在,添加时间戳后缀
+            if out_path.exists():
+                timestamp = date.strftime("%H%M%S")
+                filename = f"{date.strftime('%Y-%m-%d')}-{slug}-{timestamp}.md"
+                out_path = out_dir / filename
+
             tags = []
             for t in (tagged_note.tags or []):
                 tnorm = str(t).strip()
