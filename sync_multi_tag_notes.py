@@ -744,7 +744,9 @@ end tell'''
         try:
             title = tagged_note.title or "无标题"
             date = tagged_note.modification_date or tagged_note.creation_date or datetime.now()
-            date_str = date.strftime("%Y-%m-%d %H:%M")
+            # 使用完整的 ISO 8601 格式
+            date_str = date.strftime("%Y-%m-%dT%H:%M:%S+08:00")
+            updated_str = date.strftime("%Y-%m-%d")
             slug = self._slugify(title) or date.strftime("%Y%m%d%H%M")
             out_dir = Path("content/blog")
             out_dir.mkdir(parents=True, exist_ok=True)
@@ -767,7 +769,7 @@ end tell'''
                 "---\n"
                 f"title: \"{title}\"\n"
                 f"date: {date_str}\n"
-                f"updated: {date_str}\n"
+                f"updated: {updated_str}\n"
                 f"{draft_line}"
                 "taxonomies:\n"
                 "  categories:\n"
