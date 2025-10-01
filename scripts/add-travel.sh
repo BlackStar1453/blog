@@ -43,7 +43,7 @@ TEMPLATE_FILE="scripts/templates/travel.md.tmpl"
 if [ -f "$TEMPLATE_FILE" ]; then
     # 使用模板
     sed -e "s/{{TITLE}}/$TITLE/g" \
-        -e "s/{{DATE}}/$DATE/g" \
+        -e "s/{{DATE}}/$DATETIME/g" \
         -e "s/{{CONTENT}}/$CLEANED_CONTENT/g" \
         "$TEMPLATE_FILE" > "$FILEPATH"
 else
