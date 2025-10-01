@@ -105,48 +105,38 @@ new_thought="${formatted_content}
 # 查找当前年份的部分
 year_line=$(grep -n "## ${current_year}" "$thoughts_file" | head -1 | cut -d: -f1)
 
-if [ -z "$year_line" ]; then
-    echo "错误: 在 thoughts 文件中找不到 ${current_year} 年份部分"
-    exit 1
-fi
-
-# 转换月份为中文
-current_month_chinese=""
-case $current_month in
-    1) current_month_chinese="1月" ;;
-    2) current_month_chinese="2月" ;;
-    3) current_month_chinese="3月" ;;
-    4) current_month_chinese="4月" ;;
-    5) current_month_chinese="5月" ;;
-    6) current_month_chinese="6月" ;;
-    7) current_month_chinese="7月" ;;
-    8) current_month_chinese="8月" ;;
-    9) current_month_chinese="9月" ;;
-    10) current_month_chinese="10月" ;;
-    11) current_month_chinese="11月" ;;
-    12) current_month_chinese="12月" ;;
-esac
-
-# 查找当前月份的行号
-month_line=$(grep -n "### ${current_month_chinese}" "$thoughts_file" | head -1 | cut -d: -f1)
-
 # 创建临时文件
 temp_file=$(mktemp)
 
-if [ -n "$month_line" ]; then
-    # 如果找到了当前月份，在月份标题后插入新想法
-    head -n "$month_line" "$thoughts_file" > "$temp_file"
-    echo "" >> "$temp_file"
-    echo "$new_thought" >> "$temp_file"
-    echo "" >> "$temp_file"
-    tail -n +$((month_line + 1)) "$thoughts_file" >> "$temp_file"
+if [ -z "$year_line" ]; then
+    # 如果找不到当前年份，说明是新年份，添加到最上方
+    # 找到第一个年份标题的位置
+    first_year_line=$(grep -n "^## [0-9]" "$thoughts_file" | head -1 | cut -d: -f1)
+
+    if [ -z "$first_year_line" ]; then
+        # 如果连年份标题都没有，添加到文件末尾
+        cat "$thoughts_file" > "$temp_file"
+        echo "" >> "$temp_file"
+        echo "## ${current_year}" >> "$temp_file"
+        echo "" >> "$temp_file"
+        echo "$new_thought" >> "$temp_file"
+        echo "" >> "$temp_file"
+    else
+        # 在第一个年份标题之前插入新年份
+        head -n $((first_year_line - 1)) "$thoughts_file" > "$temp_file"
+        echo "## ${current_year}" >> "$temp_file"
+        echo "" >> "$temp_file"
+        echo "$new_thought" >> "$temp_file"
+        echo "" >> "$temp_file"
+        echo "" >> "$temp_file"
+        tail -n +$first_year_line "$thoughts_file" >> "$temp_file"
+    fi
 else
-    # 如果没有找到当前月份，在年份后创建新的月份部分
+    # 找到了当前年份，在年份标题后立即插入新想法(最上方)
     head -n "$year_line" "$thoughts_file" > "$temp_file"
     echo "" >> "$temp_file"
-    echo "### ${current_month_chinese}" >> "$temp_file"
-    echo "" >> "$temp_file"
     echo "$new_thought" >> "$temp_file"
+    echo "" >> "$temp_file"
     echo "" >> "$temp_file"
     tail -n +$((year_line + 1)) "$thoughts_file" >> "$temp_file"
 fi
