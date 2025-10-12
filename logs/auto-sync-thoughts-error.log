@@ -1,0 +1,99 @@
+ERROR:__main__:程序执行出错
+Traceback (most recent call last):
+  File "/Users/cengyaohua/blog/sync_thought_notes.py", line 379, in main
+    results = syncer.sync_thoughts(force=args.force)
+  File "/Users/cengyaohua/blog/sync_thought_notes.py", line 213, in sync_thoughts
+    thought_notes = self.get_thought_notes()
+  File "/Users/cengyaohua/blog/sync_thought_notes.py", line 188, in get_thought_notes
+    raise RuntimeError("未连接到备忘录应用")
+RuntimeError: 未连接到备忘录应用
+[2025-10-02 14:30:09] ERROR: 同步失败，请查看错误日志: /Users/cengyaohua/blog/logs/auto-sync-thoughts-error.log
+[2025-10-02 14:30:09] ERROR: 自动同步任务失败
+ERROR:__main__:程序执行出错
+Traceback (most recent call last):
+  File "/Users/cengyaohua/blog/sync_thought_notes.py", line 379, in main
+    results = syncer.sync_thoughts(force=args.force)
+  File "/Users/cengyaohua/blog/sync_thought_notes.py", line 213, in sync_thoughts
+    thought_notes = self.get_thought_notes()
+  File "/Users/cengyaohua/blog/sync_thought_notes.py", line 188, in get_thought_notes
+    raise RuntimeError("未连接到备忘录应用")
+RuntimeError: 未连接到备忘录应用
+[2025-10-03 14:30:09] ERROR: 同步失败，请查看错误日志: /Users/cengyaohua/blog/logs/auto-sync-thoughts-error.log
+[2025-10-03 14:30:09] ERROR: 自动同步任务失败
+ERROR:__main__:程序执行出错
+Traceback (most recent call last):
+  File "/Users/cengyaohua/blog/sync_thought_notes.py", line 379, in main
+    results = syncer.sync_thoughts(force=args.force)
+  File "/Users/cengyaohua/blog/sync_thought_notes.py", line 213, in sync_thoughts
+    thought_notes = self.get_thought_notes()
+  File "/Users/cengyaohua/blog/sync_thought_notes.py", line 188, in get_thought_notes
+    raise RuntimeError("未连接到备忘录应用")
+RuntimeError: 未连接到备忘录应用
+[2025-10-04 14:30:06] ERROR: 同步失败，请查看错误日志: /Users/cengyaohua/blog/logs/auto-sync-thoughts-error.log
+[2025-10-04 14:30:06] ERROR: 自动同步任务失败
+ERROR:__main__:程序执行出错
+Traceback (most recent call last):
+  File "/Users/cengyaohua/blog/sync_thought_notes.py", line 379, in main
+    results = syncer.sync_thoughts(force=args.force)
+  File "/Users/cengyaohua/blog/sync_thought_notes.py", line 213, in sync_thoughts
+    thought_notes = self.get_thought_notes()
+  File "/Users/cengyaohua/blog/sync_thought_notes.py", line 188, in get_thought_notes
+    raise RuntimeError("未连接到备忘录应用")
+RuntimeError: 未连接到备忘录应用
+[2025-10-05 14:30:11] ERROR: 同步失败，请查看错误日志: /Users/cengyaohua/blog/logs/auto-sync-thoughts-error.log
+[2025-10-05 14:30:11] ERROR: 自动同步任务失败
+ERROR:__main__:程序执行出错
+Traceback (most recent call last):
+  File "/Users/cengyaohua/blog/sync_thought_notes.py", line 379, in main
+    results = syncer.sync_thoughts(force=args.force)
+  File "/Users/cengyaohua/blog/sync_thought_notes.py", line 213, in sync_thoughts
+    thought_notes = self.get_thought_notes()
+  File "/Users/cengyaohua/blog/sync_thought_notes.py", line 188, in get_thought_notes
+    raise RuntimeError("未连接到备忘录应用")
+RuntimeError: 未连接到备忘录应用
+[2025-10-06 14:30:11] ERROR: 同步失败，请查看错误日志: /Users/cengyaohua/blog/logs/auto-sync-thoughts-error.log
+[2025-10-06 14:30:11] ERROR: 自动同步任务失败
+ERROR:__main__:程序执行出错
+Traceback (most recent call last):
+  File "/Users/cengyaohua/blog/sync_thought_notes.py", line 379, in main
+    results = syncer.sync_thoughts(force=args.force)
+  File "/Users/cengyaohua/blog/sync_thought_notes.py", line 213, in sync_thoughts
+    thought_notes = self.get_thought_notes()
+  File "/Users/cengyaohua/blog/sync_thought_notes.py", line 188, in get_thought_notes
+    raise RuntimeError("未连接到备忘录应用")
+RuntimeError: 未连接到备忘录应用
+[2025-10-07 14:30:08] ERROR: 同步失败，请查看错误日志: /Users/cengyaohua/blog/logs/auto-sync-thoughts-error.log
+[2025-10-07 14:30:08] ERROR: 自动同步任务失败
+ERROR:__main__:程序执行出错
+Traceback (most recent call last):
+  File "/Users/cengyaohua/blog/sync_thought_notes.py", line 379, in main
+    results = syncer.sync_thoughts(force=args.force)
+  File "/Users/cengyaohua/blog/sync_thought_notes.py", line 213, in sync_thoughts
+    thought_notes = self.get_thought_notes()
+  File "/Users/cengyaohua/blog/sync_thought_notes.py", line 188, in get_thought_notes
+    raise RuntimeError("未连接到备忘录应用")
+RuntimeError: 未连接到备忘录应用
+[2025-10-10 14:30:11] ERROR: 同步失败，请查看错误日志: /Users/cengyaohua/blog/logs/auto-sync-thoughts-error.log
+[2025-10-10 14:30:11] ERROR: 自动同步任务失败
+ERROR:__main__:程序执行出错
+Traceback (most recent call last):
+  File "/Users/cengyaohua/blog/sync_thought_notes.py", line 379, in main
+    results = syncer.sync_thoughts(force=args.force)
+  File "/Users/cengyaohua/blog/sync_thought_notes.py", line 213, in sync_thoughts
+    thought_notes = self.get_thought_notes()
+  File "/Users/cengyaohua/blog/sync_thought_notes.py", line 188, in get_thought_notes
+    raise RuntimeError("未连接到备忘录应用")
+RuntimeError: 未连接到备忘录应用
+[2025-10-11 14:30:12] ERROR: 同步失败，请查看错误日志: /Users/cengyaohua/blog/logs/auto-sync-thoughts-error.log
+[2025-10-11 14:30:12] ERROR: 自动同步任务失败
+ERROR:__main__:程序执行出错
+Traceback (most recent call last):
+  File "/Users/cengyaohua/blog/sync_thought_notes.py", line 379, in main
+    results = syncer.sync_thoughts(force=args.force)
+  File "/Users/cengyaohua/blog/sync_thought_notes.py", line 213, in sync_thoughts
+    thought_notes = self.get_thought_notes()
+  File "/Users/cengyaohua/blog/sync_thought_notes.py", line 188, in get_thought_notes
+    raise RuntimeError("未连接到备忘录应用")
+RuntimeError: 未连接到备忘录应用
+[2025-10-12 14:30:18] ERROR: 同步失败，请查看错误日志: /Users/cengyaohua/blog/logs/auto-sync-thoughts-error.log
+[2025-10-12 14:30:18] ERROR: 自动同步任务失败
