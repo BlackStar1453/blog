@@ -129,15 +129,22 @@ setup_repository() {
     if [ "$CURRENT_USER" = "BlackStar1453" ]; then
         log_info "检测到你是仓库所有者，直接克隆仓库..."
         gh repo clone "$ORIGINAL_REPO"
+        REPO_NAME=$(basename "$ORIGINAL_REPO")
     else
         log_info "Fork 仓库 $ORIGINAL_REPO..."
         gh repo fork "$ORIGINAL_REPO" --clone --remote
+        REPO_NAME=$(basename "$ORIGINAL_REPO")
+
+        # 重命名GitHub上的fork仓库
+        if [ "$REPO_NAME" != "$BLOG_NAME" ]; then
+            log_info "重命名GitHub仓库为: $BLOG_NAME..."
+            gh repo rename "$BLOG_NAME" --yes || log_warning "仓库重命名失败，将继续使用原名称"
+        fi
     fi
 
     # 重命名本地文件夹
-    REPO_NAME=$(basename "$ORIGINAL_REPO")
     if [ "$REPO_NAME" != "$BLOG_NAME" ]; then
-        mv "$REPO_NAME" "$BLOG_NAME"
+        mv "$REPO_NAME" "$BLOG_NAME" 2>/dev/null || true
     fi
 
     # 移动到用户指定的位置
@@ -147,11 +154,12 @@ setup_repository() {
         TARGET_DIR="$HOME/${BLOG_NAME}_$(date +%Y%m%d_%H%M%S)"
     fi
 
-    mv "$BLOG_NAME" "$TARGET_DIR"
+    mv "$BLOG_NAME" "$TARGET_DIR" 2>/dev/null || mv "$REPO_NAME" "$TARGET_DIR"
     cd "$TARGET_DIR"
 
     # 设置全局变量供后续函数使用
     export BLOG_DIR="$TARGET_DIR"
+    export GITHUB_REPO_NAME="$BLOG_NAME"
 
     log_success "仓库设置完成，位置：$BLOG_DIR"
 }
@@ -282,12 +290,42 @@ deploy_cloudflare_pages() {
         zola build
     fi
 
-    # 创建 Cloudflare Pages 项目（指定生产分支）
-    log_info "创建 Cloudflare Pages 项目..."
-    if wrangler pages project create "$CF_PROJECT_NAME" --production-branch=template-init-v2; then
-        log_success "项目创建成功"
+    # 询问用户是否要关联GitHub仓库
+    echo ""
+    echo -n "是否要关联GitHub仓库以实现自动部署？(y/n): "
+    read LINK_GITHUB < /dev/tty
+
+    if [ "$LINK_GITHUB" = "y" ] || [ "$LINK_GITHUB" = "Y" ]; then
+        # 获取GitHub用户名和仓库名
+        GITHUB_USER=$(gh api user --jq .login)
+        GITHUB_REPO="${GITHUB_REPO_NAME:-$(basename "$BLOG_DIR")}"
+
+        log_info "关联GitHub仓库: $GITHUB_USER/$GITHUB_REPO"
+        log_info "注意：需要在Cloudflare Dashboard中手动完成GitHub集成"
+        echo ""
+        echo "请按照以下步骤操作："
+        echo "1. 访问 Cloudflare Dashboard: https://dash.cloudflare.com"
+        echo "2. 进入 Pages 页面"
+        echo "3. 点击 'Create a project'"
+        echo "4. 选择 'Connect to Git'"
+        echo "5. 选择你的GitHub仓库: $GITHUB_USER/$GITHUB_REPO"
+        echo "6. 配置构建设置："
+        echo "   - Build command: zola build"
+        echo "   - Build output directory: public"
+        echo "   - Production branch: template-init-v2"
+        echo ""
+        echo -n "完成GitHub集成后按回车继续..."
+        read < /dev/tty
+
+        log_success "GitHub集成配置完成"
     else
-        log_warning "项目可能已存在，继续部署..."
+        # 创建 Cloudflare Pages 项目（手动部署模式）
+        log_info "创建 Cloudflare Pages 项目（手动部署模式）..."
+        if wrangler pages project create "$CF_PROJECT_NAME" --production-branch=template-init-v2; then
+            log_success "项目创建成功"
+        else
+            log_warning "项目可能已存在，继续部署..."
+        fi
     fi
 
     # 部署
