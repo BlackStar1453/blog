@@ -144,8 +144,12 @@ setup_repository() {
         else
             # 尝试fork（显示详细错误信息）
             log_info "正在fork仓库..."
+
+            # 临时禁用set -e以捕获错误
+            set +e
             FORK_OUTPUT=$(gh repo fork "$ORIGINAL_REPO" --clone --remote --default-branch-only 2>&1)
             FORK_STATUS=$?
+            set -e
 
             if [ $FORK_STATUS -eq 0 ]; then
                 REPO_NAME=$(basename "$ORIGINAL_REPO")
@@ -158,7 +162,9 @@ setup_repository() {
                 fi
             else
                 log_error "Fork失败！"
-                echo "错误信息: $FORK_OUTPUT"
+                echo ""
+                echo "错误信息:"
+                echo "$FORK_OUTPUT"
                 echo ""
                 echo "可能的原因："
                 echo "  1. 你已经fork过这个仓库（请检查 https://github.com/$CURRENT_USER/blog）"
