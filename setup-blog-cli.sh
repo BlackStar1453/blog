@@ -118,13 +118,20 @@ setup_repository() {
 
     read -p "请输入你的博客名称 (例如: my-blog): " BLOG_NAME
 
-    log_info "Fork 仓库 $ORIGINAL_REPO..."
+    # 获取当前用户名
+    CURRENT_USER=$(gh api user --jq .login)
 
     # 创建临时目录进行操作
     TEMP_DIR=$(mktemp -d)
     cd "$TEMP_DIR"
 
-    gh repo fork "$ORIGINAL_REPO" --clone --remote
+    if [ "$CURRENT_USER" = "BlackStar1453" ]; then
+        log_info "检测到你是仓库所有者，直接克隆仓库..."
+        gh repo clone "$ORIGINAL_REPO"
+    else
+        log_info "Fork 仓库 $ORIGINAL_REPO..."
+        gh repo fork "$ORIGINAL_REPO" --clone --remote
+    fi
 
     # 重命名本地文件夹
     REPO_NAME=$(basename "$ORIGINAL_REPO")
