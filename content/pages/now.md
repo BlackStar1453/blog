@@ -1,8 +1,17 @@
-+++
-title = "现在"
-description = "我现在在做什么"
-updated = "2024-01-01"
-+++
+---
+title: 现在
+description: 我现在在做什么
+path: now/
+date: 2025-10-12
+updated: 2025-10-12
+template: now.html
+taxonomies:
+  categories:
+    - Notes
+  tags:
+    - Now
+    - About
+---
 
 # 现在
 

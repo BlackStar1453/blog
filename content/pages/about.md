@@ -1,8 +1,16 @@
-+++
-title = "关于我"
-description = "关于我和这个博客"
-updated = "2024-01-01"
-+++
+---
+title: 关于我和这个博客
+description: 关于我和这个博客
+path: about/
+date: 2025-10-12
+updated: 2025-10-12
+template: about.html
+taxonomies:
+  categories:
+    - Notes
+  tags:
+    - About
+---
 
 # 关于我
 

@@ -1,7 +1,7 @@
-+++
-title = "Welcome"
-description = "Welcome to my blog"
-+++
+---
+title: Welcome
+description: Welcome to my blog
+---
 
 # Welcome
 
