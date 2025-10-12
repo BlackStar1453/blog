@@ -151,6 +151,9 @@ setup_repository() {
             FORK_STATUS=$?
             set -e
 
+            echo "DEBUG: Fork status = $FORK_STATUS" >&2
+            echo "DEBUG: Fork output = $FORK_OUTPUT" >&2
+
             if [ $FORK_STATUS -eq 0 ]; then
                 REPO_NAME=$(basename "$ORIGINAL_REPO")
                 log_success "Fork成功"
@@ -174,7 +177,10 @@ setup_repository() {
                 echo "建议："
                 echo "  - 如果已有fork，请先删除旧的fork仓库"
                 echo "  - 或者直接克隆你的fork: gh repo clone $CURRENT_USER/blog"
-                return 1
+                echo ""
+                echo "按回车键退出..."
+                read < /dev/tty
+                exit 1
             fi
         fi
     fi
