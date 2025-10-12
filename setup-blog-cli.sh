@@ -116,7 +116,8 @@ setup_repository() {
     # 硬编码原始仓库地址
     ORIGINAL_REPO="BlackStar1453/blog"
 
-    read -p "请输入你的博客名称 (例如: my-blog): " BLOG_NAME
+    echo -n "请输入你的博客名称 (例如: my-blog): "
+    read BLOG_NAME < /dev/tty
 
     # 获取当前用户名
     CURRENT_USER=$(gh api user --jq .login)
@@ -196,10 +197,14 @@ configure_blog() {
 
     cd "$BLOG_DIR"
 
-    read -p "请输入你的博客标题: " BLOG_TITLE
-    read -p "请输入你的博客描述: " BLOG_DESCRIPTION
-    read -p "请输入你的姓名: " AUTHOR_NAME
-    read -p "请输入你的邮箱: " AUTHOR_EMAIL
+    echo -n "请输入你的博客标题: "
+    read BLOG_TITLE < /dev/tty
+    echo -n "请输入你的博客描述: "
+    read BLOG_DESCRIPTION < /dev/tty
+    echo -n "请输入你的姓名: "
+    read AUTHOR_NAME < /dev/tty
+    echo -n "请输入你的邮箱: "
+    read AUTHOR_EMAIL < /dev/tty
 
     # 获取 GitHub 用户名
     GITHUB_USERNAME=$(gh api user --jq .login)
@@ -262,7 +267,8 @@ deploy_cloudflare_pages() {
     # 检查 Cloudflare 认证
     cloudflare_auth
 
-    read -p "请输入 Cloudflare Pages 项目名称: " CF_PROJECT_NAME
+    echo -n "请输入 Cloudflare Pages 项目名称: "
+    read CF_PROJECT_NAME < /dev/tty
 
     # 构建博客
     if [ -f "Makefile" ]; then
@@ -317,7 +323,8 @@ main() {
     echo ""
     
     while true; do
-        read -p "请选择操作 (1-4): " choice
+        echo -n "请选择操作 (1-4): "
+        read choice < /dev/tty
         case $choice in
             1)
                 local_preview
