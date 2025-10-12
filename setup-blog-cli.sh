@@ -398,6 +398,28 @@ deploy_cloudflare_pages() {
         return 1
     fi
 
+    # 保存到.env文件
+    log_info "保存环境变量到.env文件..."
+    cd "$BLOG_DIR"
+
+    # 创建或更新.env文件
+    cat > .env << EOF
+# Cloudflare配置
+CLOUDFLARE_API_TOKEN=$CF_API_TOKEN
+CLOUDFLARE_ACCOUNT_ID=$ACCOUNT_ID
+
+# 项目配置
+CLOUDFLARE_PROJECT_NAME=$CF_PROJECT_NAME
+EOF
+
+    # 确保.env在.gitignore中
+    if ! grep -q "^\.env$" .gitignore 2>/dev/null; then
+        echo ".env" >> .gitignore
+        log_info "已将.env添加到.gitignore"
+    fi
+
+    log_success "环境变量已保存到.env文件"
+
     # 获取GitHub用户名和仓库名
     GITHUB_USER=$(gh api user --jq .login)
     GITHUB_REPO="${GITHUB_REPO_NAME:-$(basename "$BLOG_DIR")}"
