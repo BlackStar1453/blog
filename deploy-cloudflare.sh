@@ -84,7 +84,7 @@ deploy_cloudflare_pages() {
         log_success "博客已部署到 Cloudflare Pages"
         
         # 获取Cloudflare账户ID
-        ACCOUNT_ID=$(wrangler whoami | grep "Account ID" | awk '{print $3}' || echo "")
+        ACCOUNT_ID=$(wrangler whoami | grep -o '[a-f0-9]\{32\}' | head -1 || echo "")
         
         if [ -n "$ACCOUNT_ID" ]; then
             DASHBOARD_URL="https://dash.cloudflare.com/${ACCOUNT_ID}/pages/view/${CF_PROJECT_NAME}"
