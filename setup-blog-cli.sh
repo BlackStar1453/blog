@@ -398,12 +398,18 @@ deploy_cloudflare_pages() {
         return 1
     fi
 
-    # 设置GitHub Secrets
-    log_info "设置GitHub Secrets..."
-
     # 获取GitHub用户名和仓库名
     GITHUB_USER=$(gh api user --jq .login)
     GITHUB_REPO="${GITHUB_REPO_NAME:-$(basename "$BLOG_DIR")}"
+
+    # 启用GitHub Actions（fork的仓库默认禁用）
+    log_info "启用GitHub Actions..."
+    gh api -X PUT "repos/$GITHUB_USER/$GITHUB_REPO/actions/permissions" \
+        -f enabled=true \
+        -f allowed_actions=all 2>/dev/null || log_warning "无法启用Actions，可能需要手动启用"
+
+    # 设置GitHub Secrets
+    log_info "设置GitHub Secrets..."
 
     # 设置secrets
     echo "$CF_API_TOKEN" | gh secret set CLOUDFLARE_API_TOKEN --repo="$GITHUB_USER/$GITHUB_REPO"
