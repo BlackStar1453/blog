@@ -161,14 +161,26 @@ setup_repository() {
                 # 进入仓库目录
                 cd "$REPO_NAME"
 
+                # 获取当前用户名
+                GITHUB_USER=$(gh api user --jq .login)
+
+                # 配置Git remote
+                log_info "配置Git远程仓库..."
+                # gh repo fork会设置origin为用户的fork，upstream为源仓库
+                # 我们需要确保origin指向用户的fork
+                git remote set-url origin "https://github.com/$GITHUB_USER/$REPO_NAME.git"
+                git remote set-url upstream "https://github.com/$ORIGINAL_REPO.git"
+
                 # 获取template-init-v2分支
                 log_info "切换到template-init-v2分支..."
-                git fetch origin template-init-v2:template-init-v2
+                git fetch origin template-init-v2:template-init-v2 2>/dev/null || git fetch upstream template-init-v2:template-init-v2
                 git checkout template-init-v2
+
+                # 设置跟踪分支为origin/template-init-v2
+                git branch --set-upstream-to=origin/template-init-v2 template-init-v2
 
                 # 设置template-init-v2为默认分支
                 log_info "设置template-init-v2为默认分支..."
-                GITHUB_USER=$(gh api user --jq .login)
                 gh api -X PATCH "repos/$GITHUB_USER/$REPO_NAME" -f default_branch=template-init-v2 || log_warning "无法设置默认分支"
 
                 # 返回上级目录
@@ -178,6 +190,12 @@ setup_repository() {
                 if [ "$REPO_NAME" != "$BLOG_NAME" ]; then
                     log_info "重命名GitHub仓库为: $BLOG_NAME..."
                     gh repo rename "$BLOG_NAME" --yes --repo="$GITHUB_USER/$REPO_NAME" || log_warning "仓库重命名失败，将继续使用原名称"
+
+                    # 更新remote URL为新名称
+                    cd "$REPO_NAME"
+                    git remote set-url origin "https://github.com/$GITHUB_USER/$BLOG_NAME.git"
+                    cd ..
+
                     REPO_NAME="$BLOG_NAME"
                 fi
             else
