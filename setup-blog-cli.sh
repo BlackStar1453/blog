@@ -290,41 +290,72 @@ deploy_cloudflare_pages() {
         zola build
     fi
 
-    # 询问用户是否要关联GitHub仓库
-    echo ""
-    echo -n "是否要关联GitHub仓库以实现自动部署？(y/n): "
-    read LINK_GITHUB < /dev/tty
-
-    if [ "$LINK_GITHUB" = "y" ] || [ "$LINK_GITHUB" = "Y" ]; then
-        # 获取GitHub用户名和仓库名
-        GITHUB_USER=$(gh api user --jq .login)
-        GITHUB_REPO="${GITHUB_REPO_NAME:-$(basename "$BLOG_DIR")}"
-
-        log_info "关联GitHub仓库: $GITHUB_USER/$GITHUB_REPO"
-        log_info "注意：需要在Cloudflare Dashboard中手动完成GitHub集成"
-        echo ""
-        echo "请按照以下步骤操作："
-        echo "1. 访问 Cloudflare Dashboard: https://dash.cloudflare.com"
-        echo "2. 进入 Pages 页面"
-        echo "3. 点击 'Create a project'"
-        echo "4. 选择 'Connect to Git'"
-        echo "5. 选择你的GitHub仓库: $GITHUB_USER/$GITHUB_REPO"
-        echo "6. 配置构建设置："
-        echo "   - Build command: zola build"
-        echo "   - Build output directory: public"
-        echo "   - Production branch: template-init-v2"
-        echo ""
-        echo -n "完成GitHub集成后按回车继续..."
-        read < /dev/tty
-
-        log_success "GitHub集成配置完成"
+    # 创建 Cloudflare Pages 项目
+    log_info "创建 Cloudflare Pages 项目..."
+    if wrangler pages project create "$CF_PROJECT_NAME" --production-branch=template-init-v2; then
+        log_success "项目创建成功"
     else
-        # 创建 Cloudflare Pages 项目（手动部署模式）
-        log_info "创建 Cloudflare Pages 项目（手动部署模式）..."
-        if wrangler pages project create "$CF_PROJECT_NAME" --production-branch=template-init-v2; then
-            log_success "项目创建成功"
+        log_warning "项目可能已存在，继续部署..."
+    fi
+
+    # 询问用户是否要设置GitHub Actions自动部署
+    echo ""
+    echo -n "是否要设置GitHub Actions自动部署？(y/n): "
+    read SETUP_ACTIONS < /dev/tty
+
+    if [ "$SETUP_ACTIONS" = "y" ] || [ "$SETUP_ACTIONS" = "Y" ]; then
+        log_info "设置GitHub Actions自动部署..."
+
+        # 获取Cloudflare账户ID
+        ACCOUNT_ID=$(wrangler whoami | grep -o '[a-f0-9]\{32\}' | head -1 || echo "")
+
+        if [ -z "$ACCOUNT_ID" ]; then
+            log_error "无法获取Cloudflare账户ID"
+            return 1
+        fi
+
+        # 获取API Token
+        echo ""
+        echo "需要创建Cloudflare API Token用于GitHub Actions部署"
+        echo "请访问: https://dash.cloudflare.com/profile/api-tokens"
+        echo "创建一个具有'Cloudflare Pages - Edit'权限的Token"
+        echo ""
+        echo -n "请输入Cloudflare API Token: "
+        read -s CF_API_TOKEN < /dev/tty
+        echo ""
+
+        if [ -z "$CF_API_TOKEN" ]; then
+            log_warning "未提供API Token，跳过GitHub Actions设置"
         else
-            log_warning "项目可能已存在，继续部署..."
+            # 设置GitHub Secrets
+            log_info "设置GitHub Secrets..."
+
+            # 获取GitHub用户名和仓库名
+            GITHUB_USER=$(gh api user --jq .login)
+            GITHUB_REPO="${GITHUB_REPO_NAME:-$(basename "$BLOG_DIR")}"
+
+            # 设置secrets
+            echo "$CF_API_TOKEN" | gh secret set CLOUDFLARE_API_TOKEN --repo="$GITHUB_USER/$GITHUB_REPO"
+            echo "$ACCOUNT_ID" | gh secret set CLOUDFLARE_ACCOUNT_ID --repo="$GITHUB_USER/$GITHUB_REPO"
+
+            # 更新GitHub Actions workflow文件中的项目名称
+            if [ -f ".github/workflows/build.yml" ]; then
+                sed -i '' "s/projectName: blog/projectName: $CF_PROJECT_NAME/" .github/workflows/build.yml
+                sed -i '' "s/- main/- template-init-v2/" .github/workflows/build.yml
+
+                git add .github/workflows/build.yml
+                git commit -m "更新GitHub Actions配置为项目: $CF_PROJECT_NAME" || true
+
+                log_success "GitHub Actions配置完成"
+                echo ""
+                echo "✅ 自动部署已设置！"
+                echo "现在每次push到template-init-v2分支时，GitHub Actions会自动："
+                echo "1. 构建博客"
+                echo "2. 部署到Cloudflare Pages"
+                echo ""
+            else
+                log_warning "未找到GitHub Actions配置文件"
+            fi
         fi
     fi
 
