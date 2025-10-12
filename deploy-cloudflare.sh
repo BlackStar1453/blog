@@ -80,26 +80,54 @@ deploy_cloudflare_pages() {
     log_info "部署到 Cloudflare Pages..."
     echo "执行命令: wrangler pages deploy public --project-name=\"$CF_PROJECT_NAME\""
     
-    if wrangler pages deploy public --project-name="$CF_PROJECT_NAME"; then
+    # 捕获部署输出
+    DEPLOY_LOG=$(mktemp)
+    if wrangler pages deploy public --project-name="$CF_PROJECT_NAME" 2>&1 | tee "$DEPLOY_LOG"; then
         log_success "博客已部署到 Cloudflare Pages"
-        
+
+        # 从部署输出中提取实际的访问地址
+        DEPLOY_URL=$(grep -o 'https://[^[:space:]]*\.pages\.dev' "$DEPLOY_LOG" | tail -1 || echo "")
+
+        # 如果没有找到完整URL，使用项目名称构建
+        if [ -z "$DEPLOY_URL" ]; then
+            DEPLOY_URL="https://${CF_PROJECT_NAME}.pages.dev"
+        fi
+
+        # 更新config.toml中的base_url
+        log_info "更新config.toml中的base_url..."
+        if [ -f "config.toml" ]; then
+            # 使用sed更新base_url
+            sed -i '' "s|^base_url = \".*\"|base_url = \"$DEPLOY_URL\"|" config.toml
+            log_success "已更新base_url为: $DEPLOY_URL"
+
+            # 提交配置更改
+            git add config.toml
+            git commit -m "更新base_url为部署地址: $DEPLOY_URL" || log_warning "配置文件未发生变化"
+        fi
+
         # 获取Cloudflare账户ID
         ACCOUNT_ID=$(wrangler whoami | grep -o '[a-f0-9]\{32\}' | head -1 || echo "")
-        
+
         if [ -n "$ACCOUNT_ID" ]; then
             DASHBOARD_URL="https://dash.cloudflare.com/${ACCOUNT_ID}/pages/view/${CF_PROJECT_NAME}"
             echo ""
             echo "🎉 部署成功！"
+            echo "🌐 访问地址: $DEPLOY_URL"
             echo "📊 查看部署详情: $DASHBOARD_URL"
-            echo "💡 在Dashboard中可以查看实际的访问地址和部署状态"
+            echo "💡 在Dashboard中可以查看部署状态和设置"
         else
             echo ""
             echo "🎉 部署成功！"
+            echo "🌐 访问地址: $DEPLOY_URL"
             echo "📊 请访问 Cloudflare Dashboard 查看部署详情"
             echo "💡 地址: https://dash.cloudflare.com -> Pages -> $CF_PROJECT_NAME"
         fi
+
+        # 清理临时文件
+        rm -f "$DEPLOY_LOG"
     else
         log_error "部署失败，请检查项目名称是否正确"
+        rm -f "$DEPLOY_LOG"
     fi
 }
 
