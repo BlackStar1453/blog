@@ -89,6 +89,11 @@ install_nodejs() {
 
 # GitHub 认证
 github_auth() {
+    if gh auth status >/dev/null 2>&1; then
+        log_success "GitHub 已认证"
+        return
+    fi
+
     log_info "开始 GitHub 认证..."
     gh auth login
     log_success "GitHub 认证完成"
@@ -96,6 +101,11 @@ github_auth() {
 
 # Cloudflare 认证
 cloudflare_auth() {
+    if wrangler whoami >/dev/null 2>&1; then
+        log_success "Cloudflare 已认证"
+        return
+    fi
+
     log_info "开始 Cloudflare 认证..."
     wrangler login
     log_success "Cloudflare 认证完成"
@@ -103,18 +113,20 @@ cloudflare_auth() {
 
 # Fork 和克隆仓库
 setup_repository() {
-    read -p "请输入原始仓库地址 (例如: username/blog): " ORIGINAL_REPO
+    # 硬编码原始仓库地址
+    ORIGINAL_REPO="BlackStar1453/blog"
+
     read -p "请输入你的博客名称 (例如: my-blog): " BLOG_NAME
-    
-    log_info "Fork 仓库..."
+
+    log_info "Fork 仓库 $ORIGINAL_REPO..."
     gh repo fork "$ORIGINAL_REPO" --clone --remote
-    
+
     # 重命名本地文件夹
     REPO_NAME=$(basename "$ORIGINAL_REPO")
     if [ "$REPO_NAME" != "$BLOG_NAME" ]; then
         mv "$REPO_NAME" "$BLOG_NAME"
     fi
-    
+
     cd "$BLOG_NAME"
     log_success "仓库设置完成"
 }
@@ -207,22 +219,25 @@ deploy_github_pages() {
 # 部署到 Cloudflare Pages
 deploy_cloudflare_pages() {
     log_info "部署到 Cloudflare Pages..."
-    
+
+    # 检查 Cloudflare 认证
+    cloudflare_auth
+
     read -p "请输入 Cloudflare Pages 项目名称: " CF_PROJECT_NAME
-    
+
     # 构建博客
     if [ -f "Makefile" ]; then
         make build
     else
         zola build
     fi
-    
+
     # 创建 Cloudflare Pages 项目
     wrangler pages project create "$CF_PROJECT_NAME" || log_warning "项目可能已存在"
-    
+
     # 部署
     wrangler pages deploy public --project-name="$CF_PROJECT_NAME"
-    
+
     log_success "博客已部署到 Cloudflare Pages"
 }
 
@@ -237,9 +252,12 @@ main() {
     install_github_cli
     install_cloudflare_cli
     
-    log_info "开始认证..."
+    log_info "检查认证状态..."
     github_auth
-    cloudflare_auth
+
+    echo ""
+    echo "GitHub 认证完成！接下来设置博客..."
+    echo ""
     
     log_info "设置博客仓库..."
     setup_repository
