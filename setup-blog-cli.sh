@@ -298,100 +298,91 @@ deploy_cloudflare_pages() {
         log_warning "项目可能已存在，继续部署..."
     fi
 
-    # 询问用户是否要设置GitHub Actions自动部署
+    # 设置GitHub Actions自动部署
+    log_info "设置GitHub Actions自动部署..."
+
+    # 获取Cloudflare账户ID
+    ACCOUNT_ID=$(wrangler whoami | grep -o '[a-f0-9]\{32\}' | head -1 || echo "")
+
+    if [ -z "$ACCOUNT_ID" ]; then
+        log_error "无法获取Cloudflare账户ID"
+        return 1
+    fi
+
+    # 获取API Token
     echo ""
-    echo -n "是否要设置GitHub Actions自动部署？(y/n): "
-    read SETUP_ACTIONS < /dev/tty
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "📝 需要创建Cloudflare API Token用于GitHub Actions自动部署"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+    echo "请按照以下步骤操作："
+    echo ""
+    echo "1️⃣  访问 Cloudflare API Tokens 页面"
+    echo "   https://dash.cloudflare.com/profile/api-tokens"
+    echo ""
+    echo "2️⃣  点击 'Create Token' 按钮"
+    echo ""
+    echo "3️⃣  选择 'Create Custom Token'"
+    echo ""
+    echo "4️⃣  输入令牌名称（例如：'GitHub Actions Deploy'）"
+    echo ""
+    echo "5️⃣  配置权限："
+    echo "   在 'Permissions' 部分："
+    echo "   - 选择 'Account'"
+    echo "   - 选择 'Cloudflare Pages'"
+    echo "   - 选择 'Edit'"
+    echo ""
+    echo "6️⃣  配置账户资源："
+    echo "   在 'Account Resources' 部分："
+    echo "   - 选择 'Include'"
+    echo "   - 选择 'All accounts'（或选择特定账户）"
+    echo ""
+    echo "7️⃣  点击页面底部的 'Continue to summary' 按钮"
+    echo ""
+    echo "8️⃣  确认信息后，点击 'Create Token' 按钮"
+    echo ""
+    echo "9️⃣  ⚠️  重要：复制显示的Token（只会显示一次！）"
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+    echo -n "请粘贴你的Cloudflare API Token: "
+    read -s CF_API_TOKEN < /dev/tty
+    echo ""
+    echo ""
 
-    if [ "$SETUP_ACTIONS" = "y" ] || [ "$SETUP_ACTIONS" = "Y" ]; then
-        log_info "设置GitHub Actions自动部署..."
+    if [ -z "$CF_API_TOKEN" ]; then
+        log_error "未提供API Token，无法设置GitHub Actions"
+        return 1
+    fi
 
-        # 获取Cloudflare账户ID
-        ACCOUNT_ID=$(wrangler whoami | grep -o '[a-f0-9]\{32\}' | head -1 || echo "")
+    # 设置GitHub Secrets
+    log_info "设置GitHub Secrets..."
 
-        if [ -z "$ACCOUNT_ID" ]; then
-            log_error "无法获取Cloudflare账户ID"
-            return 1
-        fi
+    # 获取GitHub用户名和仓库名
+    GITHUB_USER=$(gh api user --jq .login)
+    GITHUB_REPO="${GITHUB_REPO_NAME:-$(basename "$BLOG_DIR")}"
 
-        # 获取API Token
-        echo ""
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo "📝 需要创建Cloudflare API Token用于GitHub Actions自动部署"
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo ""
-        echo "请按照以下步骤操作："
-        echo ""
-        echo "1️⃣  访问 Cloudflare API Tokens 页面"
-        echo "   https://dash.cloudflare.com/profile/api-tokens"
-        echo ""
-        echo "2️⃣  点击 'Create Token' 按钮"
-        echo ""
-        echo "3️⃣  选择 'Create Custom Token'"
-        echo ""
-        echo "4️⃣  输入令牌名称（例如：'GitHub Actions Deploy'）"
-        echo ""
-        echo "5️⃣  配置权限："
-        echo "   在 'Permissions' 部分："
-        echo "   - 选择 'Account'"
-        echo "   - 选择 'Cloudflare Pages'"
-        echo "   - 选择 'Edit'"
-        echo ""
-        echo "6️⃣  配置账户资源："
-        echo "   在 'Account Resources' 部分："
-        echo "   - 选择 'Include'"
-        echo "   - 选择 'All accounts'（或选择特定账户）"
-        echo ""
-        echo "7️⃣  （可选）设置其他限制："
-        echo "   - Client IP Address Filtering: 可以限制只允许特定IP使用"
-        echo "   - TTL: 可以设置Token过期时间"
-        echo ""
-        echo "8️⃣  点击页面底部的 'Continue to summary' 按钮"
-        echo ""
-        echo "9️⃣  确认信息后，点击 'Create Token' 按钮"
-        echo ""
-        echo "🔟 ⚠️  重要：复制显示的Token（只会显示一次！）"
-        echo ""
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo ""
-        echo -n "请粘贴你的Cloudflare API Token: "
-        read -s CF_API_TOKEN < /dev/tty
-        echo ""
-        echo ""
+    # 设置secrets
+    echo "$CF_API_TOKEN" | gh secret set CLOUDFLARE_API_TOKEN --repo="$GITHUB_USER/$GITHUB_REPO"
+    echo "$ACCOUNT_ID" | gh secret set CLOUDFLARE_ACCOUNT_ID --repo="$GITHUB_USER/$GITHUB_REPO"
 
-        if [ -z "$CF_API_TOKEN" ]; then
-            log_warning "未提供API Token，跳过GitHub Actions设置"
-        else
-            # 设置GitHub Secrets
-            log_info "设置GitHub Secrets..."
+    # 更新GitHub Actions workflow文件中的项目名称
+    if [ -f ".github/workflows/build.yml" ]; then
+        sed -i '' "s/projectName: blog/projectName: $CF_PROJECT_NAME/" .github/workflows/build.yml
+        sed -i '' "s/- main/- template-init-v2/" .github/workflows/build.yml
 
-            # 获取GitHub用户名和仓库名
-            GITHUB_USER=$(gh api user --jq .login)
-            GITHUB_REPO="${GITHUB_REPO_NAME:-$(basename "$BLOG_DIR")}"
+        git add .github/workflows/build.yml
+        git commit -m "更新GitHub Actions配置为项目: $CF_PROJECT_NAME" || true
 
-            # 设置secrets
-            echo "$CF_API_TOKEN" | gh secret set CLOUDFLARE_API_TOKEN --repo="$GITHUB_USER/$GITHUB_REPO"
-            echo "$ACCOUNT_ID" | gh secret set CLOUDFLARE_ACCOUNT_ID --repo="$GITHUB_USER/$GITHUB_REPO"
-
-            # 更新GitHub Actions workflow文件中的项目名称
-            if [ -f ".github/workflows/build.yml" ]; then
-                sed -i '' "s/projectName: blog/projectName: $CF_PROJECT_NAME/" .github/workflows/build.yml
-                sed -i '' "s/- main/- template-init-v2/" .github/workflows/build.yml
-
-                git add .github/workflows/build.yml
-                git commit -m "更新GitHub Actions配置为项目: $CF_PROJECT_NAME" || true
-
-                log_success "GitHub Actions配置完成"
-                echo ""
-                echo "✅ 自动部署已设置！"
-                echo "现在每次push到template-init-v2分支时，GitHub Actions会自动："
-                echo "1. 构建博客"
-                echo "2. 部署到Cloudflare Pages"
-                echo ""
-            else
-                log_warning "未找到GitHub Actions配置文件"
-            fi
-        fi
+        log_success "GitHub Actions配置完成"
+        echo ""
+        echo "✅ 自动部署已设置！"
+        echo "现在每次push到template-init-v2分支时，GitHub Actions会自动："
+        echo "1. 构建博客"
+        echo "2. 部署到Cloudflare Pages"
+        echo ""
+    else
+        log_warning "未找到GitHub Actions配置文件"
     fi
 
     # 部署
