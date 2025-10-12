@@ -142,9 +142,14 @@ setup_repository() {
             gh repo clone "$CURRENT_USER/blog"
             REPO_NAME="blog"
         else
-            # 尝试fork
-            if gh repo fork "$ORIGINAL_REPO" --clone --remote 2>/dev/null; then
+            # 尝试fork（显示详细错误信息）
+            log_info "正在fork仓库..."
+            FORK_OUTPUT=$(gh repo fork "$ORIGINAL_REPO" --clone --remote --default-branch-only 2>&1)
+            FORK_STATUS=$?
+
+            if [ $FORK_STATUS -eq 0 ]; then
                 REPO_NAME=$(basename "$ORIGINAL_REPO")
+                log_success "Fork成功"
 
                 # 重命名GitHub上的fork仓库
                 if [ "$REPO_NAME" != "$BLOG_NAME" ]; then
@@ -152,7 +157,10 @@ setup_repository() {
                     gh repo rename "$BLOG_NAME" --yes || log_warning "仓库重命名失败，将继续使用原名称"
                 fi
             else
-                log_error "Fork失败！可能的原因："
+                log_error "Fork失败！"
+                echo "错误信息: $FORK_OUTPUT"
+                echo ""
+                echo "可能的原因："
                 echo "  1. 你已经fork过这个仓库（请检查 https://github.com/$CURRENT_USER/blog）"
                 echo "  2. 仓库禁用了fork功能"
                 echo "  3. GitHub API速率限制"
