@@ -1,35 +1,25 @@
----
-title: 侧边栏
----
++++
+title = "侧边栏"
++++
 
 ## 重要链接
 
 - [RSS 订阅地址](/atom.xml)
-- [Twitter 主页](https://x.com/Heraclitius)
-- [Mastodon 主页](https://m.cmx.im/@Heracleitus)
+- [GitHub 仓库](https://github.com/yourusername/blog)
 
 ## 关于
 
-- [关于我](/about/)
-- [现在在做的事](/now/)
+- [关于我](/pages/about/)
 
 ## 导航
 
-- [读书笔记](/blog/books/)
-- [短想法](/content/thoughts/index.md)
-- [收集](/content/quotes.md)
-- [本站源码](https://github.com/theowenyoung/blog)
+- [博客文章](/blog/)
+- [短想法](/thoughts/)
+- [诗歌](/poem/)
+- [故事](/story/)
+- [翻译](/translations/)
 
-## 我的写作
+## 示例项目
 
-- [我的翻译](/translations/)
-- [我的小说](/story/)
-- [我的诗歌](/poem/)
-
-
-## 我的项目
-
-- [Elick](https://elick.it.com/) - AI驱动的外语阅读学习工具
-- [GPT-Tutor](/content/ai-%20learning/gpt-tutor/index.md)
-- [Poemtab](https://github.com/BlackStar1453/poemtab) - 浏览器插件，新标签页显示诗歌
-- [Chat-With-Card](/projects/chat-with-card/) - Anki插件，AI对话增强学习卡片
+- 项目1 - 项目描述
+- 项目2 - 项目描述

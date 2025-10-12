@@ -1,3 +1,78 @@
+# Personal Blog Template
+
+这是一个基于 [Zola](https://www.getzola.org/) 的个人博客模板，已经清理了原作者的个人内容。
+
+## 🚀 快速开始
+
+### 1. 配置个人信息
+
+编辑 `config.toml` 文件，修改以下信息：
+
+```toml
+base_url = "https://yourdomain.com"
+title = "Your Blog Title"
+description = "Your blog description"
+
+[extra]
+author = "Your Name"
+email = "your.email@example.com"
+```
+
+### 2. 安装依赖
+
+```bash
+make install
+```
+
+### 3. 本地预览
+
+```bash
+make serve
+```
+
+访问 http://localhost:1111 查看你的博客。
+
+### 4. 开始写作
+
+- 删除示例内容（`content/blog/welcome.md` 等）
+- 使用内置脚本创建新内容：
+
+```bash
+# 添加短想法
+./scripts/blog-helper.sh thought "你的想法内容"
+
+# 创建新文章
+./scripts/blog-helper.sh create "blog" "文章标题"
+```
+
+## 📝 自动化功能（可选）
+
+如果你使用macOS，可以设置从Apple备忘录自动同步内容：
+
+```bash
+# 安装依赖
+./scripts/setup-dependencies.sh
+
+# 设置自动同步
+./scripts/blog-helper.sh auto-sync install
+```
+
+## 🛠️ 构建和部署
+
+```bash
+# 构建
+make build
+
+# 部署到GitHub Pages（需要配置GitHub Actions）
+git push origin main
+```
+
+---
+
+## 原始README
+
+以下是原始的README内容：
+
 # Owen's Blog
 
 The blog is built with [Zola](https://www.getzola.org/), for my personal need, I've use [my forked version](https://github.com/theowenyoung/zola) to build it.
