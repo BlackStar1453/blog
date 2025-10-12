@@ -294,7 +294,22 @@ deploy_cloudflare_pages() {
     log_info "部署到 Cloudflare Pages..."
     if wrangler pages deploy public --project-name="$CF_PROJECT_NAME" --commit-dirty=true; then
         log_success "博客已部署到 Cloudflare Pages"
-        echo "访问地址: https://${CF_PROJECT_NAME}.pages.dev"
+
+        # 获取Cloudflare账户ID
+        ACCOUNT_ID=$(wrangler whoami | grep "Account ID" | awk '{print $3}' || echo "")
+
+        if [ -n "$ACCOUNT_ID" ]; then
+            DASHBOARD_URL="https://dash.cloudflare.com/${ACCOUNT_ID}/pages/view/${CF_PROJECT_NAME}"
+            echo ""
+            echo "🎉 部署成功！"
+            echo "📊 查看部署详情: $DASHBOARD_URL"
+            echo "💡 在Dashboard中可以查看实际的访问地址和部署状态"
+        else
+            echo ""
+            echo "🎉 部署成功！"
+            echo "📊 请访问 Cloudflare Dashboard 查看部署详情"
+            echo "💡 地址: https://dash.cloudflare.com -> Pages -> $CF_PROJECT_NAME"
+        fi
     else
         log_error "部署失败，请检查项目名称是否正确"
     fi
