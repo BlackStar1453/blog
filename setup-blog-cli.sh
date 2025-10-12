@@ -119,6 +119,11 @@ setup_repository() {
     read -p "请输入你的博客名称 (例如: my-blog): " BLOG_NAME
 
     log_info "Fork 仓库 $ORIGINAL_REPO..."
+
+    # 创建临时目录进行操作
+    TEMP_DIR=$(mktemp -d)
+    cd "$TEMP_DIR"
+
     gh repo fork "$ORIGINAL_REPO" --clone --remote
 
     # 重命名本地文件夹
@@ -127,50 +132,65 @@ setup_repository() {
         mv "$REPO_NAME" "$BLOG_NAME"
     fi
 
-    cd "$BLOG_NAME"
-    log_success "仓库设置完成"
+    # 移动到用户指定的位置
+    mv "$BLOG_NAME" "$HOME/$BLOG_NAME"
+    cd "$HOME/$BLOG_NAME"
+
+    # 设置全局变量供后续函数使用
+    export BLOG_DIR="$HOME/$BLOG_NAME"
+
+    log_success "仓库设置完成，位置：$BLOG_DIR"
 }
 
 # 运行初始化脚本
 run_initialization() {
     log_info "运行博客初始化脚本..."
-    
+
+    cd "$BLOG_DIR"
+
+    # 切换到 template-init-v2 分支
+    git checkout template-init-v2
+
     if [ -f "init-template-simple.sh" ]; then
         chmod +x init-template-simple.sh
         ./init-template-simple.sh
     else
         log_warning "未找到初始化脚本，跳过此步骤"
     fi
-    
+
     log_success "博客初始化完成"
 }
 
 # 安装博客依赖
 install_blog_dependencies() {
     log_info "安装博客依赖..."
-    
+
+    cd "$BLOG_DIR"
+
     if [ -f "Makefile" ]; then
         make install
     else
         log_warning "未找到 Makefile，手动安装依赖..."
         brew install zola
     fi
-    
+
     log_success "博客依赖安装完成"
 }
 
 # 配置个人信息
 configure_blog() {
     log_info "配置博客个人信息..."
-    
+
+    cd "$BLOG_DIR"
+
     read -p "请输入你的博客标题: " BLOG_TITLE
     read -p "请输入你的博客描述: " BLOG_DESCRIPTION
     read -p "请输入你的姓名: " AUTHOR_NAME
     read -p "请输入你的邮箱: " AUTHOR_EMAIL
-    
+
     # 获取 GitHub 用户名
     GITHUB_USERNAME=$(gh api user --jq .login)
-    
+
     # 更新 config.toml
     if [ -f "config.toml" ]; then
         sed -i '' "s|base_url = \".*\"|base_url = \"https://${GITHUB_USERNAME}.github.io\"|" config.toml
@@ -179,7 +199,7 @@ configure_blog() {
         sed -i '' "s|author = \".*\"|author = \"${AUTHOR_NAME}\"|" config.toml
         sed -i '' "s|email = \".*\"|email = \"${AUTHOR_EMAIL}\"|" config.toml
     fi
-    
+
     log_success "博客配置完成"
 }
 
@@ -188,7 +208,9 @@ local_preview() {
     log_info "启动本地预览..."
     log_info "博客将在 http://localhost:1111 运行"
     log_info "按 Ctrl+C 停止预览"
-    
+
+    cd "$BLOG_DIR"
+
     if [ -f "Makefile" ]; then
         make serve
     else
@@ -199,19 +221,21 @@ local_preview() {
 # 部署到 GitHub Pages
 deploy_github_pages() {
     log_info "部署到 GitHub Pages..."
-    
+
+    cd "$BLOG_DIR"
+
     # 提交更改
     git add .
     git commit -m "初始化博客配置"
     git push origin main
-    
+
     # 启用 GitHub Pages
     gh api repos/:owner/:repo/pages \
         --method POST \
         --field source.branch=main \
         --field source.path=/ \
         2>/dev/null || log_warning "GitHub Pages 可能已经启用"
-    
+
     GITHUB_USERNAME=$(gh api user --jq .login)
     log_success "博客已部署到: https://${GITHUB_USERNAME}.github.io"
 }
@@ -219,6 +243,8 @@ deploy_github_pages() {
 # 部署到 Cloudflare Pages
 deploy_cloudflare_pages() {
     log_info "部署到 Cloudflare Pages..."
+
+    cd "$BLOG_DIR"
 
     # 检查 Cloudflare 认证
     cloudflare_auth
