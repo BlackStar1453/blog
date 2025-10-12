@@ -132,13 +132,36 @@ setup_repository() {
         REPO_NAME=$(basename "$ORIGINAL_REPO")
     else
         log_info "Fork 仓库 $ORIGINAL_REPO..."
-        gh repo fork "$ORIGINAL_REPO" --clone --remote
-        REPO_NAME=$(basename "$ORIGINAL_REPO")
 
-        # 重命名GitHub上的fork仓库
-        if [ "$REPO_NAME" != "$BLOG_NAME" ]; then
-            log_info "重命名GitHub仓库为: $BLOG_NAME..."
-            gh repo rename "$BLOG_NAME" --yes || log_warning "仓库重命名失败，将继续使用原名称"
+        # 检查是否已经fork过
+        EXISTING_FORK=$(gh api "repos/$CURRENT_USER/blog" 2>/dev/null | jq -r '.fork' 2>/dev/null || echo "false")
+
+        if [ "$EXISTING_FORK" = "true" ]; then
+            log_warning "检测到你已经fork过这个仓库"
+            log_info "将直接克隆你的fork仓库..."
+            gh repo clone "$CURRENT_USER/blog"
+            REPO_NAME="blog"
+        else
+            # 尝试fork
+            if gh repo fork "$ORIGINAL_REPO" --clone --remote 2>/dev/null; then
+                REPO_NAME=$(basename "$ORIGINAL_REPO")
+
+                # 重命名GitHub上的fork仓库
+                if [ "$REPO_NAME" != "$BLOG_NAME" ]; then
+                    log_info "重命名GitHub仓库为: $BLOG_NAME..."
+                    gh repo rename "$BLOG_NAME" --yes || log_warning "仓库重命名失败，将继续使用原名称"
+                fi
+            else
+                log_error "Fork失败！可能的原因："
+                echo "  1. 你已经fork过这个仓库（请检查 https://github.com/$CURRENT_USER/blog）"
+                echo "  2. 仓库禁用了fork功能"
+                echo "  3. GitHub API速率限制"
+                echo ""
+                echo "建议："
+                echo "  - 如果已有fork，请先删除旧的fork仓库"
+                echo "  - 或者直接克隆你的fork: gh repo clone $CURRENT_USER/blog"
+                return 1
+            fi
         fi
     fi
 
