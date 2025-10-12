@@ -472,13 +472,31 @@ EOF
     echo "$CF_API_TOKEN" | gh secret set CLOUDFLARE_API_TOKEN --repo="$GITHUB_USER/$GITHUB_REPO"
     echo "$ACCOUNT_ID" | gh secret set CLOUDFLARE_ACCOUNT_ID --repo="$GITHUB_USER/$GITHUB_REPO"
 
-    # 更新GitHub Actions workflow文件中的项目名称
+    # 更新GitHub Actions workflow文件中的项目名称和分支
     if [ -f ".github/workflows/build.yml" ]; then
-        sed -i '' "s/projectName: blog/projectName: $CF_PROJECT_NAME/" .github/workflows/build.yml
-        sed -i '' "s/- main/- template-init-v2/" .github/workflows/build.yml
+        log_info "更新GitHub Actions配置..."
 
+        # 更新项目名称
+        sed -i '' "s/projectName: blog/projectName: $CF_PROJECT_NAME/" .github/workflows/build.yml
+        sed -i '' "s/projectName: [a-zA-Z0-9_-]*/projectName: $CF_PROJECT_NAME/" .github/workflows/build.yml
+
+        # 更新触发分支为template-init-v2
+        sed -i '' "s/- main/- template-init-v2/" .github/workflows/build.yml
+        sed -i '' "s/branches:/branches:\n      - template-init-v2/" .github/workflows/build.yml
+        # 移除重复的分支配置
+        sed -i '' '/branches:/,/paths-ignore:/{/- template-init-v2/!{/branches:/!{/paths-ignore:/!d;}}}' .github/workflows/build.yml
+
+        # 提交更改
         git add .github/workflows/build.yml
-        git commit -m "更新GitHub Actions配置为项目: $CF_PROJECT_NAME" || true
+        git commit -m "更新GitHub Actions配置
+
+- 项目名称: $CF_PROJECT_NAME
+- 触发分支: template-init-v2
+- 自动部署到Cloudflare Pages" || true
+
+        # 推送到远程仓库
+        log_info "推送配置到远程仓库..."
+        git push origin template-init-v2 || log_warning "推送失败，请手动执行: git push origin template-init-v2"
 
         log_success "GitHub Actions配置完成"
         echo ""
@@ -486,6 +504,11 @@ EOF
         echo "现在每次push到template-init-v2分支时，GitHub Actions会自动："
         echo "1. 构建博客"
         echo "2. 部署到Cloudflare Pages"
+        echo ""
+        echo "📝 提示："
+        echo "  - 本地修改后执行: git add . && git commit -m '你的提交信息'"
+        echo "  - 推送到远程: git push origin template-init-v2"
+        echo "  - GitHub Actions会自动触发部署"
         echo ""
     else
         log_warning "未找到GitHub Actions配置文件"
