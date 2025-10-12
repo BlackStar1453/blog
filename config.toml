@@ -1,4 +1,4 @@
-base_url = "https://test-deploy-fix.pages.dev"
+base_url = "https://7cfce5d5.test-deploy-fix.pages.dev"
 build_search_index = false
 compile_sass = false
 default_language = "zh"
