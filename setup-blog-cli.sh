@@ -270,6 +270,11 @@ deploy_cloudflare_pages() {
     echo -n "请输入 Cloudflare Pages 项目名称: "
     read CF_PROJECT_NAME < /dev/tty
 
+    # 提交所有更改
+    log_info "提交更改到Git..."
+    git add .
+    git commit -m "准备部署到Cloudflare Pages" || log_warning "没有新的更改需要提交"
+
     # 构建博客
     if [ -f "Makefile" ]; then
         make build
@@ -277,13 +282,22 @@ deploy_cloudflare_pages() {
         zola build
     fi
 
-    # 创建 Cloudflare Pages 项目
-    wrangler pages project create "$CF_PROJECT_NAME" || log_warning "项目可能已存在"
+    # 创建 Cloudflare Pages 项目（指定生产分支）
+    log_info "创建 Cloudflare Pages 项目..."
+    if wrangler pages project create "$CF_PROJECT_NAME" --production-branch=template-init-v2; then
+        log_success "项目创建成功"
+    else
+        log_warning "项目可能已存在，继续部署..."
+    fi
 
     # 部署
-    wrangler pages deploy public --project-name="$CF_PROJECT_NAME"
-
-    log_success "博客已部署到 Cloudflare Pages"
+    log_info "部署到 Cloudflare Pages..."
+    if wrangler pages deploy public --project-name="$CF_PROJECT_NAME" --commit-dirty=true; then
+        log_success "博客已部署到 Cloudflare Pages"
+        echo "访问地址: https://${CF_PROJECT_NAME}.pages.dev"
+    else
+        log_error "部署失败，请检查项目名称是否正确"
+    fi
 }
 
 # 主函数
