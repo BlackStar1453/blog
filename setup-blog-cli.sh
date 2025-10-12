@@ -158,10 +158,27 @@ setup_repository() {
                 REPO_NAME=$(basename "$ORIGINAL_REPO")
                 log_success "Fork成功"
 
+                # 进入仓库目录
+                cd "$REPO_NAME"
+
+                # 获取template-init-v2分支
+                log_info "切换到template-init-v2分支..."
+                git fetch origin template-init-v2:template-init-v2
+                git checkout template-init-v2
+
+                # 设置template-init-v2为默认分支
+                log_info "设置template-init-v2为默认分支..."
+                GITHUB_USER=$(gh api user --jq .login)
+                gh api -X PATCH "repos/$GITHUB_USER/$REPO_NAME" -f default_branch=template-init-v2 || log_warning "无法设置默认分支"
+
+                # 返回上级目录
+                cd ..
+
                 # 重命名GitHub上的fork仓库
                 if [ "$REPO_NAME" != "$BLOG_NAME" ]; then
                     log_info "重命名GitHub仓库为: $BLOG_NAME..."
-                    gh repo rename "$BLOG_NAME" --yes || log_warning "仓库重命名失败，将继续使用原名称"
+                    gh repo rename "$BLOG_NAME" --yes --repo="$GITHUB_USER/$REPO_NAME" || log_warning "仓库重命名失败，将继续使用原名称"
+                    REPO_NAME="$BLOG_NAME"
                 fi
             else
                 log_error "Fork失败！"
