@@ -133,11 +133,17 @@ setup_repository() {
     fi
 
     # 移动到用户指定的位置
-    mv "$BLOG_NAME" "$HOME/$BLOG_NAME"
-    cd "$HOME/$BLOG_NAME"
+    TARGET_DIR="$HOME/$BLOG_NAME"
+    if [ -d "$TARGET_DIR" ]; then
+        log_warning "目录 $TARGET_DIR 已存在，将使用时间戳后缀"
+        TARGET_DIR="$HOME/${BLOG_NAME}_$(date +%Y%m%d_%H%M%S)"
+    fi
+
+    mv "$BLOG_NAME" "$TARGET_DIR"
+    cd "$TARGET_DIR"
 
     # 设置全局变量供后续函数使用
-    export BLOG_DIR="$HOME/$BLOG_NAME"
+    export BLOG_DIR="$TARGET_DIR"
 
     log_success "仓库设置完成，位置：$BLOG_DIR"
 }
