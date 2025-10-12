@@ -292,7 +292,7 @@ deploy_cloudflare_pages() {
 
     # 部署
     log_info "部署到 Cloudflare Pages..."
-    if wrangler pages deploy public --project-name="$CF_PROJECT_NAME" --commit-dirty=true; then
+    if wrangler pages deploy public --project-name="$CF_PROJECT_NAME"; then
         log_success "博客已部署到 Cloudflare Pages"
 
         # 获取Cloudflare账户ID
