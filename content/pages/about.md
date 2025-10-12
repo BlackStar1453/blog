@@ -33,9 +33,3 @@ taxonomies:
 
 我会在[短想法](/thoughts/)中记录一些日常的思考和想法。
 
-## 联系我
-
-你可以通过以下方式联系我：
-
-- Email: your.email@example.com
-- GitHub: [yourusername](https://github.com/yourusername)
