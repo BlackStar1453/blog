@@ -149,8 +149,8 @@ setup_repository() {
 
             # 临时禁用set -e以捕获错误
             set +e
-            # 使用--default-branch-only只克隆main分支,简化流程
-            FORK_OUTPUT=$(gh repo fork "$ORIGINAL_REPO" --clone --default-branch-only 2>&1)
+            # 只fork,不克隆
+            FORK_OUTPUT=$(gh repo fork "$ORIGINAL_REPO" --remote=false 2>&1)
             FORK_STATUS=$?
             set -e
 
@@ -158,36 +158,31 @@ setup_repository() {
             echo "DEBUG: Fork output = $FORK_OUTPUT" >&2
 
             if [ $FORK_STATUS -eq 0 ]; then
-                REPO_NAME=$(basename "$ORIGINAL_REPO")
                 log_success "Fork成功"
-
-                # 进入仓库目录
-                cd "$REPO_NAME"
 
                 # 获取当前用户名
                 GITHUB_USER=$(gh api user --jq .login)
 
-                # 配置Git remote (只保留origin,移除upstream)
-                log_info "配置Git远程仓库..."
-                git remote set-url origin "https://github.com/$GITHUB_USER/$REPO_NAME.git"
-                # 移除upstream远程仓库,简化配置
-                git remote remove upstream 2>/dev/null || true
-
-                # 返回上级目录
-                cd ..
-
                 # 重命名GitHub上的fork仓库
-                if [ "$REPO_NAME" != "$BLOG_NAME" ]; then
+                ORIGINAL_REPO_NAME=$(basename "$ORIGINAL_REPO")
+                if [ "$ORIGINAL_REPO_NAME" != "$BLOG_NAME" ]; then
                     log_info "重命名GitHub仓库为: $BLOG_NAME..."
-                    gh repo rename "$BLOG_NAME" --yes --repo="$GITHUB_USER/$REPO_NAME" || log_warning "仓库重命名失败，将继续使用原名称"
+                    gh repo rename "$BLOG_NAME" --yes --repo="$GITHUB_USER/$ORIGINAL_REPO_NAME" || log_warning "仓库重命名失败，将继续使用原名称 $ORIGINAL_REPO_NAME"
 
-                    # 更新remote URL为新名称
-                    cd "$REPO_NAME"
-                    git remote set-url origin "https://github.com/$GITHUB_USER/$BLOG_NAME.git"
-                    cd ..
-
-                    REPO_NAME="$BLOG_NAME"
+                    # 检查重命名是否成功
+                    if gh api "repos/$GITHUB_USER/$BLOG_NAME" >/dev/null 2>&1; then
+                        FORK_REPO_NAME="$BLOG_NAME"
+                    else
+                        FORK_REPO_NAME="$ORIGINAL_REPO_NAME"
+                    fi
+                else
+                    FORK_REPO_NAME="$BLOG_NAME"
                 fi
+
+                # 使用git clone只克隆main分支
+                log_info "克隆仓库..."
+                git clone --single-branch --branch main "https://github.com/$GITHUB_USER/$FORK_REPO_NAME.git" "$BLOG_NAME"
+                REPO_NAME="$BLOG_NAME"
             else
                 log_error "Fork失败！"
                 echo ""
