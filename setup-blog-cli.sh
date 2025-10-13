@@ -147,7 +147,8 @@ setup_repository() {
 
             # 临时禁用set -e以捕获错误
             set +e
-            FORK_OUTPUT=$(gh repo fork "$ORIGINAL_REPO" --clone --remote --default-branch-only 2>&1)
+            # 不使用--default-branch-only，这样可以获取所有分支
+            FORK_OUTPUT=$(gh repo fork "$ORIGINAL_REPO" --clone --remote 2>&1)
             FORK_STATUS=$?
             set -e
 
@@ -167,19 +168,20 @@ setup_repository() {
                 # 配置Git remote
                 log_info "配置Git远程仓库..."
                 # gh repo fork会设置origin为用户的fork，upstream为源仓库
-                # 我们需要确保origin指向用户的fork
                 git remote set-url origin "https://github.com/$GITHUB_USER/$REPO_NAME.git"
                 git remote set-url upstream "https://github.com/$ORIGINAL_REPO.git"
 
-                # 获取template-init-v2分支
-                log_info "获取template-init-v2分支..."
-                # 从upstream获取template-init-v2分支
-                git fetch upstream template-init-v2:template-init-v2
+                # 切换到template-init-v2分支
+                log_info "切换到template-init-v2分支..."
                 git checkout template-init-v2
 
-                # 推送template-init-v2分支到用户的fork仓库
-                log_info "推送template-init-v2分支到你的fork仓库..."
-                git push -u origin template-init-v2
+                # 设置跟踪分支为origin/template-init-v2
+                git branch --set-upstream-to=origin/template-init-v2 template-init-v2
+
+                # 删除main分支（本地和远程）
+                log_info "清理不需要的分支..."
+                git branch -D main 2>/dev/null || true
+                git push origin --delete main 2>/dev/null || log_warning "无法删除远程main分支"
 
                 # 设置template-init-v2为默认分支
                 log_info "设置template-init-v2为默认分支..."
