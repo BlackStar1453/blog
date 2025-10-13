@@ -128,8 +128,9 @@ setup_repository() {
 
     if [ "$CURRENT_USER" = "BlackStar1453" ]; then
         log_info "检测到你是仓库所有者，直接克隆仓库..."
-        gh repo clone "$ORIGINAL_REPO"
-        REPO_NAME=$(basename "$ORIGINAL_REPO")
+        # 使用git clone只克隆main分支
+        git clone --single-branch --branch main "https://github.com/$ORIGINAL_REPO.git" "$BLOG_NAME"
+        REPO_NAME="$BLOG_NAME"
     else
         log_info "Fork 仓库 $ORIGINAL_REPO..."
 
@@ -139,8 +140,9 @@ setup_repository() {
         if [ "$EXISTING_FORK" = "true" ]; then
             log_warning "检测到你已经fork过这个仓库"
             log_info "将直接克隆你的fork仓库..."
-            gh repo clone "$CURRENT_USER/blog"
-            REPO_NAME="blog"
+            # 使用git clone只克隆main分支,避免多分支问题
+            git clone --single-branch --branch main "https://github.com/$CURRENT_USER/blog.git" "$BLOG_NAME"
+            REPO_NAME="$BLOG_NAME"
         else
             # 尝试fork（显示详细错误信息）
             log_info "正在fork仓库..."
@@ -208,10 +210,8 @@ setup_repository() {
         fi
     fi
 
-    # 重命名本地文件夹
-    if [ "$REPO_NAME" != "$BLOG_NAME" ]; then
-        mv "$REPO_NAME" "$BLOG_NAME" 2>/dev/null || true
-    fi
+    # 确定当前文件夹名称
+    CURRENT_DIR="$REPO_NAME"
 
     # 移动到用户指定的位置
     TARGET_DIR="$HOME/$BLOG_NAME"
@@ -220,8 +220,14 @@ setup_repository() {
         TARGET_DIR="$HOME/${BLOG_NAME}_$(date +%Y%m%d_%H%M%S)"
     fi
 
-    mv "$BLOG_NAME" "$TARGET_DIR" 2>/dev/null || mv "$REPO_NAME" "$TARGET_DIR"
-    cd "$TARGET_DIR"
+    # 移动文件夹到目标位置
+    if [ -d "$CURRENT_DIR" ]; then
+        mv "$CURRENT_DIR" "$TARGET_DIR"
+        cd "$TARGET_DIR"
+    else
+        log_error "无法找到克隆的仓库目录: $CURRENT_DIR"
+        exit 1
+    fi
 
     # 设置全局变量供后续函数使用
     export BLOG_DIR="$TARGET_DIR"
