@@ -139,10 +139,23 @@ setup_repository() {
 
         if [ "$EXISTING_FORK" = "true" ]; then
             log_warning "检测到你已经fork过这个仓库"
-            log_info "将直接克隆你的fork仓库..."
+
+            # 获取实际的fork仓库名称
+            EXISTING_FORK_NAME=$(gh api "repos/$CURRENT_USER/blog" --jq .name 2>/dev/null || echo "blog")
+
+            log_info "将直接克隆你的fork仓库: $CURRENT_USER/$EXISTING_FORK_NAME..."
+
             # 使用git clone只克隆main分支,避免多分支问题
-            git clone --single-branch --branch main "https://github.com/$CURRENT_USER/blog.git" "$BLOG_NAME"
+            git clone --single-branch --branch main "https://github.com/$CURRENT_USER/$EXISTING_FORK_NAME.git" "$BLOG_NAME"
             REPO_NAME="$BLOG_NAME"
+
+            # 如果fork的仓库名和期望的博客名不同,更新remote URL
+            if [ "$EXISTING_FORK_NAME" != "$BLOG_NAME" ]; then
+                cd "$BLOG_NAME"
+                # 保持remote指向实际的fork仓库
+                git remote set-url origin "https://github.com/$CURRENT_USER/$EXISTING_FORK_NAME.git"
+                cd ..
+            fi
         else
             # 尝试fork（显示详细错误信息）
             log_info "正在fork仓库..."
@@ -183,6 +196,12 @@ setup_repository() {
                 log_info "克隆仓库..."
                 git clone --single-branch --branch main "https://github.com/$GITHUB_USER/$FORK_REPO_NAME.git" "$BLOG_NAME"
                 REPO_NAME="$BLOG_NAME"
+
+                # 确保remote URL正确指向fork后的仓库
+                cd "$BLOG_NAME"
+                git remote set-url origin "https://github.com/$GITHUB_USER/$FORK_REPO_NAME.git"
+                log_info "Remote URL 已设置为: https://github.com/$GITHUB_USER/$FORK_REPO_NAME.git"
+                cd ..
             else
                 log_error "Fork失败！"
                 echo ""
