@@ -172,12 +172,14 @@ setup_repository() {
                 git remote set-url upstream "https://github.com/$ORIGINAL_REPO.git"
 
                 # 获取template-init-v2分支
-                log_info "切换到template-init-v2分支..."
-                git fetch origin template-init-v2:template-init-v2 2>/dev/null || git fetch upstream template-init-v2:template-init-v2
+                log_info "获取template-init-v2分支..."
+                # 从upstream获取template-init-v2分支
+                git fetch upstream template-init-v2:template-init-v2
                 git checkout template-init-v2
 
-                # 设置跟踪分支为origin/template-init-v2
-                git branch --set-upstream-to=origin/template-init-v2 template-init-v2
+                # 推送template-init-v2分支到用户的fork仓库
+                log_info "推送template-init-v2分支到你的fork仓库..."
+                git push -u origin template-init-v2
 
                 # 设置template-init-v2为默认分支
                 log_info "设置template-init-v2为默认分支..."
