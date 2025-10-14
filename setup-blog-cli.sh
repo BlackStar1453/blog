@@ -101,7 +101,8 @@ cloudflare_auth() {
 
 # 下载模板（简单模式 - 使用 Git clone，无需认证，可选择是否保留 Git）
 download_template_simple() {
-    TEMPLATE_REPO="moris1999/blog"
+    TEMPLATE_REPO="BlackStar1453/blog"
+    TEMPLATE_BRANCH="template"
 
     log_info "下载博客模板..."
 
@@ -114,7 +115,7 @@ download_template_simple() {
 
     # 使用 Git clone（公开仓库无需认证，只需要 git 命令）
     log_info "正在下载模板..."
-    git clone "https://github.com/$TEMPLATE_REPO.git" "$BLOG_DIR" || {
+    git clone -b "$TEMPLATE_BRANCH" "https://github.com/$TEMPLATE_REPO.git" "$BLOG_DIR" || {
         log_error "下载失败，请检查网络连接"
         exit 1
     }
