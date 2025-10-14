@@ -42,13 +42,13 @@
               this as my personal digital garden, where all my notes, ideas are stored here. Cause I'm not a English native speaker,
               so there are also
             <a href="/">many posts/notes written by Chinese</a>,
-            <a href="{{ get_url(path="@/pages/now.md") }}">click to find out what I'm doing now</a>
+            <a href="{{ get_url(path="@/pages/now.md",lang=lang) }}">click to find out what I'm doing now</a>
           </p>
         {% else %}
-          <p class="index-intro">我是<a href="/about/">{{ config.extra.author }}</a>，截止目前已写了<a href="{{ get_url(path="@/pages/archive.md",lang=lang) }}">
+          <p class="index-intro">我是<a href="{{ get_url(path="@/pages/about.md",lang=lang) }}">{{ config.extra.author }}</a>，截止目前已写了<a href="{{ get_url(path="@/pages/archive.md",lang=lang) }}">
               {{ all_section_pages.pages | length }}</a>
           篇文章，大约 {{ total_word_count }} 字{% if all_pages_sort_by_date | length > 0 %}，最后更新时间：<time datetime="{{ all_pages_sort_by_date[0].updated }}">{{ all_pages_sort_by_date[0].updated }}</time>{% endif %}。 我在<a href="/thoughts">短想法</a>里记录自己随手记的一些东西，
-          在 <a href="{{ get_url(path="@/pages/about.md") }}">About</a> 页面了解更多关于我的介绍，在 <a href="{{ get_url(path="@/pages/now.md") }}">Now 页面</a>了解我最近在做什么。
+          在 <a href="{{ get_url(path="@/pages/about.md",lang=lang) }}">About</a> 页面了解更多关于我的介绍，在 <a href="{{ get_url(path="@/pages/now.md",lang=lang) }}">Now 页面</a>了解我最近在做什么。
           </p>
 
         {% endif %}
