@@ -12,7 +12,7 @@
   {% endif %}
 {% endblock before_meta %}
 {% block post_meta %}
-  {%- if config.mode=="build" -%}
+  {%- if config.extra.meilisearch_url and config.mode=="build" -%}
     <style>{{meilicss | safe}}</style>
   {%- endif -%}
 {% endblock post_meta %}
