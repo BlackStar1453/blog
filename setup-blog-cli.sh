@@ -247,16 +247,15 @@ configure_blog() {
     # 更新 config.toml
     if [ -f "config.toml" ]; then
         # 使用更精确的 sed 模式，只替换顶层配置
-        # 1. 替换 base_url（在文件开头部分）
-        sed -i '' '1,/^\[/s|^base_url = ".*"|base_url = "https://'"${GITHUB_USERNAME}"'.github.io"|' config.toml
+        # 注意：不设置 base_url，将在部署到 Cloudflare Pages 后自动设置为固定域名
 
-        # 2. 替换 title（在文件开头部分，在第一个 section 之前）
+        # 1. 替换 title（在文件开头部分，在第一个 section 之前）
         sed -i '' '1,/^\[/s|^title = ".*"|title = "'"${BLOG_TITLE}"'"|' config.toml
 
-        # 3. 替换 description（在文件开头部分，在第一个 section 之前）
+        # 2. 替换 description（在文件开头部分，在第一个 section 之前）
         sed -i '' '1,/^\[/s|^description = ".*"|description = "'"${BLOG_DESCRIPTION}"'"|' config.toml
 
-        # 4. 替换 [extra] section 中的 author
+        # 3. 替换 [extra] section 中的 author
         sed -i '' '/^\[extra\]/,/^\[/{s|^author = ".*"|author = "'"${AUTHOR_NAME}"'"|;}' config.toml
 
         # 5. 替换 [extra] section 中的 email
@@ -279,28 +278,6 @@ local_preview() {
     else
         zola serve
     fi
-}
-
-# 部署到 GitHub Pages
-deploy_github_pages() {
-    log_info "部署到 GitHub Pages..."
-
-    cd "$BLOG_DIR"
-
-    # 提交更改
-    git add .
-    git commit -m "初始化博客配置"
-    git push origin main
-
-    # 启用 GitHub Pages
-    gh api repos/:owner/:repo/pages \
-        --method POST \
-        --field source.branch=main \
-        --field source.path=/ \
-        2>/dev/null || log_warning "GitHub Pages 可能已经启用"
-
-    GITHUB_USERNAME=$(gh api user --jq .login)
-    log_success "博客已部署到: https://${GITHUB_USERNAME}.github.io"
 }
 
 # 部署到 Cloudflare Pages
