@@ -143,6 +143,8 @@ categories = ["分类"]
 
 确认文章没问题后，就可以发布到线上了！
 
+### 方法一：手动部署（推荐新手）
+
 1. **运行部署脚本**
    ```bash
    cd {BLOG_DIR}
@@ -150,30 +152,93 @@ categories = ["分类"]
    ```
 
 2. **等待部署完成**
-   
+
    脚本会自动完成以下步骤：
    - ✅ 获取 Cloudflare Pages 域名
    - ✅ 更新配置文件
    - ✅ 构建网站
    - ✅ 部署到 Cloudflare Pages
-   - ✅ 提交代码到 GitHub（触发自动部署）
 
 3. **查看部署结果**
-   
+
    部署成功后，脚本会显示：
    ```
    ✅ 部署成功！
-   
+
    📍 你的博客地址：{BLOG_URL}
-   
+
    ⏰ Cloudflare Pages 部署通常需要 1-2 分钟
-   ⏰ GitHub Actions 部署通常需要 2-3 分钟
-   
+
    💡 提示：
    1. 访问 {BLOG_URL} 查看你的博客
    2. 访问 https://dash.cloudflare.com 查看 Cloudflare 部署状态
-   3. 访问 https://github.com/{GITHUB_USER}/{REPO_NAME}/actions 查看 GitHub Actions 状态
    ```
+
+### 方法二：自动部署（推荐熟悉后使用）
+
+如果你不想每次都手动运行部署脚本，可以设置自动部署！
+
+#### 选项 1：开机自动部署（推荐）
+
+**特点**：
+- ✅ 每次开机后自动检查是否有修改
+- ✅ 有修改则自动提交并部署
+- ✅ 无修改则自动跳过，不会重复部署
+- ✅ 适合笔记本电脑用户
+
+**设置方法**：
+```bash
+cd {BLOG_DIR}
+./manage-auto-deploy.sh install-boot
+```
+
+**工作流程**：
+1. 你正常编辑文章，保存文件
+2. 关闭电脑
+3. 下次开机后，脚本自动运行
+4. 检测到有修改，自动提交并部署
+5. 你的博客自动更新！
+
+#### 选项 2：定时自动部署
+
+**特点**：
+- ✅ 每天固定时间自动检查并部署
+- ✅ 适合台式机或 24 小时开机的电脑
+- ❌ 如果电脑在指定时间未开机，任务不会执行
+
+**设置方法**：
+```bash
+cd {BLOG_DIR}
+# 每天早上 9:00 自动部署
+./manage-auto-deploy.sh install 9 0
+
+# 或者自定义时间，例如每天下午 2:30
+./manage-auto-deploy.sh install 14 30
+```
+
+#### 查看自动部署状态
+
+```bash
+# 查看任务状态
+./manage-auto-deploy.sh status
+
+# 查看运行日志
+./manage-auto-deploy.sh logs
+
+# 测试运行一次
+./manage-auto-deploy.sh test
+```
+
+#### 卸载自动部署
+
+```bash
+./manage-auto-deploy.sh uninstall
+```
+
+**💡 重要提示**：
+- 自动部署脚本会**先检查是否有修改**
+- 如果没有修改，会自动跳过部署，**不会重复部署**
+- 这样可以避免浪费资源和不必要的部署
 
 ---
 
@@ -191,14 +256,15 @@ categories = ["分类"]
    - 🟢 Success：部署成功
    - 🔴 Failed：部署失败
 
-### 方法二：查看 GitHub Actions 部署状态
+### 方法二：查看自动部署日志（如果你设置了自动部署）
 
-1. 访问你的 GitHub 仓库：https://github.com/{GITHUB_USER}/{REPO_NAME}
-2. 点击顶部的 "Actions" 标签
-3. 查看最新的 workflow 运行状态：
-   - 🟡 In progress：正在运行
-   - 🟢 Success：运行成功
-   - 🔴 Failed：运行失败
+```bash
+# 查看自动部署日志
+./manage-auto-deploy.sh logs
+
+# 或者直接查看日志文件
+tail -f ~/.blog-auto-deploy/auto-deploy.log
+```
 
 ---
 
