@@ -1,4 +1,4 @@
-base_url = "https://blog-diq.pages.dev"
+base_url = "https://moris1999.github.io"
 build_search_index = false
 compile_sass = false
 default_language = "zh"
@@ -9,7 +9,7 @@ taxonomies = [
   { name = "tags", feed = true, paginate_by = 50 },
   { name = "categories", feed = true, paginate_by = 50 },
 ]
-title = "yao"
+title = "yai"
 
 [markdown]
 highlight_code = true
