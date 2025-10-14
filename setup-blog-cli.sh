@@ -111,11 +111,11 @@ cloudflare_auth() {
     log_success "Cloudflare 认证完成"
 }
 
-# 下载模板（简单模式 - 使用 Git clone，无需认证）
+# 下载模板（简单模式 - 使用 Git clone，无需认证，可选择是否保留 Git）
 download_template_simple() {
     TEMPLATE_REPO="moris1999/blog"
 
-    log_info "克隆博客模板..."
+    log_info "下载博客模板..."
 
     # 确定目标目录
     BLOG_DIR="$HOME/blog"
@@ -124,31 +124,54 @@ download_template_simple() {
         BLOG_DIR="$HOME/blog_$(date +%Y%m%d_%H%M%S)"
     fi
 
-    # 使用 Git clone（公开仓库无需认证）
-    log_info "正在克隆模板仓库..."
+    # 使用 Git clone（公开仓库无需认证，只需要 git 命令）
+    log_info "正在下载模板..."
     git clone "https://github.com/$TEMPLATE_REPO.git" "$BLOG_DIR" || {
-        log_error "克隆失败，请检查网络连接"
+        log_error "下载失败，请检查网络连接"
         exit 1
     }
 
     cd "$BLOG_DIR"
 
-    # 移除远程仓库（用户不需要推送到模板仓库）
-    git remote remove origin
-    log_info "已移除远程仓库连接"
+    # 询问是否需要 Git 版本控制
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "是否需要本地 Git 版本控制？"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+    echo "Git 版本控制可以："
+    echo "  ✅ 记录每次修改历史"
+    echo "  ✅ 随时回滚到之前的版本"
+    echo "  ✅ 查看修改对比"
+    echo ""
+    echo "如果不需要："
+    echo "  ✅ 更简单，无需学习 Git 命令"
+    echo "  ✅ 直接编辑文件即可"
+    echo ""
+    echo -n "是否启用 Git 版本控制？[y/N]: "
+    read USE_GIT < /dev/tty
+    echo ""
 
-    # 重新初始化为独立的本地仓库
-    log_info "初始化为独立的本地仓库..."
-    rm -rf .git
-    git init
-    git add .
-    git commit -m "初始化博客" || log_warning "Git 提交失败"
+    if [ "$USE_GIT" = "y" ] || [ "$USE_GIT" = "Y" ]; then
+        # 保留 Git，但移除远程连接并重新初始化
+        log_info "初始化本地 Git 仓库..."
+        rm -rf .git
+        git init
+        git add .
+        git commit -m "初始化博客" || log_warning "Git 提交失败"
+        log_success "已启用 Git 版本控制"
+    else
+        # 完全移除 Git
+        log_info "移除 Git 版本控制..."
+        rm -rf .git
+        log_success "已移除 Git，可以直接编辑文件"
+    fi
 
     # 设置全局变量
     export BLOG_DIR
     export GITHUB_REPO_NAME="blog"
 
-    log_success "模板克隆完成，位置：$BLOG_DIR"
+    log_success "模板下载完成，位置：$BLOG_DIR"
 }
 
 # 克隆仓库（完整模式 - 使用 Git 和 GitHub）
