@@ -90,27 +90,13 @@ build_blog() {
 # 部署到 Cloudflare Pages
 deploy_to_cloudflare() {
     local project_name="$1"
-    
+
     log_info "部署到 Cloudflare Pages..."
-    
+
     # 部署
     if wrangler pages deploy public --project-name="$project_name"; then
         log_success "部署成功！"
-        
-        # 获取固定域名
-        log_info "获取项目固定域名..."
-        FIXED_DOMAIN=$(wrangler pages project list 2>/dev/null | \
-            awk -v proj="$project_name" '$2 == proj {print $4}' | \
-            grep '\.pages\.dev' | \
-            sed 's/,$//' | \
-            head -1)
-        
-        if [ -n "$FIXED_DOMAIN" ]; then
-            DEPLOY_URL="https://$FIXED_DOMAIN"
-        else
-            DEPLOY_URL="https://${project_name}.pages.dev"
-        fi
-        
+
         echo ""
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
         echo "🎉 部署成功！"
@@ -119,10 +105,7 @@ deploy_to_cloudflare() {
         echo "🌐 访问地址: $DEPLOY_URL"
         echo "📊 Cloudflare Dashboard: https://dash.cloudflare.com"
         echo ""
-        
-        # 更新 config.toml 中的 URL
-        update_config_urls "$DEPLOY_URL"
-        
+
         return 0
     else
         log_error "部署失败"
@@ -199,26 +182,48 @@ main() {
     echo "🚀 Cloudflare Pages 部署脚本"
     echo "================================"
     echo ""
-    
+
     # 检查依赖
     check_wrangler
     check_cloudflare_auth
-    
+
     echo ""
-    
+
     # 获取或创建项目
     PROJECT_NAME=$(get_or_create_project)
-    
+
     echo ""
-    
-    # 构建博客
+
+    # 获取项目固定域名（在构建之前）
+    log_info "获取项目固定域名..."
+    FIXED_DOMAIN=$(wrangler pages project list 2>/dev/null | \
+        awk -v proj="$PROJECT_NAME" '$2 == proj {print $4}' | \
+        grep '\.pages\.dev' | \
+        sed 's/,$//' | \
+        head -1)
+
+    if [ -n "$FIXED_DOMAIN" ]; then
+        DEPLOY_URL="https://$FIXED_DOMAIN"
+        log_success "✅ 固定域名: $DEPLOY_URL"
+    else
+        # 如果无法获取，使用项目名称构建
+        DEPLOY_URL="https://${PROJECT_NAME}.pages.dev"
+        log_info "使用默认域名: $DEPLOY_URL"
+    fi
+
+    # 更新 config.toml（在构建之前）
+    update_config_urls "$DEPLOY_URL"
+
+    echo ""
+
+    # 构建博客（使用更新后的 config.toml）
     build_blog
-    
+
     echo ""
-    
+
     # 部署
     deploy_to_cloudflare "$PROJECT_NAME"
-    
+
     echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo "💡 下次部署"

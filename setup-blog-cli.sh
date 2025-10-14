@@ -402,14 +402,6 @@ deploy_cloudflare_pages() {
     git add .
     git commit -m "准备部署到Cloudflare Pages" || log_warning "没有新的更改需要提交"
 
-    # 构建博客
-    log_info "构建博客..."
-    if [ -f "Makefile" ]; then
-        make build
-    else
-        zola build
-    fi
-
     # 创建 Cloudflare Pages 项目
     log_info "创建 Cloudflare Pages 项目..."
     # 使用 main 作为生产分支
@@ -417,7 +409,7 @@ deploy_cloudflare_pages() {
     if wrangler pages project create "$CF_PROJECT_NAME" --production-branch="$PRODUCTION_BRANCH"; then
         log_success "项目创建成功 (生产分支: $PRODUCTION_BRANCH)"
     else
-        log_warning "项目可能已存在，继续部署..."
+        log_warning "项目可能已存在，继续..."
     fi
 
     # 获取Cloudflare账户ID
@@ -430,6 +422,56 @@ deploy_cloudflare_pages() {
     fi
 
     log_success "账户ID: $ACCOUNT_ID"
+
+    # 获取项目的固定域名（在构建之前）
+    log_info "获取项目固定域名..."
+    FIXED_DOMAIN=$(wrangler pages project list 2>/dev/null | \
+        awk -v proj="$CF_PROJECT_NAME" '$2 == proj {print $4}' | \
+        grep '\.pages\.dev' | \
+        sed 's/,$//' | \
+        head -1)
+
+    if [ -n "$FIXED_DOMAIN" ]; then
+        DEPLOY_URL="https://$FIXED_DOMAIN"
+        log_success "✅ 固定域名: $DEPLOY_URL"
+    else
+        # 如果无法获取，使用项目名称构建（通常项目名就是subdomain）
+        DEPLOY_URL="https://${CF_PROJECT_NAME}.pages.dev"
+        log_info "使用默认域名: $DEPLOY_URL"
+    fi
+
+    # 更新config.toml中的所有URL字段（在构建之前）
+    log_info "更新config.toml中的URL..."
+    if [ -f "config.toml" ]; then
+        # 检查当前的base_url
+        CURRENT_BASE_URL=$(grep '^base_url = ' config.toml | sed 's/base_url = "\(.*\)"/\1/' || echo "")
+
+        # 只有当URL发生变化时才更新
+        if [ "$CURRENT_BASE_URL" != "$DEPLOY_URL" ]; then
+            # 更新base_url
+            sed -i '' "s|^base_url = \".*\"|base_url = \"$DEPLOY_URL\"|" config.toml
+
+            # 更新extra部分的URL（如果存在）
+            sed -i '' "s|^prefix_url = \".*\"|prefix_url = \"$DEPLOY_URL\"|" config.toml
+            sed -i '' "s|^indieweb_url = \".*\"|indieweb_url = \"$DEPLOY_URL\"|" config.toml
+
+            log_success "已更新所有URL为: $DEPLOY_URL"
+
+            # 提交配置更改
+            git add config.toml
+            git commit -m "更新所有URL为Cloudflare Pages固定域名: $FIXED_DOMAIN" || log_warning "配置文件未发生变化"
+        else
+            log_info "URL未发生变化，跳过更新"
+        fi
+    fi
+
+    # 构建博客（使用更新后的 config.toml）
+    log_info "构建博客..."
+    if [ -f "Makefile" ]; then
+        make build
+    else
+        zola build
+    fi
 
     # 只在完整模式下配置 GitHub Actions
     if [ "$MODE" = "full" ]; then
@@ -559,49 +601,6 @@ deploy_cloudflare_pages() {
     DEPLOY_LOG=$(mktemp)
     if wrangler pages deploy public --project-name="$CF_PROJECT_NAME" 2>&1 | tee "$DEPLOY_LOG"; then
         log_success "博客已部署到 Cloudflare Pages"
-
-        # 获取项目的固定域名（不是临时部署URL）
-        log_info "获取项目固定域名..."
-        FIXED_DOMAIN=$(wrangler pages project list 2>/dev/null | \
-            awk -v proj="$CF_PROJECT_NAME" '$2 == proj {print $4}' | \
-            grep '\.pages\.dev' | \
-            sed 's/,$//' | \
-            head -1)
-
-        if [ -n "$FIXED_DOMAIN" ]; then
-            DEPLOY_URL="https://$FIXED_DOMAIN"
-            log_success "✅ 固定域名: $DEPLOY_URL"
-        else
-            # 如果无法获取，使用项目名称构建（通常项目名就是subdomain）
-            DEPLOY_URL="https://${CF_PROJECT_NAME}.pages.dev"
-            log_warning "使用默认域名: $DEPLOY_URL"
-        fi
-
-        # 更新config.toml中的所有URL字段
-        log_info "更新config.toml中的所有URL..."
-        if [ -f "config.toml" ]; then
-            # 检查当前的base_url
-            CURRENT_BASE_URL=$(grep '^base_url = ' config.toml | sed 's/base_url = "\(.*\)"/\1/' || echo "")
-
-            # 只有当URL发生变化时才更新
-            if [ "$CURRENT_BASE_URL" != "$DEPLOY_URL" ]; then
-                # 更新base_url
-                sed -i '' "s|^base_url = \".*\"|base_url = \"$DEPLOY_URL\"|" config.toml
-
-                # 更新extra部分的URL（如果存在）
-                sed -i '' "s|^prefix_url = \".*\"|prefix_url = \"$DEPLOY_URL\"|" config.toml
-                sed -i '' "s|^indieweb_url = \".*\"|indieweb_url = \"$DEPLOY_URL\"|" config.toml
-
-                log_success "已更新所有URL为: $DEPLOY_URL"
-
-                # 提交配置更改
-                git add config.toml
-                git commit -m "更新所有URL为Cloudflare Pages固定域名: $FIXED_DOMAIN" || log_warning "配置文件未发生变化"
-            else
-                log_info "URL未发生变化，跳过更新"
-            fi
-        fi
-
 
         if [ -n "$ACCOUNT_ID" ]; then
             DASHBOARD_URL="https://dash.cloudflare.com/${ACCOUNT_ID}/pages/view/${CF_PROJECT_NAME}"
