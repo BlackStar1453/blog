@@ -1,6 +1,7 @@
 +++
 title = "欢迎来到我的博客"
 description = "这是一个基于Zola的个人博客模板"
+transparent = true
 +++
 
 # 欢迎来到我的博客
