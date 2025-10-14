@@ -2,10 +2,23 @@
 {% block main %}
   <div class="archive-page">
     {% set all_section_pages = get_section(path="_index"~file_lang_path~".md") -%}
+    {# 收集所有页面，包括子section的页面 #}
+    {% set_global all_pages = [] -%}
+    {# 添加根section的页面 #}
+    {% for page_item in all_section_pages.pages -%}
+      {% set_global all_pages = all_pages | concat(with=page_item) -%}
+    {% endfor -%}
+    {# 添加所有子section的页面 #}
+    {% for subsection in all_section_pages.subsections -%}
+      {% set subsection_data = get_section(path=subsection) -%}
+      {% for page_item in subsection_data.pages -%}
+        {% set_global all_pages = all_pages | concat(with=page_item) -%}
+      {% endfor -%}
+    {% endfor -%}
     <div class="main-box-block">
       <h1>{{ page.title }}</h1>
-      {% if all_section_pages.pages | length > 0 %}
-        {% for year, posts in all_section_pages.pages | group_by(attribute="year") %}
+      {% if all_pages | length > 0 %}
+        {% for year, posts in all_pages | group_by(attribute="year") %}
           <h2>{{ year }}</h2>
           <ul>
             {% for post in posts %}
