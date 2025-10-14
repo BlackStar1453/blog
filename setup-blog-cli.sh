@@ -133,39 +133,13 @@ download_template_simple() {
 
     cd "$BLOG_DIR"
 
-    # 询问是否需要 Git 版本控制
-    echo ""
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "是否需要本地 Git 版本控制？"
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo ""
-    echo "Git 版本控制可以："
-    echo "  ✅ 记录每次修改历史"
-    echo "  ✅ 随时回滚到之前的版本"
-    echo "  ✅ 查看修改对比"
-    echo ""
-    echo "如果不需要："
-    echo "  ✅ 更简单，无需学习 Git 命令"
-    echo "  ✅ 直接编辑文件即可"
-    echo ""
-    echo -n "是否启用 Git 版本控制？[y/N]: "
-    read USE_GIT < /dev/tty
-    echo ""
-
-    if [ "$USE_GIT" = "y" ] || [ "$USE_GIT" = "Y" ]; then
-        # 保留 Git，但移除远程连接并重新初始化
-        log_info "初始化本地 Git 仓库..."
-        rm -rf .git
-        git init
-        git add .
-        git commit -m "初始化博客" || log_warning "Git 提交失败"
-        log_success "已启用 Git 版本控制"
-    else
-        # 完全移除 Git
-        log_info "移除 Git 版本控制..."
-        rm -rf .git
-        log_success "已移除 Git，可以直接编辑文件"
-    fi
+    # 移除模板的 Git 历史并重新初始化为独立仓库
+    log_info "初始化本地 Git 仓库..."
+    rm -rf .git
+    git init
+    git add .
+    git commit -m "初始化博客" || log_warning "Git 提交失败"
+    log_success "已初始化本地 Git 仓库（用于版本控制）"
 
     # 设置全局变量
     export BLOG_DIR
