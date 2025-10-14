@@ -1,4 +1,4 @@
-base_url = "https://moris1999.github.io"
+base_url = "https://blog-1920.pages.dev"
 build_search_index = false
 compile_sass = false
 default_language = "zh"
@@ -21,8 +21,8 @@ smart_punctuation = true
 [extra]
 author = "yao"
 email = "yao"
-prefix_url = "https://blog-diq.pages.dev"
-indieweb_url = "https://blog-diq.pages.dev"
+prefix_url = "https://blog-1920.pages.dev"
+indieweb_url = "https://blog-1920.pages.dev"
 theme_color = "#fffcf9"
 # meilisearch_url = "https://search.yourdomain.com"
 # meilisearch_api_key = "your_search_api_key"
