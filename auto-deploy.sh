@@ -103,14 +103,27 @@ check_cloudflare_auth() {
 # 检查是否有修改
 check_changes() {
     log_info "检查文件修改..."
-    
-    if git diff --quiet && git diff --cached --quiet; then
-        log_info "没有检测到修改"
-        return 1
+
+    # 检查工作区修改（未暂存的修改）
+    if ! git diff --quiet; then
+        log_success "检测到工作区修改"
+        return 0
     fi
-    
-    log_success "检测到文件修改"
-    return 0
+
+    # 检查暂存区修改（已 add 但未 commit 的修改）
+    if ! git diff --cached --quiet; then
+        log_success "检测到暂存区修改"
+        return 0
+    fi
+
+    # 检查未跟踪的文件（新创建的文件）
+    if [ -n "$(git ls-files --others --exclude-standard)" ]; then
+        log_success "检测到新文件"
+        return 0
+    fi
+
+    log_info "没有检测到修改"
+    return 1
 }
 
 # 显示修改状态
