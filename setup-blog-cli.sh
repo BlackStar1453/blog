@@ -311,7 +311,7 @@ create_github_repo() {
         fi
 
         # 创建仓库
-        gh repo create "$GITHUB_USER/$REPO_NAME" \
+        gh repo create "$REPO_NAME" \
             $VISIBILITY_FLAG \
             --description "My personal blog powered by Zola and Cloudflare Pages" \
             --source=. \
