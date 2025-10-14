@@ -20,15 +20,33 @@
 {% block sidebar_top %}{% endblock sidebar_top %}
 {% block header %}
   {% set all_section_pages = get_section(path="_index"~file_lang_path~".md") -%}
-  {% set_global pages_with_updated = [] -%}
+
+  {# 收集所有页面，包括子section的页面 #}
+  {% set_global all_pages = [] -%}
+  {# 添加根section的页面 #}
   {% for page_item in all_section_pages.pages -%}
+    {% set_global all_pages = all_pages | concat(with=page_item) -%}
+  {% endfor -%}
+  {# 添加所有子section的页面 #}
+  {% for subsection in all_section_pages.subsections -%}
+    {% set subsection_data = get_section(path=subsection) -%}
+    {% for page_item in subsection_data.pages -%}
+      {% set_global all_pages = all_pages | concat(with=page_item) -%}
+    {% endfor -%}
+  {% endfor -%}
+
+  {# 收集有更新时间的页面 #}
+  {% set_global pages_with_updated = [] -%}
+  {% for page_item in all_pages -%}
     {% if page_item.updated -%}
       {% set_global pages_with_updated = pages_with_updated | concat(with=page_item) -%}
     {% endif -%}
   {% endfor -%}
   {% set all_pages_sort_by_date = pages_with_updated | sort(attribute="updated") | reverse -%}
+
+  {# 计算总字数 #}
   {% set total_word_count = 0 -%}
-  {% for page_item in all_section_pages.pages -%}
+  {% for page_item in all_pages -%}
     {% set_global total_word_count = total_word_count+page_item.word_count -%}
   {% endfor -%}
       <div class="header">
@@ -36,7 +54,7 @@
         {% if config.default_language != lang %}
           <p class="index-intro">I'm {{ config.extra.author }}, I've written
             <a href="{{ get_url(path="@/pages/archive.md",lang=lang) }}">
-              {{ all_section_pages.pages | length }}</a>
+              {{ all_pages | length }}</a>
             articles so far, about {{ total_word_count }} words{% if all_pages_sort_by_date | length > 0 %}, last updated on
             <time datetime="{{ all_pages_sort_by_date[0].updated }}">{{ all_pages_sort_by_date[0].updated }}</time>{% endif %}. I position
               this as my personal digital garden, where all my notes, ideas are stored here. Cause I'm not a English native speaker,
@@ -46,7 +64,7 @@
           </p>
         {% else %}
           <p class="index-intro">我是<a href="{{ get_url(path="@/pages/about.md",lang=lang) }}">{{ config.extra.author }}</a>，截止目前已写了<a href="{{ get_url(path="@/pages/archive.md",lang=lang) }}">
-              {{ all_section_pages.pages | length }}</a>
+              {{ all_pages | length }}</a>
           篇文章，大约 {{ total_word_count }} 字{% if all_pages_sort_by_date | length > 0 %}，最后更新时间：<time datetime="{{ all_pages_sort_by_date[0].updated }}">{{ all_pages_sort_by_date[0].updated }}</time>{% endif %}。 我在<a href="/thoughts">短想法</a>里记录自己随手记的一些东西，
           在 <a href="{{ get_url(path="@/pages/about.md",lang=lang) }}">About</a> 页面了解更多关于我的介绍，在 <a href="{{ get_url(path="@/pages/now.md",lang=lang) }}">Now 页面</a>了解我最近在做什么。
           </p>
