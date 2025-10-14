@@ -111,46 +111,34 @@ cloudflare_auth() {
     log_success "Cloudflare 认证完成"
 }
 
-# Fork 和克隆仓库 - 简化版
+# 克隆仓库 - 直接克隆模板仓库
 setup_repository() {
-    ORIGINAL_REPO="moris1999/blog"
+    TEMPLATE_REPO="moris1999/blog"
 
-    log_info "Fork 并克隆仓库 $ORIGINAL_REPO..."
+    log_info "克隆模板仓库 $TEMPLATE_REPO..."
 
     # 获取当前用户名
     GITHUB_USER=$(gh api user --jq .login)
 
-    # 检查是否已经fork过
-    EXISTING_FORK=$(gh api "repos/$GITHUB_USER/blog" 2>/dev/null | jq -r '.fork' 2>/dev/null || echo "false")
-
-    if [ "$EXISTING_FORK" = "true" ]; then
-        log_warning "检测到你已经fork过这个仓库，将直接使用现有fork"
-        FORK_REPO="$GITHUB_USER/blog"
-    else
-        # Fork 仓库
-        log_info "正在fork仓库..."
-        gh repo fork "$ORIGINAL_REPO" --remote=false || {
-            log_error "Fork失败，请检查网络连接或GitHub权限"
-            exit 1
-        }
-        log_success "Fork成功"
-        FORK_REPO="$GITHUB_USER/blog"
-    fi
-
-    # 克隆到本地
+    # 确定克隆目录
     BLOG_DIR="$HOME/blog"
     if [ -d "$BLOG_DIR" ]; then
         log_warning "目录 $BLOG_DIR 已存在，将使用时间戳后缀"
         BLOG_DIR="$HOME/blog_$(date +%Y%m%d_%H%M%S)"
     fi
 
+    # 直接克隆模板仓库
     log_info "克隆仓库到 $BLOG_DIR..."
-    gh repo clone "$FORK_REPO" "$BLOG_DIR" || {
-        log_error "克隆失败"
+    git clone "https://github.com/$TEMPLATE_REPO.git" "$BLOG_DIR" || {
+        log_error "克隆失败，请检查网络连接"
         exit 1
     }
 
     cd "$BLOG_DIR"
+
+    # 移除原始的 origin 远程仓库
+    git remote remove origin
+    log_info "已移除原始远程仓库"
 
     # 配置 Git 使用 gh 作为凭证助手
     git config --local credential.helper ""
@@ -162,16 +150,6 @@ setup_repository() {
     git config --local user.email "${GITHUB_USER}@users.noreply.github.com"
     log_info "已配置 Git 用户: $GITHUB_USER"
 
-    # 设置 gh CLI 默认仓库为用户的 fork
-    gh repo set-default "$FORK_REPO"
-    log_info "已设置默认仓库: $FORK_REPO"
-
-    # 移除 upstream 远程仓库（如果存在），避免误推送到原始仓库
-    if git remote | grep -q "^upstream$"; then
-        git remote remove upstream
-        log_info "已移除 upstream 远程仓库，避免误推送"
-    fi
-
     # 确保在 main 分支
     CURRENT_BRANCH=$(git branch --show-current)
     if [ "$CURRENT_BRANCH" != "main" ]; then
@@ -179,7 +157,7 @@ setup_repository() {
         if git show-ref --verify --quiet refs/heads/main; then
             git checkout main
         elif git show-ref --verify --quiet refs/remotes/origin/main; then
-            git checkout -b main origin/main
+            git checkout -b main
         else
             log_warning "未找到 main 分支，将使用当前分支: $CURRENT_BRANCH"
         fi
@@ -191,7 +169,8 @@ setup_repository() {
     export BLOG_DIR
     export GITHUB_REPO_NAME="blog"
 
-    log_success "仓库设置完成，位置：$BLOG_DIR"
+    log_success "仓库克隆完成，位置：$BLOG_DIR"
+    log_info "提示：稍后需要创建自己的 GitHub 仓库并设置为 origin"
 }
 
 # 运行初始化脚本
@@ -263,6 +242,108 @@ configure_blog() {
     fi
 
     log_success "博客配置完成"
+}
+
+# 创建 GitHub 仓库并设置为 origin
+create_github_repo() {
+    log_info "创建 GitHub 仓库..."
+
+    cd "$BLOG_DIR"
+
+    # 获取当前用户名
+    GITHUB_USER=$(gh api user --jq .login)
+
+    # 询问仓库名称
+    echo ""
+    echo -n "请输入 GitHub 仓库名称 [默认: blog]: "
+    read REPO_NAME < /dev/tty
+    REPO_NAME=${REPO_NAME:-blog}
+
+    # 检查仓库是否已存在
+    if gh api "repos/$GITHUB_USER/$REPO_NAME" >/dev/null 2>&1; then
+        log_warning "仓库 $GITHUB_USER/$REPO_NAME 已存在"
+        echo ""
+        echo "选项："
+        echo "1. 使用现有仓库（会强制推送，覆盖远程内容）"
+        echo "2. 使用不同的仓库名称"
+        echo "3. 跳过创建仓库"
+        echo -n "请选择 [1/2/3]: "
+        read CHOICE < /dev/tty
+
+        case $CHOICE in
+            1)
+                log_info "使用现有仓库: $GITHUB_USER/$REPO_NAME"
+                ;;
+            2)
+                echo -n "请输入新的仓库名称: "
+                read REPO_NAME < /dev/tty
+                # 递归调用自己（但这次仓库名不同）
+                export GITHUB_REPO_NAME="$REPO_NAME"
+                create_github_repo
+                return
+                ;;
+            3)
+                log_warning "跳过创建 GitHub 仓库"
+                return
+                ;;
+            *)
+                log_error "无效选择"
+                exit 1
+                ;;
+        esac
+    else
+        # 创建新仓库
+        log_info "创建新仓库: $GITHUB_USER/$REPO_NAME"
+
+        # 询问仓库可见性
+        echo ""
+        echo "仓库可见性："
+        echo "1. Public（公开）"
+        echo "2. Private（私有）"
+        echo -n "请选择 [1/2，默认: 1]: "
+        read VISIBILITY_CHOICE < /dev/tty
+        VISIBILITY_CHOICE=${VISIBILITY_CHOICE:-1}
+
+        if [ "$VISIBILITY_CHOICE" = "2" ]; then
+            VISIBILITY_FLAG="--private"
+        else
+            VISIBILITY_FLAG="--public"
+        fi
+
+        # 创建仓库
+        gh repo create "$GITHUB_USER/$REPO_NAME" \
+            $VISIBILITY_FLAG \
+            --description "My personal blog powered by Zola and Cloudflare Pages" \
+            --source=. \
+            --remote=origin || {
+            log_error "创建仓库失败"
+            exit 1
+        }
+
+        log_success "仓库创建成功: $GITHUB_USER/$REPO_NAME"
+    fi
+
+    # 设置 origin 远程仓库（如果还没有设置）
+    if ! git remote | grep -q "^origin$"; then
+        git remote add origin "https://github.com/$GITHUB_USER/$REPO_NAME.git"
+        log_info "已添加 origin 远程仓库"
+    fi
+
+    # 设置 gh CLI 默认仓库
+    gh repo set-default "$GITHUB_USER/$REPO_NAME"
+    log_info "已设置默认仓库: $GITHUB_USER/$REPO_NAME"
+
+    # 推送到 GitHub
+    log_info "推送代码到 GitHub..."
+    git push -u origin main --force || {
+        log_error "推送失败"
+        exit 1
+    }
+
+    log_success "代码已推送到 GitHub"
+
+    # 设置全局变量供后续使用
+    export GITHUB_REPO_NAME="$REPO_NAME"
 }
 
 # 本地预览
@@ -589,10 +670,17 @@ main() {
     setup_repository
 
     log_info "配置博客..."
-    # 由于 fork 的是已经初始化完成的仓库，跳过初始化步骤
+    # 由于克隆的是已经初始化完成的仓库，跳过初始化步骤
     # run_initialization
     install_blog_dependencies
     configure_blog
+
+    echo ""
+    log_info "创建 GitHub 仓库..."
+    echo ""
+
+    # 创建 GitHub 仓库并设置为 origin
+    create_github_repo
 
     echo ""
     log_info "开始自动部署到 Cloudflare Pages..."
