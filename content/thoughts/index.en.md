@@ -1,6 +1,8 @@
 +++
 title = "Short Thoughts"
 description = "My short thoughts and musings"
+date = 2024-01-01
+updated = 2024-01-01
 +++
 
 # Short Thoughts
