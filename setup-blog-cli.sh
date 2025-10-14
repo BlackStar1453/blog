@@ -87,18 +87,6 @@ install_nodejs() {
     log_success "Node.js 安装完成"
 }
 
-# GitHub 认证
-github_auth() {
-    if gh auth status >/dev/null 2>&1; then
-        log_success "GitHub 已认证"
-        return
-    fi
-
-    log_info "开始 GitHub 认证..."
-    gh auth login -h github.com
-    log_success "GitHub 认证完成"
-}
-
 # Cloudflare 认证
 cloudflare_auth() {
     if wrangler whoami >/dev/null 2>&1; then
@@ -148,68 +136,6 @@ download_template_simple() {
     log_success "模板下载完成，位置：$BLOG_DIR"
 }
 
-# 克隆仓库（完整模式 - 使用 Git 和 GitHub）
-setup_repository() {
-    TEMPLATE_REPO="moris1999/blog"
-
-    log_info "克隆模板仓库 $TEMPLATE_REPO..."
-
-    # 获取当前用户名
-    GITHUB_USER=$(gh api user --jq .login)
-
-    # 确定克隆目录
-    BLOG_DIR="$HOME/blog"
-    if [ -d "$BLOG_DIR" ]; then
-        log_warning "目录 $BLOG_DIR 已存在，将使用时间戳后缀"
-        BLOG_DIR="$HOME/blog_$(date +%Y%m%d_%H%M%S)"
-    fi
-
-    # 直接克隆模板仓库
-    log_info "克隆仓库到 $BLOG_DIR..."
-    git clone "https://github.com/$TEMPLATE_REPO.git" "$BLOG_DIR" || {
-        log_error "克隆失败，请检查网络连接"
-        exit 1
-    }
-
-    cd "$BLOG_DIR"
-
-    # 移除原始的 origin 远程仓库
-    git remote remove origin
-    log_info "已移除原始远程仓库"
-
-    # 配置 Git 使用 gh 作为凭证助手
-    git config --local credential.helper ""
-    git config --local --add credential.helper '!gh auth git-credential'
-    log_info "已配置 Git 使用 GitHub CLI 凭证"
-
-    # 配置 Git 用户信息为当前 GitHub 用户
-    git config --local user.name "$GITHUB_USER"
-    git config --local user.email "${GITHUB_USER}@users.noreply.github.com"
-    log_info "已配置 Git 用户: $GITHUB_USER"
-
-    # 确保在 main 分支
-    CURRENT_BRANCH=$(git branch --show-current)
-    if [ "$CURRENT_BRANCH" != "main" ]; then
-        log_info "当前分支: $CURRENT_BRANCH，切换到 main 分支..."
-        if git show-ref --verify --quiet refs/heads/main; then
-            git checkout main
-        elif git show-ref --verify --quiet refs/remotes/origin/main; then
-            git checkout -b main
-        else
-            log_warning "未找到 main 分支，将使用当前分支: $CURRENT_BRANCH"
-        fi
-        CURRENT_BRANCH=$(git branch --show-current)
-    fi
-    log_info "当前分支: $CURRENT_BRANCH"
-
-    # 设置全局变量
-    export BLOG_DIR
-    export GITHUB_REPO_NAME="blog"
-
-    log_success "仓库克隆完成，位置：$BLOG_DIR"
-    log_info "提示：稍后需要创建自己的 GitHub 仓库并设置为 origin"
-}
-
 # 安装博客依赖
 install_blog_dependencies() {
     log_info "安装博客依赖..."
@@ -241,9 +167,6 @@ configure_blog() {
     echo -n "请输入你的邮箱: "
     read AUTHOR_EMAIL < /dev/tty
 
-    # 获取 GitHub 用户名
-    GITHUB_USERNAME=$(gh api user --jq .login)
-
     # 更新 config.toml
     if [ -f "config.toml" ]; then
         # 使用更精确的 sed 模式，只替换顶层配置
@@ -265,108 +188,6 @@ configure_blog() {
     log_success "博客配置完成"
 }
 
-# 创建 GitHub 仓库并设置为 origin
-create_github_repo() {
-    log_info "创建 GitHub 仓库..."
-
-    cd "$BLOG_DIR"
-
-    # 获取当前用户名
-    GITHUB_USER=$(gh api user --jq .login)
-
-    # 询问仓库名称
-    echo ""
-    echo -n "请输入 GitHub 仓库名称 [默认: blog]: "
-    read REPO_NAME < /dev/tty
-    REPO_NAME=${REPO_NAME:-blog}
-
-    # 检查仓库是否已存在
-    if gh api "repos/$GITHUB_USER/$REPO_NAME" >/dev/null 2>&1; then
-        log_warning "仓库 $GITHUB_USER/$REPO_NAME 已存在"
-        echo ""
-        echo "选项："
-        echo "1. 使用现有仓库（会强制推送，覆盖远程内容）"
-        echo "2. 使用不同的仓库名称"
-        echo "3. 跳过创建仓库"
-        echo -n "请选择 [1/2/3]: "
-        read CHOICE < /dev/tty
-
-        case $CHOICE in
-            1)
-                log_info "使用现有仓库: $GITHUB_USER/$REPO_NAME"
-                ;;
-            2)
-                echo -n "请输入新的仓库名称: "
-                read REPO_NAME < /dev/tty
-                # 递归调用自己（但这次仓库名不同）
-                export GITHUB_REPO_NAME="$REPO_NAME"
-                create_github_repo
-                return
-                ;;
-            3)
-                log_warning "跳过创建 GitHub 仓库"
-                return
-                ;;
-            *)
-                log_error "无效选择"
-                exit 1
-                ;;
-        esac
-    else
-        # 创建新仓库
-        log_info "创建新仓库: $GITHUB_USER/$REPO_NAME"
-
-        # 询问仓库可见性
-        echo ""
-        echo "仓库可见性："
-        echo "1. Public（公开）"
-        echo "2. Private（私有）"
-        echo -n "请选择 [1/2，默认: 1]: "
-        read VISIBILITY_CHOICE < /dev/tty
-        VISIBILITY_CHOICE=${VISIBILITY_CHOICE:-1}
-
-        if [ "$VISIBILITY_CHOICE" = "2" ]; then
-            VISIBILITY_FLAG="--private"
-        else
-            VISIBILITY_FLAG="--public"
-        fi
-
-        # 创建仓库
-        gh repo create "$REPO_NAME" \
-            $VISIBILITY_FLAG \
-            --description "My personal blog powered by Zola and Cloudflare Pages" \
-            --source=. \
-            --remote=origin || {
-            log_error "创建仓库失败"
-            exit 1
-        }
-
-        log_success "仓库创建成功: $GITHUB_USER/$REPO_NAME"
-    fi
-
-    # 设置 origin 远程仓库（如果还没有设置）
-    if ! git remote | grep -q "^origin$"; then
-        git remote add origin "https://github.com/$GITHUB_USER/$REPO_NAME.git"
-        log_info "已添加 origin 远程仓库"
-    fi
-
-    # 设置 gh CLI 默认仓库
-    gh repo set-default "$GITHUB_USER/$REPO_NAME"
-    log_info "已设置默认仓库: $GITHUB_USER/$REPO_NAME"
-
-    # 推送到 GitHub
-    log_info "推送代码到 GitHub..."
-    git push -u origin main --force || {
-        log_error "推送失败"
-        exit 1
-    }
-
-    log_success "代码已推送到 GitHub"
-
-    # 设置全局变量供后续使用
-    export GITHUB_REPO_NAME="$REPO_NAME"
-}
-
 # 本地预览
 local_preview() {
     log_info "启动本地预览..."
@@ -383,10 +204,7 @@ local_preview() {
 }
 
 # 部署到 Cloudflare Pages
-# 参数: $1 = "simple" 或 "full" (部署模式)
 deploy_cloudflare_pages() {
-    local MODE="${1:-full}"
-
     log_info "部署到 Cloudflare Pages..."
 
     cd "$BLOG_DIR"
@@ -473,127 +291,6 @@ deploy_cloudflare_pages() {
         zola build
     fi
 
-    # 只在完整模式下配置 GitHub Actions
-    if [ "$MODE" = "full" ]; then
-        # 获取GitHub用户名和仓库名
-        GITHUB_USER=$(gh api user --jq .login)
-        GITHUB_REPO="${GITHUB_REPO_NAME:-$(basename "$BLOG_DIR")}"
-
-        # 启用 GitHub Actions - 需要手动设置
-        log_info "配置 GitHub Actions..."
-
-        echo ""
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo "⚠️  重要: 需要手动启用 GitHub Actions"
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo ""
-        echo "请按以下步骤操作:"
-        echo ""
-        echo "1️⃣  浏览器会自动打开 Actions 页面"
-        echo ""
-        echo "2️⃣  在 Actions 页面中："
-        echo "   - 如果看到绿色按钮 'I understand my workflows, go ahead and enable them'"
-        echo "   - 点击该按钮启用 workflows"
-        echo ""
-        echo "3️⃣  如果没有看到按钮，说明 Actions 已经启用，直接继续即可"
-        echo ""
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo ""
-        echo -n "按回车打开 Actions 页面..."
-        read < /dev/tty
-
-        # 打开浏览器
-        open "https://github.com/$GITHUB_USER/$GITHUB_REPO/actions" 2>/dev/null || \
-        xdg-open "https://github.com/$GITHUB_USER/$GITHUB_REPO/actions" 2>/dev/null || \
-        echo "请手动访问: https://github.com/$GITHUB_USER/$GITHUB_REPO/actions"
-
-        echo ""
-        echo -n "完成 Actions 设置后按回车继续..."
-        read < /dev/tty
-
-        log_success "GitHub Actions 配置完成"
-        echo ""
-
-        # 设置GitHub Secrets
-        log_info "设置GitHub Secrets..."
-
-        echo ""
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo "📝 需要 Cloudflare API Token 用于 GitHub Actions 自动部署"
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo ""
-        echo "请按照以下步骤操作："
-        echo ""
-        echo "1️⃣  访问 Cloudflare API Tokens 页面"
-        echo "   https://dash.cloudflare.com/profile/api-tokens"
-        echo ""
-        echo "2️⃣  点击 'Create Token' 按钮"
-        echo ""
-        echo "3️⃣  选择 'Create Custom Token'"
-        echo ""
-        echo "4️⃣  配置权限："
-        echo "   - Account > Cloudflare Pages > Edit"
-        echo ""
-        echo "5️⃣  创建并复制 Token"
-        echo ""
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo ""
-        echo -n "请粘贴你的 Cloudflare API Token: "
-        read -s CF_API_TOKEN < /dev/tty
-        echo ""
-        echo ""
-
-        if [ -z "$CF_API_TOKEN" ]; then
-            log_warning "未提供 API Token，跳过自动设置"
-            echo ""
-            echo "请稍后手动在 GitHub 仓库设置中添加以下 secrets:"
-            echo "  - CLOUDFLARE_API_TOKEN"
-            echo "  - CLOUDFLARE_ACCOUNT_ID: $ACCOUNT_ID"
-            echo ""
-            echo "访问: https://github.com/$GITHUB_USER/$GITHUB_REPO/settings/secrets/actions"
-            echo ""
-        else
-            # 设置 CLOUDFLARE_API_TOKEN
-            log_info "设置 CLOUDFLARE_API_TOKEN..."
-            if echo "$CF_API_TOKEN" | gh secret set CLOUDFLARE_API_TOKEN --repo="$GITHUB_USER/$GITHUB_REPO"; then
-                log_success "✓ CLOUDFLARE_API_TOKEN 已设置"
-            else
-                log_error "设置 CLOUDFLARE_API_TOKEN 失败"
-                echo "请手动设置: https://github.com/$GITHUB_USER/$GITHUB_REPO/settings/secrets/actions"
-            fi
-
-            # 设置 CLOUDFLARE_ACCOUNT_ID
-            log_info "设置 CLOUDFLARE_ACCOUNT_ID..."
-            if echo "$ACCOUNT_ID" | gh secret set CLOUDFLARE_ACCOUNT_ID --repo="$GITHUB_USER/$GITHUB_REPO"; then
-                log_success "✓ CLOUDFLARE_ACCOUNT_ID 已设置"
-            else
-                log_error "设置 CLOUDFLARE_ACCOUNT_ID 失败"
-                echo "请手动设置: https://github.com/$GITHUB_USER/$GITHUB_REPO/settings/secrets/actions"
-            fi
-
-            log_success "GitHub Secrets 设置完成"
-        fi
-
-        # 更新GitHub Actions workflow文件中的项目名称
-        if [ -f ".github/workflows/build.yml" ]; then
-            CURRENT_BRANCH=$(git branch --show-current)
-            sed -i '' "s/projectName: blog/projectName: $CF_PROJECT_NAME/" .github/workflows/build.yml
-
-            git add .github/workflows/build.yml
-            git commit -m "更新GitHub Actions配置为项目: $CF_PROJECT_NAME" || true
-
-            log_success "GitHub Actions配置完成"
-            echo ""
-            echo "✅ 自动部署已设置！"
-            echo "现在每次push到 $CURRENT_BRANCH 分支时，GitHub Actions会自动："
-            echo "1. 构建博客"
-            echo "2. 部署到Cloudflare Pages"
-            echo ""
-        else
-            log_warning "未找到GitHub Actions配置文件"
-        fi
-    fi
-
     # 部署
     log_info "部署到 Cloudflare Pages..."
 
@@ -624,61 +321,27 @@ deploy_cloudflare_pages() {
         # 清理临时文件
         rm -f "$DEPLOY_LOG"
 
-        # 只在完整模式下推送到 GitHub
-        if [ "$MODE" = "full" ]; then
-            # 推送所有更改到远程仓库
-            log_info "推送更改到远程仓库..."
-            CURRENT_BRANCH=$(git branch --show-current)
-            if git push origin "$CURRENT_BRANCH" 2>&1; then
-                log_success "已推送到远程仓库"
-                echo ""
-                echo "📝 提示："
-                echo "  - 本地修改后执行: git add . && git commit -m '你的提交信息'"
-                echo "  - 推送到远程: git push origin $CURRENT_BRANCH"
-                echo "  - GitHub Actions会自动触发部署"
-                echo ""
-                echo "🔍 查看 GitHub Actions 运行状态:"
-                echo "  gh run list --limit 5"
-                echo "  或访问: https://github.com/$GITHUB_USER/$GITHUB_REPO/actions"
-            else
-                log_warning "推送失败"
-                echo ""
-                echo "可能的原因:"
-                echo "  1. 网络连接问题"
-                echo "  2. GitHub 认证过期"
-                echo "  3. 分支保护规则"
-                echo ""
-                echo "解决方案:"
-                echo "  1. 检查网络连接"
-                echo "  2. 刷新 GitHub 认证: gh auth refresh -h github.com -s workflow"
-                echo "  3. 手动推送: cd $BLOG_DIR && git push origin $CURRENT_BRANCH"
-                echo ""
-            fi
-        else
-            # 简单模式：提示用户如何更新博客
-            echo ""
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo "📝 如何更新博客内容"
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo ""
-            echo "1️⃣  编辑内容："
-            echo "   - 在 content/ 目录下创建或编辑 Markdown 文件"
-            echo "   - 在 static/ 目录下添加图片等静态资源"
-            echo ""
-            echo "2️⃣  本地预览："
-            echo "   cd $BLOG_DIR"
-            echo "   make serve"
-            echo "   # 访问 http://localhost:1111"
-            echo ""
-            echo "3️⃣  构建并部署："
-            echo "   make build"
-            echo "   wrangler pages deploy public --project-name=$CF_PROJECT_NAME"
-            echo ""
-            echo "💡 提示："
-            echo "   - 每次修改后都需要重新构建和部署"
-            echo "   - 部署后访问: $DEPLOY_URL"
-            echo ""
-        fi
+        # 提示用户如何更新博客
+        echo ""
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "📝 如何更新博客内容"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo ""
+        echo "1️⃣  创建文章："
+        echo "   ./create-article.sh"
+        echo ""
+        echo "2️⃣  本地预览："
+        echo "   cd $BLOG_DIR"
+        echo "   make serve"
+        echo "   # 访问 http://localhost:1111"
+        echo ""
+        echo "3️⃣  部署更新："
+        echo "   ./deploy-to-cloudflare.sh"
+        echo ""
+        echo "💡 提示："
+        echo "   - 每次修改后都需要重新部署"
+        echo "   - 部署后访问: $DEPLOY_URL"
+        echo ""
     else
         log_error "部署失败，请检查项目名称是否正确"
         rm -f "$DEPLOY_LOG"
@@ -691,91 +354,24 @@ main() {
     echo "===================="
     echo ""
 
-    # 询问部署模式
-    echo "请选择部署模式："
-    echo ""
-    echo "1. 🚀 简单模式（推荐新手）"
-    echo "   - 只需要 Cloudflare 账号"
-    echo "   - 本地编辑，手动部署"
-    echo "   - 无需了解 Git/GitHub"
-    echo "   - 流程：编辑 → 构建 → 部署"
-    echo ""
-    echo "2. 🔧 完整模式（推荐进阶用户）"
-    echo "   - 需要 GitHub + Cloudflare 账号"
-    echo "   - 自动部署（GitHub Actions）"
-    echo "   - 版本控制和协作"
-    echo "   - 流程：编辑 → 推送 → 自动部署"
-    echo ""
-    echo -n "请选择 [1/2，默认: 1]: "
-    read DEPLOY_MODE < /dev/tty
-    DEPLOY_MODE=${DEPLOY_MODE:-1}
+    log_info "开始安装必要工具..."
+    install_homebrew
+    install_nodejs
+    install_cloudflare_cli
+
+    log_info "下载博客模板..."
+    download_template_simple
+
+    log_info "配置博客..."
+    install_blog_dependencies
+    configure_blog
 
     echo ""
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    log_info "开始部署到 Cloudflare Pages..."
+    echo ""
 
-    if [ "$DEPLOY_MODE" = "1" ]; then
-        echo "✅ 已选择：简单模式"
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo ""
-
-        log_info "开始安装必要工具..."
-        install_homebrew
-        install_nodejs
-        install_cloudflare_cli
-
-        log_info "下载博客模板..."
-        download_template_simple
-
-        log_info "配置博客..."
-        install_blog_dependencies
-        configure_blog
-
-        echo ""
-        log_info "开始部署到 Cloudflare Pages..."
-        echo ""
-
-        # 简单模式：只部署到 Cloudflare Pages
-        deploy_cloudflare_pages "simple"
-
-    else
-        echo "✅ 已选择：完整模式"
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo ""
-
-        log_info "开始安装必要工具..."
-        install_homebrew
-        install_nodejs
-        install_github_cli
-        install_cloudflare_cli
-
-        log_info "检查认证状态..."
-        github_auth
-
-        echo ""
-        echo "GitHub 认证完成！接下来设置博客..."
-        echo ""
-
-        log_info "设置博客仓库..."
-        setup_repository
-
-        log_info "配置博客..."
-        install_blog_dependencies
-        configure_blog
-
-        echo ""
-        log_info "创建 GitHub 仓库..."
-        echo ""
-
-        # 创建 GitHub 仓库并设置为 origin
-        create_github_repo
-
-        echo ""
-        log_info "开始自动部署到 Cloudflare Pages..."
-        echo ""
-
-        # 完整模式：部署到 Cloudflare Pages 并配置 GitHub Actions
-        deploy_cloudflare_pages "full"
-    fi
+    # 部署到 Cloudflare Pages
+    deploy_cloudflare_pages
 
     echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
