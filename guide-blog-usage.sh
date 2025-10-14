@@ -298,10 +298,10 @@ practice_step3_notes_demo() {
 EOF
     
     echo -e "\n${BOLD}4. 运行同步脚本${NC}"
-    echo -e "   ${CYAN}make sync${NC}  或  ${CYAN}./scripts/sync_notes.sh${NC}\n"
+    echo -e "   ${CYAN}./scripts/auto-sync-thoughts.sh${NC}  或  ${CYAN}./scripts/auto-sync-thoughts.sh${NC}\n"
     
     log_info "同步后，备忘录会自动转换为博客文章"
-    log_info "并保存到对应的目录（如 content/blog/journals/）"
+    log_info "并保存到对应的目录（如 content/thoughts/）"
     
     echo -e "\n${YELLOW}注意：${NC}"
     echo -e "  - 备忘录同步功能需要额外配置"
