@@ -3,16 +3,20 @@
   <div class="archive-page">
     {% set all_section_pages = get_section(path="_index"~file_lang_path~".md") -%}
     <div class="main-box-block">
-      {% for year, posts in
-all_section_pages.pages | group_by(attribute="year") %}
-        <h2>{{ year }}</h2>
-        <ul>
-          {% for post in posts %}
-            <li>{{ macro::post_min(page=post) }}</a>
-          </li>
+      <h1>{{ page.title }}</h1>
+      {% if all_section_pages.pages | length > 0 %}
+        {% for year, posts in all_section_pages.pages | group_by(attribute="year") %}
+          <h2>{{ year }}</h2>
+          <ul>
+            {% for post in posts %}
+              <li>{{ macro::post_min(page=post) }}</li>
+            {% endfor %}
+          </ul>
         {% endfor %}
-      </ul>
-    {% endfor %}
+      {% else %}
+        <p>暂无文章</p>
+      {% endif %}
+    </div>
+    {{ macro::webmentions(backlinks=page.backlinks) }}
   </div>
-  {{ macro::webmentions(backlinks=page.backlinks) }}
-</div>{% endblock main %}
+{% endblock main %}
