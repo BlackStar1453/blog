@@ -95,6 +95,10 @@
 
 ### 安装定时任务
 
+有两种模式可选：
+
+#### 模式 1: 定时执行（每天固定时间）
+
 ```bash
 # 安装定时任务（默认每天 9:00 执行）
 ./manage-auto-deploy.sh install
@@ -102,6 +106,33 @@
 # 自定义执行时间（例如每天 14:30）
 ./manage-auto-deploy.sh install 14 30
 ```
+
+**优点**：
+- ✅ 可以精确控制执行时间
+- ✅ 适合有规律的发布需求
+
+**缺点**：
+- ❌ 如果电脑在指定时间未开机，任务不会执行
+
+#### 模式 2: 开机自动运行（推荐）
+
+```bash
+# 安装开机自动运行任务
+./manage-auto-deploy.sh install-boot
+```
+
+**优点**：
+- ✅ 每次开机后自动运行，保证一定会执行
+- ✅ 不需要担心电脑是否在指定时间开机
+- ✅ 如果没有修改，脚本会自动跳过部署
+
+**缺点**：
+- ❌ 执行时间不固定（取决于开机时间）
+
+**推荐使用场景**：
+- 笔记本电脑用户（不是 24 小时开机）
+- 不需要精确控制发布时间
+- 希望保证任务一定会执行
 
 ### 管理定时任务
 
@@ -127,6 +158,8 @@
 
 ### 定时任务工作原理
 
+#### 定时执行模式
+
 1. **定时检查**
    - 每天在指定时间自动运行
    - 检查是否有文件修改
@@ -140,6 +173,28 @@
    - 部署到 Cloudflare Pages
 
 4. **日志记录**
+   - 运行日志：`~/.blog-auto-deploy/auto-deploy.log`
+   - 错误日志：`~/.blog-auto-deploy/error.log`
+
+#### 开机自动运行模式
+
+1. **开机触发**
+   - 每次开机后自动运行
+   - 检查是否有文件修改
+
+2. **自动提交**
+   - 如果有修改，自动提交到 Git
+   - 提交信息：`Auto deploy on boot: 2025-10-15 10:30:00`
+
+3. **自动部署**
+   - 构建博客
+   - 部署到 Cloudflare Pages
+
+4. **智能跳过**
+   - 如果没有修改，自动跳过部署
+   - 不会浪费资源
+
+5. **日志记录**
    - 运行日志：`~/.blog-auto-deploy/auto-deploy.log`
    - 错误日志：`~/.blog-auto-deploy/error.log`
 
@@ -197,7 +252,7 @@ base_url = "https://your-blog.pages.dev"
 ./auto-deploy.sh "发布新文章：文章标题"
 ```
 
-### 场景 2: 每天自动发布修改
+### 场景 2: 每天自动发布修改（定时模式）
 
 ```bash
 # 1. 安装定时任务（每天早上 9:00）
@@ -210,7 +265,21 @@ base_url = "https://your-blog.pages.dev"
 # 每天 9:00 自动检查修改并部署
 ```
 
-### 场景 3: 测试部署流程
+### 场景 3: 开机自动发布修改（推荐）
+
+```bash
+# 1. 安装开机自动运行任务
+./manage-auto-deploy.sh install-boot
+
+# 2. 正常编辑文章
+# ... 随时编辑文章 ...
+
+# 3. 自动部署
+# 每次开机后自动检查修改并部署
+# 如果没有修改，自动跳过
+```
+
+### 场景 4: 测试部署流程
 
 ```bash
 # 测试运行一次（不等待定时）
@@ -221,7 +290,18 @@ base_url = "https://your-blog.pages.dev"
 
 ## ❓ 常见问题
 
-### Q1: 如何修改定时任务的执行时间？
+### Q1: 定时模式和开机模式哪个更好？
+
+**推荐使用开机模式**，原因：
+- ✅ 保证任务一定会执行（不受开机时间影响）
+- ✅ 如果没有修改，自动跳过部署
+- ✅ 适合笔记本电脑用户
+
+**定时模式适合**：
+- 需要精确控制发布时间
+- 电脑 24 小时开机（例如服务器）
+
+### Q2: 如何修改定时任务的执行时间？
 
 ```bash
 # 先卸载旧任务
@@ -231,7 +311,17 @@ base_url = "https://your-blog.pages.dev"
 ./manage-auto-deploy.sh install 14 30  # 每天 14:30
 ```
 
-### Q2: 定时任务没有执行怎么办？
+### Q3: 如何从定时模式切换到开机模式？
+
+```bash
+# 先卸载旧任务
+./manage-auto-deploy.sh uninstall
+
+# 安装开机模式
+./manage-auto-deploy.sh install-boot
+```
+
+### Q4: 定时任务没有执行怎么办？
 
 1. 检查任务状态：
    ```bash
@@ -248,7 +338,7 @@ base_url = "https://your-blog.pages.dev"
    ./manage-auto-deploy.sh test
    ```
 
-### Q3: 如何查看定时任务是否正在运行？
+### Q5: 如何查看定时任务是否正在运行？
 
 ```bash
 # 查看 launchctl 任务列表
@@ -258,7 +348,7 @@ launchctl list | grep com.blog.auto-deploy
 ./manage-auto-deploy.sh status
 ```
 
-### Q4: 如何停止定时任务？
+### Q6: 如何停止定时任务？
 
 ```bash
 # 临时停止（不删除任务）
@@ -268,11 +358,11 @@ launchctl list | grep com.blog.auto-deploy
 ./manage-auto-deploy.sh uninstall
 ```
 
-### Q5: 定时任务会在没有修改时也部署吗？
+### Q7: 定时任务会在没有修改时也部署吗？
 
 不会。脚本会先检查是否有文件修改，如果没有修改会自动跳过部署。
 
-### Q6: 如何手动触发一次部署？
+### Q8: 如何手动触发一次部署？
 
 ```bash
 # 方法 1: 使用 auto-deploy.sh
@@ -282,7 +372,7 @@ launchctl list | grep com.blog.auto-deploy
 ./manage-auto-deploy.sh test
 ```
 
-### Q7: 日志文件在哪里？
+### Q9: 日志文件在哪里？
 
 ```bash
 # 运行日志
@@ -295,19 +385,37 @@ launchctl list | grep com.blog.auto-deploy
 ./manage-auto-deploy.sh logs
 ```
 
+### Q10: 开机模式会在每次开机时都部署吗？
+
+不会。脚本会先检查是否有文件修改：
+- ✅ 有修改：自动提交并部署
+- ❌ 无修改：跳过部署，不浪费资源
+
 ---
 
 ## 🎯 最佳实践
 
-### 1. 定时任务 + 手动部署结合使用
+### 1. 推荐使用开机模式
 
-- **定时任务**：用于每天自动发布积累的修改
+```bash
+# 安装开机自动运行任务
+./manage-auto-deploy.sh install-boot
+```
+
+**优点**：
+- ✅ 保证任务一定会执行
+- ✅ 无需担心电脑是否在指定时间开机
+- ✅ 自动跳过无修改的部署
+
+### 2. 开机模式 + 手动部署结合使用
+
+- **开机模式**：用于自动发布积累的修改
 - **手动部署**：用于紧急发布或重要更新
 
-### 2. 合理设置执行时间
-
-- 选择你不常使用电脑的时间（例如早上 9:00）
-- 避免在工作时间执行，以免影响正在编辑的文件
+```bash
+# 紧急发布
+./auto-deploy.sh "紧急修复：修复重要bug"
+```
 
 ### 3. 定期查看日志
 
@@ -316,14 +424,14 @@ launchctl list | grep com.blog.auto-deploy
 ./manage-auto-deploy.sh logs
 ```
 
-### 4. 测试后再启用定时任务
+### 4. 测试后再启用自动任务
 
 ```bash
 # 先测试运行
 ./manage-auto-deploy.sh test
 
-# 确认无误后再安装定时任务
-./manage-auto-deploy.sh install
+# 确认无误后再安装任务
+./manage-auto-deploy.sh install-boot
 ```
 
 ---
@@ -350,10 +458,30 @@ launchctl list | grep com.blog.auto-deploy
 
 ## 🎉 总结
 
-- **手动部署**：使用 `./auto-deploy.sh` 快速部署
-- **定时部署**：使用 `./manage-auto-deploy.sh install` 设置定时任务
-- **查看状态**：使用 `./manage-auto-deploy.sh status` 查看任务状态
-- **查看日志**：使用 `./manage-auto-deploy.sh logs` 查看运行日志
+### 快速开始
+
+```bash
+# 1. 安装开机自动运行任务（推荐）
+./manage-auto-deploy.sh install-boot
+
+# 2. 或者安装定时任务
+./manage-auto-deploy.sh install 9 0  # 每天 9:00
+
+# 3. 查看状态
+./manage-auto-deploy.sh status
+
+# 4. 手动部署
+./auto-deploy.sh "提交信息"
+```
+
+### 常用命令
+
+- **手动部署**：`./auto-deploy.sh`
+- **开机自动运行**：`./manage-auto-deploy.sh install-boot`（推荐）
+- **定时部署**：`./manage-auto-deploy.sh install`
+- **查看状态**：`./manage-auto-deploy.sh status`
+- **查看日志**：`./manage-auto-deploy.sh logs`
+- **测试运行**：`./manage-auto-deploy.sh test`
 
 祝你使用愉快！🚀
 

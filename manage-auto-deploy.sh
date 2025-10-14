@@ -53,6 +53,7 @@ show_help() {
 
 命令:
   install [小时] [分钟]  - 安装定时任务（默认每天 9:00）
+  install-boot           - 安装开机自动运行任务
   uninstall              - 卸载定时任务
   start                  - 启动定时任务
   stop                   - 停止定时任务
@@ -64,12 +65,14 @@ show_help() {
 示例:
   $0 install             # 安装定时任务，每天 9:00 执行
   $0 install 14 30       # 安装定时任务，每天 14:30 执行
+  $0 install-boot        # 安装开机自动运行任务
   $0 status              # 查看任务状态
   $0 logs                # 查看运行日志
   $0 test                # 立即测试运行一次
 
 说明:
   - 定时任务会自动检查修改、提交并部署到 Cloudflare Pages
+  - 开机任务会在每次开机后自动运行一次
   - 日志文件位置: ${LOG_FILE}
   - 错误日志位置: ${ERROR_LOG}
 
@@ -110,16 +113,16 @@ create_log_dir() {
     fi
 }
 
-# 生成 plist 文件
+# 生成 plist 文件（定时任务）
 generate_plist() {
     local hour="${1:-9}"  # 默认上午9点
     local minute="${2:-0}" # 默认0分
-    
-    print_info "生成 plist 配置文件..."
-    
+
+    print_info "生成 plist 配置文件（定时任务）..."
+
     # 确保 LaunchAgents 目录存在
     mkdir -p "${HOME}/Library/LaunchAgents"
-    
+
     cat > "${PLIST_FILE}" << EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -127,14 +130,14 @@ generate_plist() {
 <dict>
     <key>Label</key>
     <string>${PLIST_NAME}</string>
-    
+
     <key>ProgramArguments</key>
     <array>
         <string>/bin/bash</string>
         <string>${AUTO_DEPLOY_SCRIPT}</string>
         <string>Auto deploy: \$(date +%Y-%m-%d\ %H:%M:%S)</string>
     </array>
-    
+
     <key>StartCalendarInterval</key>
     <dict>
         <key>Hour</key>
@@ -142,19 +145,19 @@ generate_plist() {
         <key>Minute</key>
         <integer>${minute}</integer>
     </dict>
-    
+
     <key>StandardOutPath</key>
     <string>${LOG_FILE}</string>
-    
+
     <key>StandardErrorPath</key>
     <string>${ERROR_LOG}</string>
-    
+
     <key>WorkingDirectory</key>
     <string>${SCRIPT_DIR}</string>
-    
+
     <key>RunAtLoad</key>
     <false/>
-    
+
     <key>EnvironmentVariables</key>
     <dict>
         <key>PATH</key>
@@ -163,7 +166,53 @@ generate_plist() {
 </dict>
 </plist>
 EOF
-    
+
+    print_success "plist 文件已生成: ${PLIST_FILE}"
+}
+
+# 生成 plist 文件（开机自动运行）
+generate_plist_boot() {
+    print_info "生成 plist 配置文件（开机自动运行）..."
+
+    # 确保 LaunchAgents 目录存在
+    mkdir -p "${HOME}/Library/LaunchAgents"
+
+    cat > "${PLIST_FILE}" << EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>${PLIST_NAME}</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>${AUTO_DEPLOY_SCRIPT}</string>
+        <string>Auto deploy on boot: \$(date +%Y-%m-%d\ %H:%M:%S)</string>
+    </array>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>StandardOutPath</key>
+    <string>${LOG_FILE}</string>
+
+    <key>StandardErrorPath</key>
+    <string>${ERROR_LOG}</string>
+
+    <key>WorkingDirectory</key>
+    <string>${SCRIPT_DIR}</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+    </dict>
+</dict>
+</plist>
+EOF
+
     print_success "plist 文件已生成: ${PLIST_FILE}"
 }
 
@@ -171,30 +220,30 @@ EOF
 install_task() {
     local hour="${1:-9}"
     local minute="${2:-0}"
-    
+
     print_info "安装自动部署定时任务..."
-    
+
     # 检查依赖
     if ! check_dependencies; then
         print_error "依赖检查失败"
         return 1
     fi
-    
+
     # 创建日志目录
     create_log_dir
-    
+
     # 如果任务已存在，先卸载
     if is_task_loaded; then
         print_warning "任务已存在，先卸载旧任务..."
         unload_task
     fi
-    
+
     # 生成 plist 文件
     generate_plist "${hour}" "${minute}"
-    
+
     # 确保脚本可执行
     chmod +x "${AUTO_DEPLOY_SCRIPT}"
-    
+
     # 加载任务
     if launchctl load "${PLIST_FILE}"; then
         print_success "定时任务安装成功"
@@ -216,6 +265,58 @@ install_task() {
         return 0
     else
         print_error "定时任务安装失败"
+        return 1
+    fi
+}
+
+# 安装开机自动运行任务
+install_boot_task() {
+    print_info "安装开机自动运行任务..."
+
+    # 检查依赖
+    if ! check_dependencies; then
+        print_error "依赖检查失败"
+        return 1
+    fi
+
+    # 创建日志目录
+    create_log_dir
+
+    # 如果任务已存在，先卸载
+    if is_task_loaded; then
+        print_warning "任务已存在，先卸载旧任务..."
+        unload_task
+    fi
+
+    # 生成 plist 文件（开机自动运行）
+    generate_plist_boot
+
+    # 确保脚本可执行
+    chmod +x "${AUTO_DEPLOY_SCRIPT}"
+
+    # 加载任务
+    if launchctl load "${PLIST_FILE}"; then
+        print_success "开机自动运行任务安装成功"
+        echo ""
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "📋 任务信息"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "⏰ 执行时间: 每次开机后自动运行"
+        echo "📝 日志文件: ${LOG_FILE}"
+        echo "❌ 错误日志: ${ERROR_LOG}"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo ""
+        echo "💡 提示:"
+        echo "  - 查看状态: $0 status"
+        echo "  - 查看日志: $0 logs"
+        echo "  - 测试运行: $0 test"
+        echo ""
+        echo "⚠️  注意: 任务会在每次开机后自动运行一次"
+        echo "   如果没有修改，脚本会自动跳过部署"
+        echo ""
+        return 0
+    else
+        print_error "开机自动运行任务安装失败"
         return 1
     fi
 }
@@ -354,10 +455,13 @@ test_run() {
 # 主函数
 main() {
     local command="${1:-help}"
-    
+
     case "$command" in
         install)
             install_task "${2}" "${3}"
+            ;;
+        install-boot)
+            install_boot_task
             ;;
         uninstall)
             uninstall_task
