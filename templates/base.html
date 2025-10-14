@@ -231,18 +231,29 @@
       </div>
       {% endblock body_zone -%}
     </div>
-      {{ macro::music_playlist_block(
-        source="/media/",
-        manifest="music_playlist.json",
-        title="Music",
-        preload="metadata",
-        list_folded=false,
-        fixed=true,
-        mini=false,
-        autoplay=true,
-        mutex=true,
-        default_cover="/media/playlist-cover.svg"
-      ) }}
+      {# 尝试加载 music_playlist.json，如果不存在则隐藏播放器 #}
+      {% set_global has_music_playlist = false -%}
+      {% set music_data = load_data(path="static/media/music_playlist.json", required=false) -%}
+      {% if music_data -%}
+        {% if music_data is iterable and music_data | length > 0 -%}
+          {% set_global has_music_playlist = true -%}
+        {% endif -%}
+      {% endif -%}
+
+      {% if has_music_playlist %}
+        {{ macro::music_playlist_block(
+          source="/media/",
+          manifest="music_playlist.json",
+          title="Music",
+          preload="metadata",
+          list_folded=false,
+          fixed=true,
+          mini=false,
+          autoplay=true,
+          mutex=true,
+          default_cover="/media/playlist-cover.svg"
+        ) }}
+      {% endif %}
 
     <div id="bottom"></div>
     {% block before_body_end -%}
