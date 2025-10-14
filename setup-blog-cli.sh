@@ -557,20 +557,20 @@ deploy_cloudflare_pages() {
 main() {
     echo "🚀 博客一键设置脚本"
     echo "===================="
-    
+
     log_info "开始安装必要工具..."
     install_homebrew
     install_nodejs
     install_github_cli
     install_cloudflare_cli
-    
+
     log_info "检查认证状态..."
     github_auth
 
     echo ""
     echo "GitHub 认证完成！接下来设置博客..."
     echo ""
-    
+
     log_info "设置博客仓库..."
     setup_repository
 
@@ -579,20 +579,27 @@ main() {
     # run_initialization
     install_blog_dependencies
     configure_blog
-    
+
     echo ""
-    echo "🎉 博客设置完成！"
+    log_info "开始自动部署到 Cloudflare Pages..."
+    echo ""
+
+    # 自动部署到 Cloudflare Pages
+    deploy_cloudflare_pages
+
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "🎉 博客部署完成！"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
     echo "接下来你可以选择："
-    echo "1. 📖 查看使用引导（推荐新手）"
+    echo "1. 📖 查看使用引导（推荐新手）- 了解如何创建文章、管理内容"
     echo "2. 👀 本地预览博客"
-    echo "3. 🚀 部署到 GitHub Pages"
-    echo "4. ☁️  部署到 Cloudflare Pages"
-    echo "5. 退出"
+    echo "3. 退出"
     echo ""
 
     while true; do
-        echo -n "请选择操作 (1-5): "
+        echo -n "请选择操作 (1-3): "
         read choice < /dev/tty
         case $choice in
             1)
@@ -610,22 +617,16 @@ main() {
                 break
                 ;;
             3)
-                deploy_github_pages
-                break
-                ;;
-            4)
-                deploy_cloudflare_pages
-                break
-                ;;
-            5)
                 log_success "设置完成，祝你写作愉快！"
                 echo ""
-                echo "💡 提示：你可以随时运行 ./guide-blog-usage.sh 查看使用引导"
+                echo "💡 提示："
+                echo "  - 随时运行 ./guide-blog-usage.sh 查看使用引导"
+                echo "  - 博客目录: $BLOG_DIR"
                 echo ""
                 break
                 ;;
             *)
-                log_error "无效选择，请输入 1-5"
+                log_error "无效选择，请输入 1-3"
                 ;;
         esac
     done
