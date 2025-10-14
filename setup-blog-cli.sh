@@ -411,44 +411,40 @@ deploy_cloudflare_pages() {
     GITHUB_USER=$(gh api user --jq .login)
     GITHUB_REPO="${GITHUB_REPO_NAME:-$(basename "$BLOG_DIR")}"
 
-    # 启用GitHub Actions（fork的仓库默认禁用）
-    log_info "启用GitHub Actions..."
+    # 启用 GitHub Actions - 需要手动设置
+    log_info "配置 GitHub Actions..."
 
-    # 步骤1: 启用 Actions 权限
-    if gh api -X PUT "repos/$GITHUB_USER/$GITHUB_REPO/actions/permissions" \
-        -f enabled=true \
-        -f allowed_actions=all 2>/dev/null; then
-        log_success "GitHub Actions 权限已启用"
-    else
-        log_warning "无法自动启用 GitHub Actions 权限"
-    fi
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "⚠️  重要: 需要手动启用 GitHub Actions"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+    echo "请按以下步骤操作:"
+    echo ""
+    echo "1️⃣  浏览器会自动打开 Actions 页面"
+    echo ""
+    echo "2️⃣  在 Actions 页面中："
+    echo "   - 如果看到绿色按钮 'I understand my workflows, go ahead and enable them'"
+    echo "   - 点击该按钮启用 workflows"
+    echo ""
+    echo "3️⃣  如果没有看到按钮，说明 Actions 已经启用，直接继续即可"
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+    echo -n "按回车打开 Actions 页面..."
+    read < /dev/tty
 
-    # 步骤2: 对于 fork 仓库，需要额外启用 workflows
-    # 检查是否是 fork
-    IS_FORK=$(gh api "repos/$GITHUB_USER/$GITHUB_REPO" --jq .fork 2>/dev/null || echo "false")
-    if [ "$IS_FORK" = "true" ]; then
-        log_warning "检测到 fork 仓库，workflows 默认禁用"
-        echo ""
-        echo "⚠️  重要: Fork 仓库的 workflows 需要手动启用"
-        echo ""
-        echo "请按以下步骤操作:"
-        echo "1. 浏览器会自动打开 Actions 页面"
-        echo "2. 点击绿色按钮: 'I understand my workflows, go ahead and enable them'"
-        echo "3. 完成后回到终端按回车继续"
-        echo ""
-        echo -n "按回车打开 Actions 页面..."
-        read < /dev/tty
+    # 打开浏览器
+    open "https://github.com/$GITHUB_USER/$GITHUB_REPO/actions" 2>/dev/null || \
+    xdg-open "https://github.com/$GITHUB_USER/$GITHUB_REPO/actions" 2>/dev/null || \
+    echo "请手动访问: https://github.com/$GITHUB_USER/$GITHUB_REPO/actions"
 
-        # 打开浏览器
-        open "https://github.com/$GITHUB_USER/$GITHUB_REPO/actions" 2>/dev/null || \
-        xdg-open "https://github.com/$GITHUB_USER/$GITHUB_REPO/actions" 2>/dev/null || \
-        echo "请手动访问: https://github.com/$GITHUB_USER/$GITHUB_REPO/actions"
+    echo ""
+    echo -n "完成 Actions 设置后按回车继续..."
+    read < /dev/tty
 
-        echo ""
-        echo -n "启用 workflows 后按回车继续..."
-        read < /dev/tty
-
-        log_success "Workflows 已启用"
+    log_success "GitHub Actions 配置完成"
+    echo ""
 
     # 设置GitHub Secrets
     log_info "设置GitHub Secrets..."
@@ -508,18 +504,6 @@ deploy_cloudflare_pages() {
         fi
         
         log_success "GitHub Secrets 设置完成"
-    fi        
-        if echo "$ACCOUNT_ID" | gh secret set CLOUDFLARE_ACCOUNT_ID --repo="$GITHUB_USER/$GITHUB_REPO" 2>/dev/null; then
-            log_success "已设置 CLOUDFLARE_ACCOUNT_ID"
-        else
-            log_warning "无法自动设置 CLOUDFLARE_ACCOUNT_ID，请手动设置"
-        fi
-    else
-        log_warning "跳过 GitHub Secrets 设置"
-        echo "请手动在 GitHub 仓库设置中添加以下 secrets:"
-        echo "  - CLOUDFLARE_API_TOKEN"
-        echo "  - CLOUDFLARE_ACCOUNT_ID"
-        echo "访问: https://github.com/$GITHUB_USER/$GITHUB_REPO/settings/secrets/actions"
     fi
 
     # 更新GitHub Actions workflow文件中的项目名称
