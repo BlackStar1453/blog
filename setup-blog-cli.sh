@@ -149,13 +149,22 @@ download_template_simple() {
         exit 1
     fi
 
-    # 解压
+    # 解压（使用 -O 参数指定编码，-qq 忽略警告）
     log_info "解压模板..."
-    unzip -q "$TEMP_ZIP" -d "$TEMP_DIR" || {
-        log_error "解压失败"
+    # 尝试使用 UTF-8 编码解压，如果失败则使用默认编码
+    if ! unzip -qq -O UTF-8 "$TEMP_ZIP" -d "$TEMP_DIR" 2>/dev/null; then
+        # 如果 UTF-8 失败，尝试默认编码并忽略错误
+        unzip -qq "$TEMP_ZIP" -d "$TEMP_DIR" 2>/dev/null || {
+            log_warning "解压时遇到一些问题，但主要文件应该已解压"
+        }
+    fi
+
+    # 检查是否成功解压
+    if [ ! -d "$TEMP_DIR/blog-main" ]; then
+        log_error "解压失败：未找到 blog-main 目录"
         rm -rf "$TEMP_DIR"
         exit 1
-    }
+    fi
 
     # 移动到目标目录（GitHub ZIP 解压后会有一个 blog-main 目录）
     mv "$TEMP_DIR/blog-main" "$BLOG_DIR" || {
