@@ -81,20 +81,31 @@
         <p class="no-border">{{ trans(key="label_all_thoughts",lang=lang) | markdown(inline=true) | safe }}</p>
       </div>
       </details>
-            <details open class="py">
-        <summary class="by">最近在听<a href="#now-playing" id="now-playing" class="zola-anchor">🔗</a></summary>
-        <div class="articles">
-          <p class="no-border">记录最近在听的歌。</p>
-          {{ macro::music_playlist_block(
-            source="/media/",
-            manifest="music_playlist.json",
-            title="Recent Listening",
-            list_folded=false,
-            preload="metadata",
-            default_cover="/media/playlist-cover.svg"
-          ) }}
-        </div>
-      </details>
+      {# 尝试加载 music_playlist.json，如果不存在则隐藏播放器 #}
+      {% set_global has_music_playlist = false -%}
+      {% set music_data = load_data(path="static/media/music_playlist.json", required=false) -%}
+      {% if music_data -%}
+        {% if music_data is iterable and music_data | length > 0 -%}
+          {% set_global has_music_playlist = true -%}
+        {% endif -%}
+      {% endif -%}
+
+      {% if has_music_playlist %}
+        <details open class="py">
+          <summary class="by">最近在听<a href="#now-playing" id="now-playing" class="zola-anchor">🔗</a></summary>
+          <div class="articles">
+            <p class="no-border">记录最近在听的歌。</p>
+            {{ macro::music_playlist_block(
+              source="/media/",
+              manifest="music_playlist.json",
+              title="Recent Listening",
+              list_folded=false,
+              preload="metadata",
+              default_cover="/media/playlist-cover.svg"
+            ) }}
+          </div>
+        </details>
+      {% endif %}
       <details open class="py">
         <summary class="by ">{{ trans(key="label_new_posts_list_title",lang=lang) | markdown(inline=true) | safe }}:
       </summary>
