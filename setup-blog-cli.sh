@@ -157,9 +157,20 @@ setup_repository() {
     git config --local --add credential.helper '!gh auth git-credential'
     log_info "已配置 Git 使用 GitHub CLI 凭证"
 
+    # 配置 Git 用户信息为当前 GitHub 用户
+    git config --local user.name "$GITHUB_USER"
+    git config --local user.email "${GITHUB_USER}@users.noreply.github.com"
+    log_info "已配置 Git 用户: $GITHUB_USER"
+
     # 设置 gh CLI 默认仓库为用户的 fork
     gh repo set-default "$FORK_REPO"
     log_info "已设置默认仓库: $FORK_REPO"
+
+    # 移除 upstream 远程仓库（如果存在），避免误推送到原始仓库
+    if git remote | grep -q "^upstream$"; then
+        git remote remove upstream
+        log_info "已移除 upstream 远程仓库，避免误推送"
+    fi
 
     # 确保在 main 分支
     CURRENT_BRANCH=$(git branch --show-current)
@@ -480,24 +491,46 @@ deploy_cloudflare_pages() {
     if wrangler pages deploy public --project-name="$CF_PROJECT_NAME" 2>&1 | tee "$DEPLOY_LOG"; then
         log_success "博客已部署到 Cloudflare Pages"
 
-        # 从部署输出中提取实际的访问地址
-        DEPLOY_URL=$(grep -o 'https://[^[:space:]]*\.pages\.dev' "$DEPLOY_LOG" | tail -1 || echo "")
+        # 获取项目的固定域名（不是临时部署URL）
+        log_info "获取项目固定域名..."
+        FIXED_DOMAIN=$(wrangler pages project list 2>/dev/null | \
+            awk -v proj="$CF_PROJECT_NAME" '$2 == proj {print $4}' | \
+            grep '\.pages\.dev' | \
+            sed 's/,$//' | \
+            head -1)
 
-        # 如果没有找到完整URL，使用项目名称构建
-        if [ -z "$DEPLOY_URL" ]; then
+        if [ -n "$FIXED_DOMAIN" ]; then
+            DEPLOY_URL="https://$FIXED_DOMAIN"
+            log_success "✅ 固定域名: $DEPLOY_URL"
+        else
+            # 如果无法获取，使用项目名称构建（通常项目名就是subdomain）
             DEPLOY_URL="https://${CF_PROJECT_NAME}.pages.dev"
+            log_warning "使用默认域名: $DEPLOY_URL"
         fi
 
-        # 更新config.toml中的base_url
-        log_info "更新config.toml中的base_url..."
+        # 更新config.toml中的所有URL字段
+        log_info "更新config.toml中的所有URL..."
         if [ -f "config.toml" ]; then
-            # 使用sed更新base_url
-            sed -i '' "s|^base_url = \".*\"|base_url = \"$DEPLOY_URL\"|" config.toml
-            log_success "已更新base_url为: $DEPLOY_URL"
+            # 检查当前的base_url
+            CURRENT_BASE_URL=$(grep '^base_url = ' config.toml | sed 's/base_url = "\(.*\)"/\1/' || echo "")
 
-            # 提交配置更改
-            git add config.toml
-            git commit -m "更新base_url为部署地址: $DEPLOY_URL" || log_warning "配置文件未发生变化"
+            # 只有当URL发生变化时才更新
+            if [ "$CURRENT_BASE_URL" != "$DEPLOY_URL" ]; then
+                # 更新base_url
+                sed -i '' "s|^base_url = \".*\"|base_url = \"$DEPLOY_URL\"|" config.toml
+
+                # 更新extra部分的URL（如果存在）
+                sed -i '' "s|^prefix_url = \".*\"|prefix_url = \"$DEPLOY_URL\"|" config.toml
+                sed -i '' "s|^indieweb_url = \".*\"|indieweb_url = \"$DEPLOY_URL\"|" config.toml
+
+                log_success "已更新所有URL为: $DEPLOY_URL"
+
+                # 提交配置更改
+                git add config.toml
+                git commit -m "更新所有URL为Cloudflare Pages固定域名: $FIXED_DOMAIN" || log_warning "配置文件未发生变化"
+            else
+                log_info "URL未发生变化，跳过更新"
+            fi
         fi
 
 
@@ -505,13 +538,17 @@ deploy_cloudflare_pages() {
             DASHBOARD_URL="https://dash.cloudflare.com/${ACCOUNT_ID}/pages/view/${CF_PROJECT_NAME}"
             echo ""
             echo "🎉 部署成功！"
-            echo "🌐 访问地址: $DEPLOY_URL"
+            echo "🌐 固定访问地址: $DEPLOY_URL"
             echo "📊 查看部署详情: $DASHBOARD_URL"
-            echo "💡 在Dashboard中可以查看部署状态和设置"
+            echo ""
+            echo "💡 提示："
+            echo "  - 固定域名已设置到 config.toml 的所有URL字段"
+            echo "  - 该域名永久有效，不会随部署变化"
+            echo "  - 在 Dashboard 中可以查看部署状态和设置"
         else
             echo ""
             echo "🎉 部署成功！"
-            echo "🌐 访问地址: $DEPLOY_URL"
+            echo "🌐 固定访问地址: $DEPLOY_URL"
             echo "📊 请访问 Cloudflare Dashboard 查看部署详情"
             echo "💡 地址: https://dash.cloudflare.com -> Pages -> $CF_PROJECT_NAME"
         fi
