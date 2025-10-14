@@ -111,12 +111,11 @@ cloudflare_auth() {
     log_success "Cloudflare 认证完成"
 }
 
-# 下载模板（简单模式 - 不使用 Git）
+# 下载模板（简单模式 - 使用 Git clone，无需认证）
 download_template_simple() {
     TEMPLATE_REPO="moris1999/blog"
-    TEMPLATE_URL="https://github.com/$TEMPLATE_REPO/archive/refs/heads/main.zip"
 
-    log_info "下载博客模板..."
+    log_info "克隆博客模板..."
 
     # 确定目标目录
     BLOG_DIR="$HOME/blog"
@@ -125,61 +124,22 @@ download_template_simple() {
         BLOG_DIR="$HOME/blog_$(date +%Y%m%d_%H%M%S)"
     fi
 
-    # 创建临时目录
-    TEMP_DIR=$(mktemp -d)
-    TEMP_ZIP="$TEMP_DIR/blog-template.zip"
-
-    # 下载 ZIP 文件
-    log_info "正在下载模板..."
-    if command_exists curl; then
-        curl -L "$TEMPLATE_URL" -o "$TEMP_ZIP" || {
-            log_error "下载失败，请检查网络连接"
-            rm -rf "$TEMP_DIR"
-            exit 1
-        }
-    elif command_exists wget; then
-        wget "$TEMPLATE_URL" -O "$TEMP_ZIP" || {
-            log_error "下载失败，请检查网络连接"
-            rm -rf "$TEMP_DIR"
-            exit 1
-        }
-    else
-        log_error "未找到 curl 或 wget，无法下载模板"
-        rm -rf "$TEMP_DIR"
-        exit 1
-    fi
-
-    # 解压（使用 -O 参数指定编码，-qq 忽略警告）
-    log_info "解压模板..."
-    # 尝试使用 UTF-8 编码解压，如果失败则使用默认编码
-    if ! unzip -qq -O UTF-8 "$TEMP_ZIP" -d "$TEMP_DIR" 2>/dev/null; then
-        # 如果 UTF-8 失败，尝试默认编码并忽略错误
-        unzip -qq "$TEMP_ZIP" -d "$TEMP_DIR" 2>/dev/null || {
-            log_warning "解压时遇到一些问题，但主要文件应该已解压"
-        }
-    fi
-
-    # 检查是否成功解压
-    if [ ! -d "$TEMP_DIR/blog-main" ]; then
-        log_error "解压失败：未找到 blog-main 目录"
-        rm -rf "$TEMP_DIR"
-        exit 1
-    fi
-
-    # 移动到目标目录（GitHub ZIP 解压后会有一个 blog-main 目录）
-    mv "$TEMP_DIR/blog-main" "$BLOG_DIR" || {
-        log_error "移动文件失败"
-        rm -rf "$TEMP_DIR"
+    # 使用 Git clone（公开仓库无需认证）
+    log_info "正在克隆模板仓库..."
+    git clone "https://github.com/$TEMPLATE_REPO.git" "$BLOG_DIR" || {
+        log_error "克隆失败，请检查网络连接"
         exit 1
     }
 
-    # 清理临时文件
-    rm -rf "$TEMP_DIR"
-
     cd "$BLOG_DIR"
 
-    # 初始化 Git 仓库（用于本地版本控制）
-    log_info "初始化本地 Git 仓库..."
+    # 移除远程仓库（用户不需要推送到模板仓库）
+    git remote remove origin
+    log_info "已移除远程仓库连接"
+
+    # 重新初始化为独立的本地仓库
+    log_info "初始化为独立的本地仓库..."
+    rm -rf .git
     git init
     git add .
     git commit -m "初始化博客" || log_warning "Git 提交失败"
@@ -188,7 +148,7 @@ download_template_simple() {
     export BLOG_DIR
     export GITHUB_REPO_NAME="blog"
 
-    log_success "模板下载完成，位置：$BLOG_DIR"
+    log_success "模板克隆完成，位置：$BLOG_DIR"
 }
 
 # 克隆仓库（完整模式 - 使用 Git 和 GitHub）
