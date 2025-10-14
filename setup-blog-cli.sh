@@ -584,34 +584,48 @@ main() {
     echo "🎉 博客设置完成！"
     echo ""
     echo "接下来你可以选择："
-    echo "1. 本地预览博客"
-    echo "2. 部署到 GitHub Pages"
-    echo "3. 部署到 Cloudflare Pages"
-    echo "4. 退出"
+    echo "1. 📖 查看使用引导（推荐新手）"
+    echo "2. 👀 本地预览博客"
+    echo "3. 🚀 部署到 GitHub Pages"
+    echo "4. ☁️  部署到 Cloudflare Pages"
+    echo "5. 退出"
     echo ""
-    
+
     while true; do
-        echo -n "请选择操作 (1-4): "
+        echo -n "请选择操作 (1-5): "
         read choice < /dev/tty
         case $choice in
             1)
-                local_preview
+                log_info "启动使用引导..."
+                if [ -f "./guide-blog-usage.sh" ]; then
+                    chmod +x ./guide-blog-usage.sh
+                    ./guide-blog-usage.sh
+                else
+                    log_error "找不到引导脚本 guide-blog-usage.sh"
+                fi
                 break
                 ;;
             2)
-                deploy_github_pages
+                local_preview
                 break
                 ;;
             3)
-                deploy_cloudflare_pages
+                deploy_github_pages
                 break
                 ;;
             4)
+                deploy_cloudflare_pages
+                break
+                ;;
+            5)
                 log_success "设置完成，祝你写作愉快！"
+                echo ""
+                echo "💡 提示：你可以随时运行 ./guide-blog-usage.sh 查看使用引导"
+                echo ""
                 break
                 ;;
             *)
-                log_error "无效选择，请输入 1-4"
+                log_error "无效选择，请输入 1-5"
                 ;;
         esac
     done
