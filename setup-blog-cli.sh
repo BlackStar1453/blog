@@ -173,22 +173,6 @@ setup_repository() {
     log_info "提示：稍后需要创建自己的 GitHub 仓库并设置为 origin"
 }
 
-# 运行初始化脚本
-run_initialization() {
-    log_info "运行博客初始化脚本..."
-
-    cd "$BLOG_DIR"
-
-    if [ -f "init-template.sh" ]; then
-        chmod +x init-template.sh
-        ./init-template.sh
-    else
-        log_warning "未找到初始化脚本，跳过此步骤"
-    fi
-
-    log_success "博客初始化完成"
-}
-
 # 安装博客依赖
 install_blog_dependencies() {
     log_info "安装博客依赖..."
@@ -654,8 +638,6 @@ main() {
     setup_repository
 
     log_info "配置博客..."
-    # 由于克隆的是已经初始化完成的仓库，跳过初始化步骤
-    # run_initialization
     install_blog_dependencies
     configure_blog
 
