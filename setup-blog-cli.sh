@@ -113,7 +113,7 @@ cloudflare_auth() {
 
 # Fork 和克隆仓库 - 简化版
 setup_repository() {
-    ORIGINAL_REPO="BlackStar1453/blog"
+    ORIGINAL_REPO="moris1999/blog"
 
     log_info "Fork 并克隆仓库 $ORIGINAL_REPO..."
 
@@ -235,11 +235,21 @@ configure_blog() {
 
     # 更新 config.toml
     if [ -f "config.toml" ]; then
-        sed -i '' "s|base_url = \".*\"|base_url = \"https://${GITHUB_USERNAME}.github.io\"|" config.toml
-        sed -i '' "s|title = \".*\"|title = \"${BLOG_TITLE}\"|" config.toml
-        sed -i '' "s|description = \".*\"|description = \"${BLOG_DESCRIPTION}\"|" config.toml
-        sed -i '' "s|author = \".*\"|author = \"${AUTHOR_NAME}\"|" config.toml
-        sed -i '' "s|email = \".*\"|email = \"${AUTHOR_EMAIL}\"|" config.toml
+        # 使用更精确的 sed 模式，只替换顶层配置
+        # 1. 替换 base_url（在文件开头部分）
+        sed -i '' '1,/^\[/s|^base_url = ".*"|base_url = "https://'"${GITHUB_USERNAME}"'.github.io"|' config.toml
+
+        # 2. 替换 title（在文件开头部分，在第一个 section 之前）
+        sed -i '' '1,/^\[/s|^title = ".*"|title = "'"${BLOG_TITLE}"'"|' config.toml
+
+        # 3. 替换 description（在文件开头部分，在第一个 section 之前）
+        sed -i '' '1,/^\[/s|^description = ".*"|description = "'"${BLOG_DESCRIPTION}"'"|' config.toml
+
+        # 4. 替换 [extra] section 中的 author
+        sed -i '' '/^\[extra\]/,/^\[/{s|^author = ".*"|author = "'"${AUTHOR_NAME}"'"|;}' config.toml
+
+        # 5. 替换 [extra] section 中的 email
+        sed -i '' '/^\[extra\]/,/^\[/{s|^email = ".*"|email = "'"${AUTHOR_EMAIL}"'"|;}' config.toml
     fi
 
     log_success "博客配置完成"
@@ -563,9 +573,10 @@ main() {
     
     log_info "设置博客仓库..."
     setup_repository
-    
-    log_info "初始化博客..."
-    run_initialization
+
+    log_info "配置博客..."
+    # 由于 fork 的是已经初始化完成的仓库，跳过初始化步骤
+    # run_initialization
     install_blog_dependencies
     configure_blog
     

@@ -1,7 +1,10 @@
----
-template: "archive.html"
-title: 所有文章存档
-path: archive
----
++++
+title = "归档"
+description = "所有文章归档"
+template = "archive.html"
++++
 
-你也进入 <https://archive.owenyoung.com> 查看本站的电子书版本存档。
+# 归档
+
+这里是所有文章的归档页面。
+
