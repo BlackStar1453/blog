@@ -166,6 +166,8 @@ configure_blog() {
     read AUTHOR_NAME < /dev/tty
     echo -n "请输入你的邮箱: "
     read AUTHOR_EMAIL < /dev/tty
+    echo -n "请输入你的个人简介 (bio): "
+    read AUTHOR_BIO < /dev/tty
 
     # 更新 config.toml
     if [ -f "config.toml" ]; then
@@ -181,8 +183,11 @@ configure_blog() {
         # 3. 替换 [extra] section 中的 author
         sed -i '' '/^\[extra\]/,/^\[/{s|^author = ".*"|author = "'"${AUTHOR_NAME}"'"|;}' config.toml
 
-        # 5. 替换 [extra] section 中的 email
+        # 4. 替换 [extra] section 中的 email
         sed -i '' '/^\[extra\]/,/^\[/{s|^email = ".*"|email = "'"${AUTHOR_EMAIL}"'"|;}' config.toml
+
+        # 5. 替换 [extra] section 中的 bio
+        sed -i '' '/^\[extra\]/,/^\[/{s|^bio = ".*"|bio = "'"${AUTHOR_BIO}"'"|;}' config.toml
     fi
 
     log_success "博客配置完成"
