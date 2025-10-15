@@ -87,6 +87,9 @@
 (function() {
   'use strict';
 
+  // 防止重复初始化
+  let initialized = false;
+
   // 所有文章数据
   const allArticles = [
     {% for page_item in all_pages %}
@@ -142,7 +145,9 @@
   // 渲染特定日期的文章
   function renderDateArticles(dateInfo) {
     const contentEl = document.getElementById('special-date-content');
-    if (!contentEl) return;
+    if (!contentEl) {
+      return;
+    }
 
     let matchedArticles;
     let titleText;
@@ -239,10 +244,7 @@
 
   // 初始化
   function init() {
-    console.log('Special dates page init called');
     const dateInfo = getDateFromHash();
-    console.log('Date info from hash:', dateInfo);
-    console.log('All articles count:', allArticles.length);
 
     if (dateInfo) {
       renderDateArticles(dateInfo);
@@ -256,25 +258,25 @@
 
   // 监听hash变化
   window.addEventListener('hashchange', function() {
-    console.log('Hash changed');
     init();
   });
 
-  // 页面加载时初始化 - 使用多种方式确保执行
+  // 页面加载时初始化 - 只初始化一次
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function() {
-      // 延迟一点确保hash已经设置
-      setTimeout(init, 50);
+      if (!initialized) {
+        initialized = true;
+        // 延迟一点确保hash已经设置
+        setTimeout(init, 100);
+      }
     });
   } else {
     // DOM已经加载完成，立即执行
-    setTimeout(init, 50);
+    if (!initialized) {
+      initialized = true;
+      setTimeout(init, 100);
+    }
   }
-
-  // 额外的保险措施
-  window.addEventListener('load', function() {
-    setTimeout(init, 50);
-  });
 })();
 </script>
 
