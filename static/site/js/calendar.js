@@ -14,7 +14,7 @@
   const WEEKDAY_NAMES = ['日', '一', '二', '三', '四', '五', '六'];
 
   let currentYear, currentMonth;
-  let contentDates = new Set(); // 存储有内容的日期 (格式: "MM-DD")
+  let allContentDates = []; // 存储所有有内容的日期 (格式: "YYYY-MM-DD")
 
   /**
    * 初始化日历
@@ -25,12 +25,11 @@
       return;
     }
 
-    // 获取有内容的日期数据
+    // 获取有内容的日期数据 (完整日期 YYYY-MM-DD)
     const datesData = calendarContainer.getAttribute('data-content-dates');
     if (datesData) {
       try {
-        const dates = JSON.parse(datesData);
-        contentDates = new Set(dates);
+        allContentDates = JSON.parse(datesData);
       } catch (e) {
         console.error('Failed to parse content dates:', e);
       }
@@ -153,14 +152,15 @@
         dayCell.classList.add('today');
       }
 
-      // 检查是否有内容
+      // 检查当前年份的这一天是否有内容
       const monthStr = String(currentMonth + 1).padStart(2, '0');
       const dayStr = String(day).padStart(2, '0');
-      const dateKey = monthStr + '-' + dayStr;
+      const fullDate = currentYear + '-' + monthStr + '-' + dayStr;
 
-      if (contentDates.has(dateKey)) {
+      // 只有当前年份的这一天有内容时才标记
+      if (allContentDates.includes(fullDate)) {
         dayCell.classList.add('has-content');
-        dayCell.setAttribute('data-date', dateKey);
+        dayCell.setAttribute('data-date', fullDate);
         dayCell.style.cursor = 'pointer';
 
         // 添加点击事件 - 使用查询参数
@@ -169,9 +169,8 @@
           e.preventDefault();
           e.stopPropagation();
 
-          const targetDate = currentYear + '-' + dateKey;
           // 使用查询参数而不是hash,这样会触发页面重新加载
-          window.location.href = '/special-dates/?date=' + targetDate;
+          window.location.href = '/special-dates/?date=' + fullDate;
         });
       }
 
