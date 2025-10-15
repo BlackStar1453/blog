@@ -277,27 +277,44 @@ main() {
     
     # 获取提交信息
     local commit_message="$1"
+    local auto_mode=false
+
+    # 检测是否在非交互式环境中运行（如 launchd）
+    if [ ! -t 0 ]; then
+        auto_mode=true
+    fi
+
     if [ -z "$commit_message" ]; then
         local default_message="Update: $(date +%Y-%m-%d\ %H:%M:%S)"
-        echo "请输入提交信息（留空使用默认: $default_message）:"
-        read -r user_input
-        if [ -n "$user_input" ]; then
-            commit_message="$user_input"
-        else
+        if [ "$auto_mode" = true ]; then
+            # 自动模式：直接使用默认消息
             commit_message="$default_message"
+        else
+            # 交互模式：询问用户
+            echo "请输入提交信息（留空使用默认: $default_message）:"
+            read -r user_input
+            if [ -n "$user_input" ]; then
+                commit_message="$user_input"
+            else
+                commit_message="$default_message"
+            fi
         fi
     fi
-    
+
     echo ""
     echo "📝 提交信息: $commit_message"
     echo ""
-    
-    # 询问确认
-    echo "是否继续提交并部署? (Y/n)"
-    read -r confirm
-    if [ "$confirm" = "n" ] || [ "$confirm" = "N" ]; then
-        log_info "操作已取消"
-        exit 0
+
+    # 询问确认（仅在交互模式下）
+    if [ "$auto_mode" = false ]; then
+        echo "是否继续提交并部署? (Y/n)"
+        read -r confirm
+        if [ "$confirm" = "n" ] || [ "$confirm" = "N" ]; then
+            log_info "操作已取消"
+            exit 0
+        fi
+    else
+        log_info "自动模式：跳过确认，直接部署"
     fi
     
     echo ""
