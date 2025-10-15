@@ -165,7 +165,7 @@
   transform: translateX(-50%);
   width: 5px;
   height: 5px;
-  background: rgba(153, 0, 0, 1);
+  background: rgba(153, 0, 0, 1) !important;
   border-radius: 50%;
 }
 

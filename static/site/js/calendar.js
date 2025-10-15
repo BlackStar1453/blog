@@ -193,26 +193,20 @@
       }
 
       if (hasContent || isSpecialDate) {
-        // 如果有内容,添加has-content类
         if (hasContent) {
           dayCell.classList.add('has-content');
         }
 
-        // 如果是特殊日期(但没有内容),添加special-date类
-        if (isSpecialDate && !hasContent) {
+        if (isSpecialDate) {
           dayCell.classList.add('special-date');
         }
 
         dayCell.setAttribute('data-date', fullDate);
         dayCell.style.cursor = 'pointer';
 
-        // 添加点击事件 - 使用查询参数
         dayCell.addEventListener('click', function (e) {
-          // 阻止事件冒泡和默认行为
           e.preventDefault();
           e.stopPropagation();
-
-          // 使用查询参数而不是hash,这样会触发页面重新加载
           window.location.href = '/special-dates/?date=' + fullDate;
         });
       }
