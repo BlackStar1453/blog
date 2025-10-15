@@ -146,17 +146,14 @@
   border-radius: 50%;
 }
 
-/* 特殊日期 - 使用更深的红色,更明显 */
+/* 特殊日期 - 使用更深的红色 */
 .calendar-day.special-date {
-  background: rgba(204, 51, 85, 0.8);
-  color: white;
-  font-weight: 700;
+  background: rgba(153, 0, 0, 0.8) !important;
   cursor: pointer;
-  border: 1px solid rgba(204, 51, 85, 1);
 }
 
 .calendar-day.special-date:hover {
-  background: rgba(204, 51, 85, 0.9);
+  background: rgba(153, 0, 0, 0.9) !important;
   transform: scale(1.1);
 }
 
@@ -168,7 +165,7 @@
   transform: translateX(-50%);
   width: 5px;
   height: 5px;
-  background: white;
+  background: rgba(153, 0, 0, 1);
   border-radius: 50%;
 }
 
