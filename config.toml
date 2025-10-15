@@ -74,6 +74,14 @@ message = "今天是测试特殊日期功能的日子！🎉✨"
 banner_color = "#ff6b9d"
 text_color = "#ffffff"
 
+[[extra.special_dates.dates]]
+month = 10
+day = 20
+title = "另一个测试日"
+message = "这是另一个特殊日期！🎊"
+banner_color = "#4a90e2"
+text_color = "#ffffff"
+
 [translations]
 label_toggle_more = "展开全部"
 label_or_toggle_more = "或展开剩余文章"
