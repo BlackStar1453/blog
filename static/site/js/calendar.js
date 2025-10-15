@@ -16,6 +16,7 @@
   let currentYear, currentMonth;
   let allContentDates = []; // 存储所有有内容的日期 (格式: "YYYY-MM-DD")
   let specialDates = []; // 存储特殊日期 (格式: "MM-DD")
+  let selectedDate = null; // 当前选中的日期 (格式: "YYYY-MM-DD")
 
   /**
    * 初始化日历
@@ -55,11 +56,13 @@
       const dateParts = dateParam.split('-');
       currentYear = parseInt(dateParts[0], 10);
       currentMonth = parseInt(dateParts[1], 10) - 1; // 月份从0开始
+      selectedDate = dateParam; // 保存选中的日期
     } else {
       // 默认为当前月份
       const now = new Date();
       currentYear = now.getFullYear();
       currentMonth = now.getMonth(); // 0-11
+      selectedDate = null;
     }
 
     renderCalendar();
@@ -184,11 +187,19 @@
       const hasContent = allContentDates.includes(fullDate);
       const isSpecialDate = specialDates.includes(monthDay);
 
-      if (hasContent || isSpecialDate) {
-        dayCell.classList.add('has-content');
+      // 检查是否是选中的日期
+      if (selectedDate === fullDate) {
+        dayCell.classList.add('selected');
+      }
 
-        // 如果是特殊日期,添加额外的样式类
-        if (isSpecialDate) {
+      if (hasContent || isSpecialDate) {
+        // 如果有内容,添加has-content类
+        if (hasContent) {
+          dayCell.classList.add('has-content');
+        }
+
+        // 如果是特殊日期(但没有内容),添加special-date类
+        if (isSpecialDate && !hasContent) {
           dayCell.classList.add('special-date');
         }
 

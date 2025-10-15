@@ -153,29 +153,63 @@
   background: white;
 }
 
-/* 特殊日期样式 (如生日) */
+/* 特殊日期样式 (如生日) - 使用蓝色 */
 .calendar-day.special-date {
-  background: rgba(255, 107, 157, 0.15);
+  background: rgba(74, 144, 226, 0.15);
   font-weight: 600;
 }
 
 .calendar-day.special-date:hover {
-  background: rgba(255, 107, 157, 0.25);
+  background: rgba(74, 144, 226, 0.25);
 }
 
 .calendar-day.special-date::after {
-  background: #ff6b9d;
+  background: #4a90e2;
   width: 4px;
   height: 4px;
 }
 
+/* 如果既是特殊日期又有内容,优先显示有内容的样式(红色) */
+.calendar-day.has-content.special-date {
+  background: rgba(204, 51, 85, 0.1);
+}
+
+.calendar-day.has-content.special-date:hover {
+  background: rgba(204, 51, 85, 0.2);
+}
+
+.calendar-day.has-content.special-date::after {
+  background: var(--colors-primary);
+  width: 3px;
+  height: 3px;
+}
+
 .calendar-day.special-date.today {
-  background: #ff6b9d;
+  background: #4a90e2;
   color: white;
 }
 
 .calendar-day.special-date.today::after {
   background: white;
+}
+
+.calendar-day.has-content.today {
+  background: var(--colors-primary);
+  color: white;
+}
+
+/* 选中状态 */
+.calendar-day.selected {
+  box-shadow: 0 0 0 2px var(--colors-primary);
+  font-weight: 700;
+}
+
+.calendar-day.selected.has-content {
+  box-shadow: 0 0 0 2px var(--colors-primary);
+}
+
+.calendar-day.selected.special-date {
+  box-shadow: 0 0 0 2px #4a90e2;
 }
 
 /* 响应式调整 */
