@@ -165,8 +165,16 @@
 
         // 添加点击事件 - 使用年份+日期的hash参数
         dayCell.addEventListener('click', function () {
-          const url = '/special-dates/#' + currentYear + '-' + dateKey;
-          window.location.href = url;
+          const targetHash = currentYear + '-' + dateKey;
+          const currentPath = window.location.pathname;
+
+          // 如果已经在special-dates页面,只更新hash
+          if (currentPath === '/special-dates/' || currentPath === '/special-dates') {
+            window.location.hash = targetHash;
+          } else {
+            // 否则跳转到special-dates页面
+            window.location.href = '/special-dates/#' + targetHash;
+          }
         });
       }
 

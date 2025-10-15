@@ -262,14 +262,19 @@
 
   // 页面加载时初始化 - 使用多种方式确保执行
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('DOMContentLoaded', function() {
+      // 延迟一点确保hash已经设置
+      setTimeout(init, 50);
+    });
   } else {
     // DOM已经加载完成，立即执行
-    setTimeout(init, 0);
+    setTimeout(init, 50);
   }
 
   // 额外的保险措施
-  window.addEventListener('load', init);
+  window.addEventListener('load', function() {
+    setTimeout(init, 50);
+  });
 })();
 </script>
 
