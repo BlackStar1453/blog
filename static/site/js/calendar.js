@@ -15,6 +15,7 @@
 
   let currentYear, currentMonth;
   let allContentDates = []; // 存储所有有内容的日期 (格式: "YYYY-MM-DD")
+  let specialDates = []; // 存储特殊日期 (格式: "MM-DD")
 
   /**
    * 初始化日历
@@ -32,6 +33,16 @@
         allContentDates = JSON.parse(datesData);
       } catch (e) {
         console.error('Failed to parse content dates:', e);
+      }
+    }
+
+    // 获取特殊日期数据 (MM-DD)
+    const specialDatesData = calendarContainer.getAttribute('data-special-dates');
+    if (specialDatesData) {
+      try {
+        specialDates = JSON.parse(specialDatesData);
+      } catch (e) {
+        console.error('Failed to parse special dates:', e);
       }
     }
 
@@ -163,14 +174,24 @@
         dayCell.classList.add('today');
       }
 
-      // 检查当前年份的这一天是否有内容
+      // 检查当前年份的这一天是否有内容或是特殊日期
       const monthStr = String(currentMonth + 1).padStart(2, '0');
       const dayStr = String(day).padStart(2, '0');
       const fullDate = currentYear + '-' + monthStr + '-' + dayStr;
+      const monthDay = monthStr + '-' + dayStr;
 
-      // 只有当前年份的这一天有内容时才标记
-      if (allContentDates.includes(fullDate)) {
+      // 检查是否有内容或是特殊日期
+      const hasContent = allContentDates.includes(fullDate);
+      const isSpecialDate = specialDates.includes(monthDay);
+
+      if (hasContent || isSpecialDate) {
         dayCell.classList.add('has-content');
+
+        // 如果是特殊日期,添加额外的样式类
+        if (isSpecialDate) {
+          dayCell.classList.add('special-date');
+        }
+
         dayCell.setAttribute('data-date', fullDate);
         dayCell.style.cursor = 'pointer';
 

@@ -153,6 +153,31 @@
   background: white;
 }
 
+/* 特殊日期样式 (如生日) */
+.calendar-day.special-date {
+  background: rgba(255, 107, 157, 0.15);
+  font-weight: 600;
+}
+
+.calendar-day.special-date:hover {
+  background: rgba(255, 107, 157, 0.25);
+}
+
+.calendar-day.special-date::after {
+  background: #ff6b9d;
+  width: 4px;
+  height: 4px;
+}
+
+.calendar-day.special-date.today {
+  background: #ff6b9d;
+  color: white;
+}
+
+.calendar-day.special-date.today::after {
+  background: white;
+}
+
 /* 响应式调整 */
 @media (max-width: 768px) {
   .calendar-container {

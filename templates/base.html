@@ -260,9 +260,29 @@
     {% endfor %}
   {% endfor %}
 
+  {# 收集特殊日期 (MM-DD格式) #}
+  {% set_global special_dates = [] %}
+  {% if config.extra.special_dates and config.extra.special_dates.dates %}
+    {% for date_config in config.extra.special_dates.dates %}
+      {% set month_str = date_config.month %}
+      {% if date_config.month < 10 %}
+        {% set month_str = "0" ~ date_config.month %}
+      {% endif %}
+      {% set day_str = date_config.day %}
+      {% if date_config.day < 10 %}
+        {% set day_str = "0" ~ date_config.day %}
+      {% endif %}
+      {% set special_date = month_str ~ "-" ~ day_str %}
+      {% set_global special_dates = special_dates | concat(with=special_date) %}
+    {% endfor %}
+  {% endif %}
+
   {# 去重并传递给 JavaScript #}
   {% set unique_dates = all_content_dates | unique %}
-  <div id="sidebar-calendar" data-content-dates='{{ unique_dates | json_encode() | safe }}' style="display: none;"></div>
+  <div id="sidebar-calendar"
+       data-content-dates='{{ unique_dates | json_encode() | safe }}'
+       data-special-dates='{{ special_dates | json_encode() | safe }}'
+       style="display: none;"></div>
 
             <h2>
               <a class="no-underline" title="{{ trans(key='label_tags',lang=lang) }}" href="{{ lang_prefix_path }}tags/">{{ trans(key="label_tags",lang=lang) }}</a>
