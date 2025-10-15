@@ -6,14 +6,12 @@
     return;
   }
 
-  // 创建蛋糕和礼物形状
+  // 创建蛋糕和派对形状
   var cake = confetti.shapeFromText({ text: '🎂', scalar: 2 });
-  var gift = confetti.shapeFromText({ text: '🎁', scalar: 2 });
-  var balloon = confetti.shapeFromText({ text: '🎈', scalar: 2 });
   var party = confetti.shapeFromText({ text: '🎉', scalar: 2 });
 
   var defaults = {
-    shapes: [cake, gift, balloon, party],
+    shapes: [cake, party],
     scalar: 2,
     spread: 180,
     ticks: 300,
