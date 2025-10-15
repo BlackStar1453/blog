@@ -35,10 +35,21 @@
       }
     }
 
-    // 初始化为当前月份
-    const now = new Date();
-    currentYear = now.getFullYear();
-    currentMonth = now.getMonth(); // 0-11
+    // 尝试从URL恢复日历状态
+    const urlParams = new URLSearchParams(window.location.search);
+    const dateParam = urlParams.get('date');
+
+    if (dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam)) {
+      // 从date参数中提取年份和月份
+      const dateParts = dateParam.split('-');
+      currentYear = parseInt(dateParts[0], 10);
+      currentMonth = parseInt(dateParts[1], 10) - 1; // 月份从0开始
+    } else {
+      // 默认为当前月份
+      const now = new Date();
+      currentYear = now.getFullYear();
+      currentMonth = now.getMonth(); // 0-11
+    }
 
     renderCalendar();
   }
