@@ -68,9 +68,9 @@ enabled = false
 # 特殊日期配置 - 在特定日期显示横幅并收集往年同日内容
 [[extra.special_dates.dates]]
 month = 10
-day = 15
+day = 16
 title = "测试日"
-message = "今天是测试特殊日期功能的日子！🎉✨"
+message = "今天是一个特殊的日子！"
 banner_color = "#ff6b9d"
 text_color = "#ffffff"
 

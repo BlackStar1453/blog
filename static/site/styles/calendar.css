@@ -148,12 +148,12 @@
 
 /* 特殊日期 - 使用更深的红色 */
 .calendar-day.special-date {
-  background: rgba(153, 0, 0, 0.8) !important;
+  background: rgba(6, 226, 43, 0.276) !important;
   cursor: pointer;
 }
 
 .calendar-day.special-date:hover {
-  background: rgba(153, 0, 0, 0.9) !important;
+  background: rgba(6, 226, 43, 0.276) !important;
   transform: scale(1.1);
 }
 

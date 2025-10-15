@@ -1,8 +1,41 @@
 {% extends "base.html" %}
 {% import "macros.html" as macro %}
 
+{% block extra_head %}
+  <link rel="stylesheet" href="{{ get_url(path='site/styles/birthday.css') }}">
+{% endblock extra_head %}
+
 {% block main %}
   <div class="special-date-page">
+    {# 查找当前日期的特殊日期配置 #}
+    {% set_global special_config = false %}
+    {% if config.extra.special_dates and config.extra.special_dates.dates %}
+      {% for date_config in config.extra.special_dates.dates %}
+        {% set month_str = date_config.month %}
+        {% if date_config.month < 10 %}
+          {% set month_str = "0" ~ date_config.month %}
+        {% endif %}
+        {% set day_str = date_config.day %}
+        {% if date_config.day < 10 %}
+          {% set day_str = "0" ~ date_config.day %}
+        {% endif %}
+        {% set config_date = month_str ~ "-" ~ day_str %}
+        {% if config_date == page.extra.target_date %}
+          {% set_global special_config = date_config %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+
+    {# 如果有特殊日期配置,显示祝福横幅 #}
+    {% if special_config %}
+      <div class="birthday-banner">
+        <h1 class="birthday-title">🎂 今天是 {{ config.title }} 的{{ special_config.title }}！🎉</h1>
+        <p class="birthday-message">{{ special_config.message }}</p>
+      </div>
+      {# 蛋糕下落动画容器 #}
+      <div id="cake-animation"></div>
+    {% endif %}
+
     <div class="main-box-block">
       <h1>{{ page.title }}</h1>
       <p class="special-date-description">{{ page.description }}</p>
@@ -70,5 +103,10 @@
     </div>
     {{ macro::webmentions(backlinks=page.backlinks) }}
   </div>
+
+  {# 如果有特殊日期配置,加载生日动画 #}
+  {% if special_config %}
+    <script src="{{ get_url(path='site/js/birthday.js') }}"></script>
+  {% endif %}
 {% endblock main %}
 
