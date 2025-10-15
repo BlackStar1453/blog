@@ -109,6 +109,38 @@ check_dependencies() {
     return 0
 }
 
+# 获取当前环境的 PATH
+get_current_path() {
+    # 获取当前 PATH，确保包含常用路径
+    local current_path="$PATH"
+
+    # 添加常用路径（如果不存在）
+    local common_paths=(
+        "/opt/homebrew/bin"
+        "/usr/local/bin"
+        "/usr/bin"
+        "/bin"
+        "/usr/sbin"
+        "/sbin"
+    )
+
+    local final_path=""
+    for path in "${common_paths[@]}"; do
+        if [ -d "$path" ]; then
+            if [ -z "$final_path" ]; then
+                final_path="$path"
+            else
+                # 检查是否已存在
+                if [[ ":$final_path:" != *":$path:"* ]]; then
+                    final_path="$final_path:$path"
+                fi
+            fi
+        fi
+    done
+
+    echo "$final_path"
+}
+
 # 创建日志目录
 create_log_dir() {
     if [ ! -d "${LOG_DIR}" ]; then
@@ -121,6 +153,7 @@ create_log_dir() {
 generate_plist() {
     local hour="${1:-9}"  # 默认上午9点
     local minute="${2:-0}" # 默认0分
+    local env_path=$(get_current_path)
 
     print_info "生成 plist 配置文件（定时任务）..."
 
@@ -165,7 +198,7 @@ generate_plist() {
     <key>EnvironmentVariables</key>
     <dict>
         <key>PATH</key>
-        <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+        <string>${env_path}</string>
     </dict>
 </dict>
 </plist>
@@ -176,6 +209,8 @@ EOF
 
 # 生成 plist 文件（开机自动运行）
 generate_plist_boot() {
+    local env_path=$(get_current_path)
+
     print_info "生成 plist 配置文件（开机自动运行）..."
 
     # 确保 LaunchAgents 目录存在
@@ -211,7 +246,7 @@ generate_plist_boot() {
     <key>EnvironmentVariables</key>
     <dict>
         <key>PATH</key>
-        <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+        <string>${env_path}</string>
     </dict>
 </dict>
 </plist>
@@ -224,6 +259,7 @@ EOF
 generate_plist_both() {
     local hour="${1:-14}"  # 默认下午2点
     local minute="${2:-30}" # 默认30分
+    local env_path=$(get_current_path)
 
     print_info "生成 plist 配置文件（开机 + 定时任务）..."
 
@@ -268,7 +304,7 @@ generate_plist_both() {
     <key>EnvironmentVariables</key>
     <dict>
         <key>PATH</key>
-        <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+        <string>${env_path}</string>
     </dict>
 </dict>
 </plist>
