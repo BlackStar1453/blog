@@ -32,8 +32,6 @@
         <h1 class="birthday-title">🎂 今天是 {{ config.title }} 的{{ special_config.title }}！🎉</h1>
         <p class="birthday-message">{{ special_config.message }}</p>
       </div>
-      {# 蛋糕下落动画容器 #}
-      <div id="cake-animation"></div>
     {% endif %}
 
     <div class="main-box-block">
@@ -106,6 +104,7 @@
 
   {# 如果有特殊日期配置,加载生日动画 #}
   {% if special_config %}
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
     <script src="{{ get_url(path='site/js/birthday.js') }}"></script>
   {% endif %}
 {% endblock main %}

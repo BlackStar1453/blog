@@ -1,46 +1,58 @@
-(function() {
+(function () {
   'use strict';
 
-  const cakeContainer = document.getElementById('cake-animation');
-  if (!cakeContainer) {
+  if (typeof confetti === 'undefined') {
+    console.warn('canvas-confetti library not loaded');
     return;
   }
 
-  const emojis = ['🎂', '🍰', '🧁', '🎉', '🎊', '🎈', '✨', '🎁'];
-  
-  function createCake() {
-    const cake = document.createElement('div');
-    cake.className = 'cake-emoji';
-    cake.textContent = emojis[Math.floor(Math.random() * emojis.length)];
-    
-    // 随机水平位置
-    cake.style.left = Math.random() * 100 + '%';
-    
-    // 随机动画持续时间 (3-6秒)
-    const duration = 3 + Math.random() * 3;
-    cake.style.animationDuration = duration + 's';
-    
-    // 随机延迟
-    cake.style.animationDelay = Math.random() * 2 + 's';
-    
-    cakeContainer.appendChild(cake);
-    
-    // 动画结束后移除元素
-    setTimeout(() => {
-      cake.remove();
-    }, (duration + 2) * 1000);
+  // 创建蛋糕和礼物形状
+  var cake = confetti.shapeFromText({ text: '🎂', scalar: 2 });
+  var gift = confetti.shapeFromText({ text: '🎁', scalar: 2 });
+  var balloon = confetti.shapeFromText({ text: '🎈', scalar: 2 });
+  var party = confetti.shapeFromText({ text: '🎉', scalar: 2 });
+
+  var defaults = {
+    shapes: [cake, gift, balloon, party],
+    scalar: 2,
+    spread: 180,
+    ticks: 300,
+    gravity: 0.8,
+    decay: 0.94,
+    startVelocity: 30
+  };
+
+  function randomInRange(min, max) {
+    return Math.random() * (max - min) + min;
   }
 
-  // 初始创建一批蛋糕
-  for (let i = 0; i < 15; i++) {
-    setTimeout(() => {
-      createCake();
-    }, i * 200);
-  }
+  // 持续30秒的庆祝动画
+  var duration = 30 * 1000;
+  var end = Date.now() + duration;
 
-  // 持续创建新的蛋糕
-  setInterval(() => {
-    createCake();
-  }, 800);
+  (function frame() {
+    confetti({
+      ...defaults,
+      particleCount: 3,
+      origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
+    });
+    confetti({
+      ...defaults,
+      particleCount: 3,
+      origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
+    });
+
+    if (Date.now() < end) {
+      requestAnimationFrame(frame);
+    }
+  }());
+
+  // 初始爆发效果
+  confetti({
+    ...defaults,
+    particleCount: 100,
+    spread: 160,
+    origin: { y: 0.6 }
+  });
 })();
 

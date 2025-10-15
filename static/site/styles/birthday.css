@@ -29,41 +29,10 @@
     opacity: 0;
     transform: translateY(-30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-/* 蛋糕动画容器 */
-#cake-animation {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 9999;
-  overflow: hidden;
-}
-
-/* 蛋糕表情符号 */
-.cake-emoji {
-  position: absolute;
-  font-size: 2rem;
-  animation: fall linear infinite;
-  opacity: 0.8;
-}
-
-/* 下落动画 */
-@keyframes fall {
-  0% {
-    transform: translateY(-100px) rotate(0deg);
-    opacity: 0.8;
-  }
-  100% {
-    transform: translateY(100vh) rotate(360deg);
-    opacity: 0;
   }
 }
 
@@ -72,13 +41,8 @@
   .birthday-title {
     font-size: 1.5rem;
   }
-  
+
   .birthday-message {
     font-size: 1rem;
   }
-  
-  .cake-emoji {
-    font-size: 1.5rem;
-  }
 }
-
