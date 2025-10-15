@@ -148,14 +148,15 @@
 
 /* 特殊日期 - 使用更深的红色,更明显 */
 .calendar-day.special-date {
-  background: rgba(204, 51, 85, 0.25);
+  background: rgba(204, 51, 85, 0.8);
+  color: white;
   font-weight: 700;
   cursor: pointer;
-  border: 1px solid rgba(204, 51, 85, 0.3);
+  border: 1px solid rgba(204, 51, 85, 1);
 }
 
 .calendar-day.special-date:hover {
-  background: rgba(204, 51, 85, 0.35);
+  background: rgba(204, 51, 85, 0.9);
   transform: scale(1.1);
 }
 
@@ -167,7 +168,7 @@
   transform: translateX(-50%);
   width: 5px;
   height: 5px;
-  background: var(--colors-primary);
+  background: white;
   border-radius: 50%;
 }
 
