@@ -3,13 +3,13 @@
  * 显示所有有内容的日期，点击跳转到特殊日期页面
  */
 
-(function() {
+(function () {
   'use strict';
 
   // 月份名称
-  const MONTH_NAMES = ['一月', '二月', '三月', '四月', '五月', '六月', 
-                       '七月', '八月', '九月', '十月', '十一月', '十二月'];
-  
+  const MONTH_NAMES = ['一月', '二月', '三月', '四月', '五月', '六月',
+    '七月', '八月', '九月', '十月', '十一月', '十二月'];
+
   // 星期名称
   const WEEKDAY_NAMES = ['日', '一', '二', '三', '四', '五', '六'];
 
@@ -42,7 +42,6 @@
     currentMonth = now.getMonth(); // 0-11
 
     renderCalendar();
-    attachEventListeners();
   }
 
   /**
@@ -60,11 +59,65 @@
     // 更新月份年份显示
     const monthYearDisplay = document.getElementById('calendar-month-year');
     if (monthYearDisplay) {
-      monthYearDisplay.textContent = currentYear + '年 ' + MONTH_NAMES[currentMonth];
+      monthYearDisplay.innerHTML =
+        '<button id="calendar-year-prev" class="calendar-year-nav" aria-label="上一年">‹‹</button>' +
+        '<button id="calendar-month-prev" class="calendar-nav-btn" aria-label="上个月">‹</button>' +
+        '<span class="calendar-display-text">' +
+        '<span class="calendar-year-text">' + currentYear + '年</span>' +
+        '<span class="calendar-month-text">' + MONTH_NAMES[currentMonth] + '</span>' +
+        '</span>' +
+        '<button id="calendar-month-next" class="calendar-nav-btn" aria-label="下个月">›</button>' +
+        '<button id="calendar-year-next" class="calendar-year-nav" aria-label="下一年">››</button>';
+
+      // 添加年份切换事件
+      const yearPrevBtn = document.getElementById('calendar-year-prev');
+      const yearNextBtn = document.getElementById('calendar-year-next');
+      const monthPrevBtn = document.getElementById('calendar-month-prev');
+      const monthNextBtn = document.getElementById('calendar-month-next');
+
+      if (yearPrevBtn) {
+        yearPrevBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          currentYear--;
+          renderCalendar();
+        });
+      }
+
+      if (yearNextBtn) {
+        yearNextBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          currentYear++;
+          renderCalendar();
+        });
+      }
+
+      if (monthPrevBtn) {
+        monthPrevBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          currentMonth--;
+          if (currentMonth < 0) {
+            currentMonth = 11;
+            currentYear--;
+          }
+          renderCalendar();
+        });
+      }
+
+      if (monthNextBtn) {
+        monthNextBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          currentMonth++;
+          if (currentMonth > 11) {
+            currentMonth = 0;
+            currentYear++;
+          }
+          renderCalendar();
+        });
+      }
     }
 
     // 渲染星期标题
-    WEEKDAY_NAMES.forEach(function(day) {
+    WEEKDAY_NAMES.forEach(function (day) {
       const weekdayCell = document.createElement('div');
       weekdayCell.className = 'calendar-weekday';
       weekdayCell.textContent = day;
@@ -109,10 +162,10 @@
         dayCell.classList.add('has-content');
         dayCell.setAttribute('data-date', dateKey);
         dayCell.style.cursor = 'pointer';
-        
-        // 添加点击事件
-        dayCell.addEventListener('click', function() {
-          const url = '/special-dates/' + dateKey + '/';
+
+        // 添加点击事件 - 使用hash参数而不是路径
+        dayCell.addEventListener('click', function () {
+          const url = '/special-dates/#' + dateKey;
           window.location.href = url;
         });
       }
@@ -130,35 +183,7 @@
     }
   }
 
-  /**
-   * 附加事件监听器
-   */
-  function attachEventListeners() {
-    const prevBtn = document.getElementById('calendar-prev');
-    const nextBtn = document.getElementById('calendar-next');
 
-    if (prevBtn) {
-      prevBtn.addEventListener('click', function() {
-        currentMonth--;
-        if (currentMonth < 0) {
-          currentMonth = 11;
-          currentYear--;
-        }
-        renderCalendar();
-      });
-    }
-
-    if (nextBtn) {
-      nextBtn.addEventListener('click', function() {
-        currentMonth++;
-        if (currentMonth > 11) {
-          currentMonth = 0;
-          currentYear++;
-        }
-        renderCalendar();
-      });
-    }
-  }
 
   // 页面加载完成后初始化
   if (document.readyState === 'loading') {

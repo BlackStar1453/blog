@@ -159,7 +159,7 @@ git_commit() {
 # 构建博客
 build_blog() {
     log_info "构建博客..."
-    
+
     if [ -f "Makefile" ]; then
         make build
     elif command_exists zola; then
@@ -168,12 +168,12 @@ build_blog() {
         log_error "未找到构建工具（Makefile 或 zola）"
         return 1
     fi
-    
+
     if [ ! -d "public" ]; then
         log_error "构建失败：未找到 public 目录"
         return 1
     fi
-    
+
     log_success "博客构建完成"
     return 0
 }
