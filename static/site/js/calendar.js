@@ -163,18 +163,15 @@
         dayCell.setAttribute('data-date', dateKey);
         dayCell.style.cursor = 'pointer';
 
-        // 添加点击事件 - 使用年份+日期的hash参数
-        dayCell.addEventListener('click', function () {
-          const targetHash = currentYear + '-' + dateKey;
-          const currentPath = window.location.pathname;
+        // 添加点击事件 - 使用查询参数
+        dayCell.addEventListener('click', function (e) {
+          // 阻止事件冒泡和默认行为
+          e.preventDefault();
+          e.stopPropagation();
 
-          // 如果已经在special-dates页面,只更新hash
-          if (currentPath === '/special-dates/' || currentPath === '/special-dates') {
-            window.location.hash = targetHash;
-          } else {
-            // 否则跳转到special-dates页面
-            window.location.href = '/special-dates/#' + targetHash;
-          }
+          const targetDate = currentYear + '-' + dateKey;
+          // 使用查询参数而不是hash,这样会触发页面重新加载
+          window.location.href = '/special-dates/?date=' + targetDate;
         });
       }
 

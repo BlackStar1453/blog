@@ -107,26 +107,32 @@
   ];
 
   // 从URL hash中获取日期
+  // 从URL查询参数中获取日期信息
   // 支持两种格式:
-  // 1. YYYY-MM-DD (日历点击,只显示该年该日期)
-  // 2. MM-DD (特殊日期/去年今日,显示所有年份该日期)
-  function getDateFromHash() {
-    const hash = window.location.hash.substring(1); // 移除 #
+  // 1. ?date=YYYY-MM-DD (日历点击,只显示该年该日期)
+  // 2. ?date=MM-DD (特殊日期/去年今日,显示所有年份该日期)
+  function getDateFromURL() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const dateParam = urlParams.get('date');
+
+    if (!dateParam) {
+      return null;
+    }
 
     // 格式1: YYYY-MM-DD
-    if (/^\d{4}-\d{2}-\d{2}$/.test(hash)) {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateParam)) {
       return {
         type: 'specific',
-        year: hash.substring(0, 4),
-        monthDay: hash.substring(5) // MM-DD
+        year: dateParam.substring(0, 4),
+        monthDay: dateParam.substring(5) // MM-DD
       };
     }
 
     // 格式2: MM-DD
-    if (/^\d{2}-\d{2}$/.test(hash)) {
+    if (/^\d{2}-\d{2}$/.test(dateParam)) {
       return {
         type: 'all-years',
-        monthDay: hash
+        monthDay: dateParam
       };
     }
 
@@ -244,7 +250,7 @@
 
   // 初始化
   function init() {
-    const dateInfo = getDateFromHash();
+    const dateInfo = getDateFromURL();
 
     if (dateInfo) {
       renderDateArticles(dateInfo);
@@ -256,10 +262,7 @@
     }
   }
 
-  // 监听hash变化
-  window.addEventListener('hashchange', function() {
-    init();
-  });
+  // 不再需要监听hashchange,因为使用查询参数会触发页面重新加载
 
   // 页面加载时初始化 - 只初始化一次
   if (document.readyState === 'loading') {
