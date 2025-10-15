@@ -54,6 +54,7 @@ show_help() {
 命令:
   install [小时] [分钟]  - 安装定时任务（默认每天 9:00）
   install-boot           - 安装开机自动运行任务
+  install-both [小时] [分钟] - 安装开机 + 定时任务（默认每天 14:30）
   uninstall              - 卸载定时任务
   start                  - 启动定时任务
   stop                   - 停止定时任务
@@ -66,6 +67,8 @@ show_help() {
   $0 install             # 安装定时任务，每天 9:00 执行
   $0 install 14 30       # 安装定时任务，每天 14:30 执行
   $0 install-boot        # 安装开机自动运行任务
+  $0 install-both        # 安装开机 + 定时任务（每天 14:30）
+  $0 install-both 16 0   # 安装开机 + 定时任务（每天 16:00）
   $0 status              # 查看任务状态
   $0 logs                # 查看运行日志
   $0 test                # 立即测试运行一次
@@ -73,6 +76,7 @@ show_help() {
 说明:
   - 定时任务会自动检查修改、提交并部署到 Cloudflare Pages
   - 开机任务会在每次开机后自动运行一次
+  - 开机 + 定时任务会在开机后和每天指定时间运行
   - 日志文件位置: ${LOG_FILE}
   - 错误日志位置: ${ERROR_LOG}
 
@@ -216,6 +220,66 @@ EOF
     print_success "plist 文件已生成: ${PLIST_FILE}"
 }
 
+# 生成 plist 文件（开机 + 定时）
+generate_plist_both() {
+    local hour="${1:-14}"  # 默认下午2点
+    local minute="${2:-30}" # 默认30分
+
+    print_info "生成 plist 配置文件（开机 + 定时任务）..."
+
+    # 确保 LaunchAgents 目录存在
+    mkdir -p "${HOME}/Library/LaunchAgents"
+
+    cat > "${PLIST_FILE}" << EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>${PLIST_NAME}</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>${AUTO_DEPLOY_SCRIPT}</string>
+        <string>Auto deploy: \$(date +%Y-%m-%d\ %H:%M:%S)</string>
+    </array>
+
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>${hour}</integer>
+        <key>Minute</key>
+        <integer>${minute}</integer>
+    </dict>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>StandardOutPath</key>
+    <string>${LOG_FILE}</string>
+
+    <key>StandardErrorPath</key>
+    <string>${ERROR_LOG}</string>
+
+    <key>WorkingDirectory</key>
+    <string>${SCRIPT_DIR}</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+    </dict>
+</dict>
+</plist>
+EOF
+
+    print_success "plist 文件已生成: ${PLIST_FILE}"
+    print_info "任务将在以下时间运行："
+    print_info "  1. 每次开机后"
+    print_info "  2. 每天 ${hour}:${minute}"
+}
+
 # 安装定时任务
 install_task() {
     local hour="${1:-9}"
@@ -317,6 +381,60 @@ install_boot_task() {
         return 0
     else
         print_error "开机自动运行任务安装失败"
+        return 1
+    fi
+}
+
+# 安装开机 + 定时任务
+install_both_task() {
+    local hour="${1:-14}"
+    local minute="${2:-30}"
+
+    print_info "安装开机 + 定时自动部署任务..."
+
+    # 创建日志目录
+    create_log_dir
+
+    # 如果任务已存在，先卸载
+    if is_task_loaded; then
+        print_warning "任务已存在，先卸载旧任务..."
+        unload_task
+    fi
+
+    # 生成 plist 文件（开机 + 定时）
+    generate_plist_both "${hour}" "${minute}"
+
+    # 确保脚本可执行
+    chmod +x "${AUTO_DEPLOY_SCRIPT}"
+
+    # 加载任务
+    if launchctl load "${PLIST_FILE}"; then
+        print_success "开机 + 定时任务安装成功！"
+        echo ""
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "✅ 自动部署任务已启用（开机 + 定时）"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo ""
+        echo "📋 任务信息:"
+        echo "  - 任务名称: ${PLIST_NAME}"
+        echo "  - 运行时间: 每次开机后 + 每天 ${hour}:${minute}"
+        echo "  - 工作目录: ${SCRIPT_DIR}"
+        echo "  - 日志文件: ${LOG_FILE}"
+        echo "  - 错误日志: ${ERROR_LOG}"
+        echo ""
+        echo "📝 常用命令:"
+        echo "  - 查看状态: $0 status"
+        echo "  - 查看日志: $0 logs"
+        echo "  - 测试运行: $0 test"
+        echo ""
+        echo "⚠️  注意: 任务会在以下时间自动运行："
+        echo "   1. 每次开机后"
+        echo "   2. 每天 ${hour}:${minute}"
+        echo "   如果没有修改，脚本会自动跳过部署"
+        echo ""
+        return 0
+    else
+        print_error "开机 + 定时任务安装失败"
         return 1
     fi
 }
@@ -462,6 +580,9 @@ main() {
             ;;
         install-boot)
             install_boot_task
+            ;;
+        install-both)
+            install_both_task "${2}" "${3}"
             ;;
         uninstall)
             uninstall_task
