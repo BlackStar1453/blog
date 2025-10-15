@@ -104,11 +104,29 @@
   ];
 
   // 从URL hash中获取日期
+  // 支持两种格式:
+  // 1. YYYY-MM-DD (日历点击,只显示该年该日期)
+  // 2. MM-DD (特殊日期/去年今日,显示所有年份该日期)
   function getDateFromHash() {
     const hash = window.location.hash.substring(1); // 移除 #
-    if (/^\d{2}-\d{2}$/.test(hash)) {
-      return hash;
+
+    // 格式1: YYYY-MM-DD
+    if (/^\d{4}-\d{2}-\d{2}$/.test(hash)) {
+      return {
+        type: 'specific',
+        year: hash.substring(0, 4),
+        monthDay: hash.substring(5) // MM-DD
+      };
     }
+
+    // 格式2: MM-DD
+    if (/^\d{2}-\d{2}$/.test(hash)) {
+      return {
+        type: 'all-years',
+        monthDay: hash
+      };
+    }
+
     return null;
   }
 
@@ -122,16 +140,40 @@
   }
 
   // 渲染特定日期的文章
-  function renderDateArticles(targetDate) {
+  function renderDateArticles(dateInfo) {
     const contentEl = document.getElementById('special-date-content');
     if (!contentEl) return;
 
-    // 筛选匹配的文章
-    const matchedArticles = allArticles.filter(function(article) {
-      const articleDate = formatDate(article.date);
-      const articleUpdated = formatDate(article.updated);
-      return articleDate === targetDate || articleUpdated === targetDate;
-    });
+    let matchedArticles;
+    let titleText;
+
+    if (dateInfo.type === 'specific') {
+      // 日历点击: 只显示特定年份+日期的内容
+      const targetYear = dateInfo.year;
+      const targetMonthDay = dateInfo.monthDay;
+
+      matchedArticles = allArticles.filter(function(article) {
+        if (article.year !== targetYear) return false;
+
+        const articleDate = formatDate(article.date);
+        const articleUpdated = formatDate(article.updated);
+        return articleDate === targetMonthDay || articleUpdated === targetMonthDay;
+      });
+
+      titleText = targetYear + '年' + targetMonthDay.replace('-', '月') + '日';
+
+    } else {
+      // 特殊日期/去年今日: 显示所有年份该日期的内容
+      const targetMonthDay = dateInfo.monthDay;
+
+      matchedArticles = allArticles.filter(function(article) {
+        const articleDate = formatDate(article.date);
+        const articleUpdated = formatDate(article.updated);
+        return articleDate === targetMonthDay || articleUpdated === targetMonthDay;
+      });
+
+      titleText = targetMonthDay.replace('-', '月') + '日 (所有年份)';
+    }
 
     if (matchedArticles.length === 0) {
       contentEl.innerHTML = '<div class="no-articles">该日期暂无内容</div>';
@@ -155,16 +197,14 @@
 
     // 构建HTML
     let html = '<div class="special-date-header">';
-    html += '<h2 class="special-date-title">' + targetDate.replace('-', '月') + '日</h2>';
+    html += '<h2 class="special-date-title">' + titleText + '</h2>';
     html += '<p class="special-date-subtitle">共找到 ' + matchedArticles.length + ' 篇内容</p>';
     html += '</div>';
 
-    years.forEach(function(year) {
-      html += '<div class="year-group">';
-      html += '<h2>' + year + '</h2>';
+    // 如果是特定年份,不需要显示年份分组
+    if (dateInfo.type === 'specific' && years.length === 1) {
       html += '<ul>';
-      
-      articlesByYear[year].forEach(function(article) {
+      matchedArticles.forEach(function(article) {
         html += '<li>';
         html += '<a href="' + article.permalink + '">' + article.title + '</a>';
         if (article.description) {
@@ -172,10 +212,27 @@
         }
         html += '</li>';
       });
-      
       html += '</ul>';
-      html += '</div>';
-    });
+    } else {
+      // 显示年份分组
+      years.forEach(function(year) {
+        html += '<div class="year-group">';
+        html += '<h2>' + year + '</h2>';
+        html += '<ul>';
+
+        articlesByYear[year].forEach(function(article) {
+          html += '<li>';
+          html += '<a href="' + article.permalink + '">' + article.title + '</a>';
+          if (article.description) {
+            html += '<p style="color: var(--colors-text-muted); font-size: 0.9rem; margin: 0.3rem 0 0 0;">' + article.description + '</p>';
+          }
+          html += '</li>';
+        });
+
+        html += '</ul>';
+        html += '</div>';
+      });
+    }
 
     contentEl.innerHTML = html;
   }
@@ -183,12 +240,12 @@
   // 初始化
   function init() {
     console.log('Special dates page init called');
-    const targetDate = getDateFromHash();
-    console.log('Target date from hash:', targetDate);
+    const dateInfo = getDateFromHash();
+    console.log('Date info from hash:', dateInfo);
     console.log('All articles count:', allArticles.length);
 
-    if (targetDate) {
-      renderDateArticles(targetDate);
+    if (dateInfo) {
+      renderDateArticles(dateInfo);
     } else {
       const contentEl = document.getElementById('special-date-content');
       if (contentEl) {

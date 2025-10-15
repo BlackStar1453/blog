@@ -163,9 +163,9 @@
         dayCell.setAttribute('data-date', dateKey);
         dayCell.style.cursor = 'pointer';
 
-        // 添加点击事件 - 使用hash参数而不是路径
+        // 添加点击事件 - 使用年份+日期的hash参数
         dayCell.addEventListener('click', function () {
-          const url = '/special-dates/#' + dateKey;
+          const url = '/special-dates/#' + currentYear + '-' + dateKey;
           window.location.href = url;
         });
       }
