@@ -7,50 +7,40 @@
   }
 
   // 创建蛋糕和派对形状
-  var cake = confetti.shapeFromText({ text: '🎂', scalar: 2 });
-  var party = confetti.shapeFromText({ text: '🎉', scalar: 2 });
+  var cake = confetti.shapeFromText({ text: '🎂', scalar: 1.5 });
+  var party = confetti.shapeFromText({ text: '🎉', scalar: 1.5 });
 
-  var defaults = {
-    shapes: [cake, party],
-    scalar: 2,
-    spread: 180,
-    ticks: 300,
-    gravity: 0.8,
-    decay: 0.94,
-    startVelocity: 30
-  };
+  var duration = 60 * 1000;
+  var animationEnd = Date.now() + duration;
+  var skew = 1;
 
   function randomInRange(min, max) {
     return Math.random() * (max - min) + min;
   }
 
-  // 持续30秒的庆祝动画
-  var duration = 30 * 1000;
-  var end = Date.now() + duration;
-
   (function frame() {
+    var timeLeft = animationEnd - Date.now();
+    var ticks = Math.max(200, 500 * (timeLeft / duration));
+    skew = Math.max(0.8, skew - 0.001);
+
     confetti({
-      ...defaults,
-      particleCount: 3,
-      origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
-    });
-    confetti({
-      ...defaults,
-      particleCount: 3,
-      origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
+      particleCount: 1,
+      startVelocity: 0,
+      ticks: ticks,
+      origin: {
+        x: Math.random(),
+        y: Math.random() * skew - 0.2
+      },
+      colors: ['#ff6b9d', '#ffa07a'],
+      shapes: [cake, party],
+      gravity: randomInRange(0.4, 0.6),
+      scalar: randomInRange(0.8, 1.2),
+      drift: randomInRange(-0.4, 0.4)
     });
 
-    if (Date.now() < end) {
+    if (timeLeft > 0) {
       requestAnimationFrame(frame);
     }
-  }());
-
-  // 初始爆发效果
-  confetti({
-    ...defaults,
-    particleCount: 100,
-    spread: 160,
-    origin: { y: 0.6 }
-  });
+  })();
 })();
 
