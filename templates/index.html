@@ -15,10 +15,43 @@
   {%- if config.extra.meilisearch_url and config.mode=="build" -%}
     <style>{{meilicss | safe}}</style>
   {%- endif -%}
+  {# 特殊日期功能样式 #}
+  <link rel="stylesheet" href="{{ get_url(path='site/styles/special-date.css', trailing_slash=false, cachebust=true) | safe }}">
 {% endblock post_meta %}
 
 {% block sidebar_top %}{% endblock sidebar_top %}
 {% block header %}
+  {# 特殊日期横幅 - 极简文本风格 #}
+  {% if config.extra.special_dates and config.extra.special_dates.dates %}
+    {% set current_time = now() %}
+    {% set current_month = current_time | date(format="%m") | int %}
+    {% set current_day = current_time | date(format="%d") | int %}
+
+    {% set_global active_special_date = false %}
+    {% for special_date in config.extra.special_dates.dates %}
+      {% if special_date.month == current_month and special_date.day == current_day %}
+        {% set_global active_special_date = special_date %}
+        {% break %}
+      {% endif %}
+    {% endfor %}
+
+    {# 极简文本横幅 #}
+    <a id="special-date-banner"
+       class="special-date-banner"
+       href="/special-dates/{{ current_month }}-{{ current_day }}/"
+       data-special-dates='{{ config.extra.special_dates.dates | json_encode() | safe }}'
+       style="{% if not active_special_date %}display: none;{% endif %}">
+      <p class="special-date-banner-text">
+        {% if active_special_date %}
+          {{ active_special_date.message | default(value='今天是特殊的一天！🎉') }}
+        {% else %}
+          今天是特殊的一天！🎉
+        {% endif %}
+      </p>
+      <p class="special-date-banner-hint">点击查看今天发生了什么</p>
+    </a>
+  {% endif %}
+
   {% set all_section_pages = get_section(path="_index"~file_lang_path~".md") -%}
 
   {# 收集所有页面，包括子section的页面 #}
@@ -187,6 +220,10 @@
   {% endblock main -%}
   {% block before_body_end %}
     {{ super() }}
+    {# 特殊日期功能 JavaScript #}
+    {% if config.extra.special_dates and config.extra.special_dates.dates %}
+      <script defer src="{{ get_url(path='site/js/special-date.js', trailing_slash=false, cachebust=true) | safe }}"></script>
+    {% endif %}
     {% if config.extra.meilisearch_url %}
       <script defer src="{{ get_url(path="site/js/docs-searchbar.min.js", trailing_slash=false,cachebust=true) | safe }}"></script>
       <script>

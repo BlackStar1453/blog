@@ -1,0 +1,131 @@
+/* 侧边栏日历样式 */
+.sidebar-calendar {
+  margin-top: 1.5rem;
+}
+
+.calendar-container {
+  background: var(--colors-surface);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 0.5rem;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding: 0 0.5rem;
+}
+
+.calendar-nav-btn {
+  background: none;
+  border: none;
+  color: var(--colors-primary);
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 0.25rem 0.5rem;
+  transition: opacity 0.2s ease;
+}
+
+.calendar-nav-btn:hover {
+  opacity: 0.7;
+}
+
+.calendar-month-year {
+  font-weight: 500;
+  color: var(--colors-text);
+  font-size: 0.95rem;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.25rem;
+}
+
+.calendar-weekday {
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--colors-muted);
+  padding: 0.25rem;
+  font-weight: 500;
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  color: var(--colors-text);
+  border-radius: 4px;
+  cursor: default;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.calendar-day.empty {
+  visibility: hidden;
+}
+
+.calendar-day.other-month {
+  color: var(--colors-muted);
+  opacity: 0.4;
+}
+
+.calendar-day.today {
+  background: var(--colors-primary);
+  color: white;
+  font-weight: 600;
+}
+
+.calendar-day.has-content {
+  background: rgba(204, 51, 85, 0.1);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.calendar-day.has-content:hover {
+  background: rgba(204, 51, 85, 0.2);
+  transform: scale(1.1);
+}
+
+.calendar-day.has-content.today {
+  background: var(--colors-primary);
+  color: white;
+}
+
+.calendar-day.has-content.today:hover {
+  background: var(--colors-primary);
+  opacity: 0.9;
+}
+
+/* 内容指示点 */
+.calendar-day.has-content::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 3px;
+  height: 3px;
+  background: var(--colors-primary);
+  border-radius: 50%;
+}
+
+.calendar-day.has-content.today::after {
+  background: white;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .calendar-container {
+    padding: 0.75rem;
+  }
+  
+  .calendar-day {
+    font-size: 0.75rem;
+  }
+}
+

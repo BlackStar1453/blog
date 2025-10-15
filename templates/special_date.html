@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block post_meta %}
+  {# 特殊日期功能样式 #}
+  <link rel="stylesheet" href="{{ get_url(path='site/styles/special-date.css', trailing_slash=false, cachebust=true) | safe }}">
+{% endblock post_meta %}
+
+{% block main %}
+  <div class="archive-page">
+    {# 从页面的 extra 中获取月份和日期 #}
+    {% set target_month = page.extra.month | default(value=0) %}
+    {% set target_day = page.extra.day | default(value=0) %}
+
+    {# 查找对应的配置 #}
+    {% set_global page_title = "特殊日期" %}
+    {% if config.extra.special_dates and config.extra.special_dates.dates %}
+      {% for special_date in config.extra.special_dates.dates %}
+        {% if special_date.month == target_month and special_date.day == target_day %}
+          {% set_global page_title = special_date.title %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+
+    {# 收集所有匹配的文章 #}
+    {% set_global matched_articles = [] %}
+
+    {# 获取根 section #}
+    {% set all_section = get_section(path="_index.md") %}
+
+    {# 遍历根 section 的所有页面 #}
+    {% for page_item in all_section.pages %}
+      {% set match = false %}
+
+      {# 检查发布日期 #}
+      {% if page_item.date %}
+        {% set page_month = page_item.date | date(format="%m") | int %}
+        {% set page_day = page_item.date | date(format="%d") | int %}
+        {% if page_month == target_month and page_day == target_day %}
+          {% set match = true %}
+        {% endif %}
+      {% endif %}
+
+      {# 检查更新日期（如果发布日期不匹配） #}
+      {% if page_item.updated and not match %}
+        {% set updated_month = page_item.updated | date(format="%m") | int %}
+        {% set updated_day = page_item.updated | date(format="%d") | int %}
+        {% if updated_month == target_month and updated_day == target_day %}
+          {% set match = true %}
+        {% endif %}
+      {% endif %}
+
+      {% if match %}
+        {% set_global matched_articles = matched_articles | concat(with=page_item) %}
+      {% endif %}
+    {% endfor %}
+
+    {# 遍历所有子 section #}
+    {% for subsection_path in all_section.subsections %}
+      {% set subsection = get_section(path=subsection_path) %}
+      {% for page_item in subsection.pages %}
+        {% set match = false %}
+
+        {# 检查发布日期 #}
+        {% if page_item.date %}
+          {% set page_month = page_item.date | date(format="%m") | int %}
+          {% set page_day = page_item.date | date(format="%d") | int %}
+          {% if page_month == target_month and page_day == target_day %}
+            {% set match = true %}
+          {% endif %}
+        {% endif %}
+
+        {# 检查更新日期（如果发布日期不匹配） #}
+        {% if page_item.updated and not match %}
+          {% set updated_month = page_item.updated | date(format="%m") | int %}
+          {% set updated_day = page_item.updated | date(format="%d") | int %}
+          {% if updated_month == target_month and updated_day == target_day %}
+            {% set match = true %}
+          {% endif %}
+        {% endif %}
+
+        {% if match %}
+          {% set_global matched_articles = matched_articles | concat(with=page_item) %}
+        {% endif %}
+      {% endfor %}
+    {% endfor %}
+
+    <div class="main-box-block">
+      <h1>{{ page_title }} - {{ target_month }}月{{ target_day }}日</h1>
+      <p class="page-intro muted">这里收集了所有在 {{ target_month }}月{{ target_day }}日 发布或更新的文章，记录这一天的所有回忆。</p>
+
+      {# 显示文章列表 #}
+      {% if matched_articles | length > 0 %}
+        {% for year, posts in matched_articles | group_by(attribute="year") %}
+          <h2>{{ year }}</h2>
+          <ul>
+            {% for post in posts %}
+              <li>{{ macro::post_min(page=post) }}</li>
+            {% endfor %}
+          </ul>
+        {% endfor %}
+      {% else %}
+        <p>还没有在这一天发布或更新的文章</p>
+      {% endif %}
+    </div>
+
+    {{ macro::webmentions(backlinks=page.backlinks) }}
+  </div>
+{% endblock main %}
+

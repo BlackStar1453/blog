@@ -64,6 +64,16 @@ enabled = false
 # twitter = "yourusername"
 # mastodon = "https://mastodon.social/@yourusername"
 
+[extra.special_dates]
+# 特殊日期配置 - 在特定日期显示横幅并收集往年同日内容
+[[extra.special_dates.dates]]
+month = 10
+day = 15
+title = "测试日"
+message = "今天是测试特殊日期功能的日子！🎉✨"
+banner_color = "#ff6b9d"
+text_color = "#ffffff"
+
 [translations]
 label_toggle_more = "展开全部"
 label_or_toggle_more = "或展开剩余文章"
