@@ -109,12 +109,19 @@
   opacity: 0.4;
 }
 
+/* 今天 - 使用蓝色 */
 .calendar-day.today {
-  background: var(--colors-primary);
+  background: #4a90e2;
   color: white;
   font-weight: 600;
 }
 
+.calendar-day.today:hover {
+  background: #4a90e2;
+  opacity: 0.9;
+}
+
+/* 有内容的日期 - 使用深红色 */
 .calendar-day.has-content {
   background: rgba(204, 51, 85, 0.1);
   font-weight: 500;
@@ -124,16 +131,6 @@
 .calendar-day.has-content:hover {
   background: rgba(204, 51, 85, 0.2);
   transform: scale(1.1);
-}
-
-.calendar-day.has-content.today {
-  background: var(--colors-primary);
-  color: white;
-}
-
-.calendar-day.has-content.today:hover {
-  background: var(--colors-primary);
-  opacity: 0.9;
 }
 
 /* 内容指示点 */
@@ -149,53 +146,48 @@
   border-radius: 50%;
 }
 
-.calendar-day.has-content.today::after {
-  background: white;
-}
-
-/* 特殊日期样式 (如生日) - 使用蓝色 */
+/* 特殊日期 - 使用深红色(与has-content相同) */
 .calendar-day.special-date {
-  background: rgba(74, 144, 226, 0.15);
+  background: rgba(204, 51, 85, 0.1);
   font-weight: 600;
+  cursor: pointer;
 }
 
 .calendar-day.special-date:hover {
-  background: rgba(74, 144, 226, 0.25);
+  background: rgba(204, 51, 85, 0.2);
+  transform: scale(1.1);
 }
 
 .calendar-day.special-date::after {
-  background: #4a90e2;
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
   width: 4px;
   height: 4px;
-}
-
-/* 如果既是特殊日期又有内容,优先显示有内容的样式(红色) */
-.calendar-day.has-content.special-date {
-  background: rgba(204, 51, 85, 0.1);
-}
-
-.calendar-day.has-content.special-date:hover {
-  background: rgba(204, 51, 85, 0.2);
-}
-
-.calendar-day.has-content.special-date::after {
   background: var(--colors-primary);
-  width: 3px;
-  height: 3px;
+  border-radius: 50%;
 }
 
-.calendar-day.special-date.today {
+/* 今天且有内容 - 蓝色背景,白色文字 */
+.calendar-day.today.has-content {
   background: #4a90e2;
   color: white;
 }
 
-.calendar-day.special-date.today::after {
+.calendar-day.today.has-content::after {
   background: white;
 }
 
-.calendar-day.has-content.today {
-  background: var(--colors-primary);
+/* 今天且是特殊日期 - 蓝色背景,白色文字 */
+.calendar-day.today.special-date {
+  background: #4a90e2;
   color: white;
+}
+
+.calendar-day.today.special-date::after {
+  background: white;
 }
 
 /* 选中状态 */
