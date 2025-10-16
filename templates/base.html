@@ -167,6 +167,19 @@
 
             {% set custom_sidebar = get_page(path="pages/sidebar"~file_lang_path~".md") %}
             {{ custom_sidebar.content | safe }}
+
+            {# 侧边栏日历 - 移到最上方 #}
+            <div class="sidebar-calendar pt">
+              <div class="main-box-block">
+                <div class="calendar-container">
+                  <div class="calendar-header">
+                    <div id="calendar-month-year" class="calendar-month-year"></div>
+                  </div>
+                  <div id="calendar-body" class="calendar-grid"></div>
+                </div>
+              </div>
+            </div>
+
               {% set all_categories = get_taxonomy(kind="categories",lang=lang) -%}
 
               <div class="taxonomy-list-page pt">
@@ -213,18 +226,6 @@
                 </ul>
               </details>
             {% endfor %}
-      </div>
-    </div>
-  </div>
-
-  {# 侧边栏日历 #}
-  <div class="sidebar-calendar pt">
-    <div class="main-box-block">
-      <div class="calendar-container">
-        <div class="calendar-header">
-          <div id="calendar-month-year" class="calendar-month-year"></div>
-        </div>
-        <div id="calendar-body" class="calendar-grid"></div>
       </div>
     </div>
   </div>
