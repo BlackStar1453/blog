@@ -165,10 +165,7 @@
               <p class="p-note">{{ config.extra.bio }}</p>
             </div>
 
-            {% set custom_sidebar = get_page(path="pages/sidebar"~file_lang_path~".md") %}
-            {{ custom_sidebar.content | safe }}
-
-            {# 侧边栏日历 - 移到最上方 #}
+            {# 侧边栏日历 - 在重要链接之前 #}
             <div class="sidebar-calendar pt">
               <div class="main-box-block">
                 <div class="calendar-container">
@@ -179,6 +176,9 @@
                 </div>
               </div>
             </div>
+
+            {% set custom_sidebar = get_page(path="pages/sidebar"~file_lang_path~".md") %}
+            {{ custom_sidebar.content | safe }}
 
               {% set all_categories = get_taxonomy(kind="categories",lang=lang) -%}
 
