@@ -45,14 +45,6 @@
       {% endfor %}
     {% endif %}
 
-    {# 如果有特殊日期配置,显示祝福横幅 #}
-    {% if matched_config %}
-      <div class="birthday-banner">
-        <h1 class="birthday-title">🎂 今天是 {{ config.title }} 的{{ matched_config.title }}！🎉</h1>
-        <p class="birthday-message">{{ matched_config.message }}</p>
-      </div>
-    {% endif %}
-
     <div class="main-box-block">
       <h1>{{ page.title }}</h1>
       <p class="special-date-description">{{ page.description }}</p>
@@ -121,7 +113,7 @@
     {{ macro::webmentions(backlinks=page.backlinks) }}
   </div>
 
-  {# 如果有特殊日期配置,加载生日动画 #}
+  {# 如果有特殊日期配置,加载生日开场动画 #}
   {% if matched_config %}
     <script src="{{ get_url(path='site/js/birthday-intro.js') }}"></script>
     <script>
@@ -133,8 +125,6 @@
         '{{ get_url(path="site/animations/birthday-cake-candles.json") }}'
       );
     </script>
-    <script src="{{ get_url(path='site/js/confetti.browser.min.js') }}"></script>
-    <script src="{{ get_url(path='site/js/birthday.js') }}"></script>
   {% endif %}
 {% endblock main %}
 

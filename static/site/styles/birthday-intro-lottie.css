@@ -30,6 +30,7 @@
     transform: scale(0.5);
     opacity: 0;
   }
+
   100% {
     transform: scale(1);
     opacity: 1;
@@ -48,9 +49,11 @@
     transform: scale(0);
     opacity: 0;
   }
+
   50% {
     transform: scale(1.05);
   }
+
   100% {
     transform: scale(1);
     opacity: 1;
@@ -72,19 +75,42 @@
   margin-top: 10px;
 }
 
+.skip-intro-btn {
+  margin-top: 30px;
+  padding: 12px 30px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #667eea;
+  background: #ffffff;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.skip-intro-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+  background: #f0f0f0;
+}
+
+.skip-intro-btn:active {
+  transform: translateY(0);
+}
+
 /* 响应式 */
 @media (max-width: 767px) {
   .birthday-lottie-container dotlottie-player {
     width: 300px !important;
     height: 300px !important;
   }
-  
+
   .birthday-message h1 {
     font-size: 36px;
   }
-  
+
   .birthday-message p {
     font-size: 16px;
   }
 }
-

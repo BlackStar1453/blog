@@ -30,6 +30,7 @@
           <h1>🎂 生日快乐 🎉</h1>
           <p>今天是 ${blogTitle} 的${specialTitle}!</p>
           <p style="font-size: 16px; margin-top: 20px; opacity: 0.8;">${specialMessage}</p>
+          <button id="skipIntroBtn" class="skip-intro-btn">进入页面 →</button>
         </div>
       </div>
     `;
@@ -55,10 +56,18 @@
       // 暂时禁用sessionStorage,始终播放动画
       // sessionStorage.setItem('birthday-intro-shown', 'true');
 
-      // 5秒后淡出(Lottie动画会循环播放)
-      setTimeout(function () {
-        fadeOutIntro();
-      }, 5000);
+      // 绑定按钮点击事件
+      var skipBtn = document.getElementById('skipIntroBtn');
+      if (skipBtn) {
+        skipBtn.addEventListener('click', function () {
+          fadeOutIntro();
+        });
+      }
+
+      // 不再自动淡出,由用户点击按钮控制
+      // setTimeout(function () {
+      //   fadeOutIntro();
+      // }, 5000);
     }).catch(function (error) {
       console.error('[Birthday Intro] Failed to load lottie-player:', error);
     });
