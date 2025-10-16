@@ -64,7 +64,8 @@ enabled = false
 # twitter = "yourusername"
 # mastodon = "https://mastodon.social/@yourusername"
 
-
+[extra.special_dates]
+# 特殊日期配置 - 在特定日期显示横幅并收集往年同日内容
 [[extra.special_dates.dates]]
 month = 10
 day = 20

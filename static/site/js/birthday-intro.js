@@ -3,10 +3,9 @@
 
   // 检查是否应该显示开场动画
   function shouldShowIntro() {
-    // 暂时禁用sessionStorage检查,方便测试
-    // if (sessionStorage.getItem('birthday-intro-shown')) {
-    //   return false;
-    // }
+    if (sessionStorage.getItem('birthday-intro-shown')) {
+      return false;
+    }
     return true;
   }
 
@@ -41,11 +40,17 @@
       return;
     }
 
+    // 检查lottie-player是否已加载
+    if (typeof window.customElements === 'undefined' || !window.customElements.get('lottie-player')) {
+      console.error('[Birthday Intro] lottie-player not loaded!');
+      return;
+    }
+
     // 插入HTML
     document.body.insertAdjacentHTML('beforeend', createIntroHTML(blogTitle, specialTitle, specialMessage, animationPath));
 
-    // 暂时禁用sessionStorage标记,方便测试
-    // sessionStorage.setItem('birthday-intro-shown', 'true');
+    // 启用sessionStorage标记,避免刷新重复播放
+    sessionStorage.setItem('birthday-intro-shown', 'true');
 
     // 5秒后淡出(Lottie动画会循环播放)
     setTimeout(function () {
