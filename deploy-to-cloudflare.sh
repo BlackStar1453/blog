@@ -108,7 +108,20 @@ deploy_to_cloudflare() {
 
         return 0
     else
-        log_error "部署失败"
+        log_error "❌ 部署失败,请检查上方错误信息"
+        echo ""
+        echo "常见问题:"
+        echo "  • 项目名称格式错误(应该已被验证,但可能 Cloudflare 有额外限制)"
+        echo "  • 网络连接问题"
+        echo "  • Cloudflare 账户权限不足"
+        echo "  • public 目录为空或构建失败"
+        echo ""
+        echo "建议操作:"
+        echo "  1. 检查网络连接"
+        echo "  2. 确认 Cloudflare 账户已登录: wrangler whoami"
+        echo "  3. 检查 public 目录是否存在且有内容: ls -la public/"
+        echo "  4. 查看完整错误信息并根据提示操作"
+        echo ""
         return 1
     fi
 }
@@ -148,24 +161,92 @@ update_config_urls() {
     fi
 }
 
+# 验证项目名称格式
+validate_project_name() {
+    local name="$1"
+
+    # 检查长度(1-58字符)
+    if [ ${#name} -lt 1 ] || [ ${#name} -gt 58 ]; then
+        return 1
+    fi
+
+    # 检查格式:只允许小写字母、数字和连字符,不能以连字符开头或结尾
+    if ! [[ "$name" =~ ^[a-z0-9]([a-z0-9-]{0,56}[a-z0-9])?$ ]]; then
+        return 1
+    fi
+
+    return 0
+}
+
 # 获取或创建项目
 get_or_create_project() {
     log_info "检查 Cloudflare Pages 项目..."
-    
+
     # 列出现有项目
     echo ""
     echo "现有的 Cloudflare Pages 项目："
     wrangler pages project list 2>/dev/null || echo "  (无)"
     echo ""
-    
-    echo -n "请输入项目名称（新建或使用现有）: "
-    read -r project_name < /dev/tty
-    
-    if [ -z "$project_name" ]; then
-        log_error "项目名称不能为空"
+
+    # 显示项目名称要求
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "📝 项目名称要求:"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "  • 长度: 1-58 个字符"
+    echo "  • 字符: 只能包含小写字母(a-z)、数字(0-9)和连字符(-)"
+    echo "  • 限制: 不能以连字符开头或结尾"
+    echo "  • 示例: my-blog, blog-2024, personal-website"
+    echo ""
+
+    local project_name
+    local attempts=0
+    local max_attempts=3
+
+    while [ $attempts -lt $max_attempts ]; do
+        echo -n "请输入项目名称（新建或使用现有）: "
+        read -r input_name < /dev/tty
+
+        if [ -z "$input_name" ]; then
+            log_error "项目名称不能为空"
+            attempts=$((attempts + 1))
+            continue
+        fi
+
+        # 自动转换为小写
+        project_name=$(echo "$input_name" | tr '[:upper:]' '[:lower:]')
+
+        # 如果转换后与输入不同,提示用户
+        if [ "$project_name" != "$input_name" ]; then
+            log_info "已自动转换为小写: $project_name"
+        fi
+
+        # 验证格式
+        if validate_project_name "$project_name"; then
+            log_success "✅ 项目名称格式正确: $project_name"
+            break
+        else
+            log_error "❌ 项目名称格式错误"
+            echo ""
+            echo "错误原因可能是:"
+            echo "  • 包含大写字母(已自动转换,但可能还有其他问题)"
+            echo "  • 包含特殊字符(只允许字母、数字和连字符)"
+            echo "  • 以连字符开头或结尾"
+            echo "  • 长度不在 1-58 字符范围内"
+            echo ""
+            attempts=$((attempts + 1))
+
+            if [ $attempts -lt $max_attempts ]; then
+                echo "请重新输入 ($((max_attempts - attempts)) 次机会剩余)..."
+                echo ""
+            fi
+        fi
+    done
+
+    if [ $attempts -eq $max_attempts ]; then
+        log_error "超过最大尝试次数,退出"
         exit 1
     fi
-    
+
     # 尝试创建项目（如果已存在会失败，但不影响后续部署）
     log_info "准备项目: $project_name"
     if wrangler pages project create "$project_name" --production-branch="main" 2>/dev/null; then
@@ -173,7 +254,7 @@ get_or_create_project() {
     else
         log_info "项目已存在，将直接部署"
     fi
-    
+
     echo "$project_name"
 }
 
