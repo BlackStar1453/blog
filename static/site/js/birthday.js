@@ -35,7 +35,8 @@
       shapes: [cake, party],
       gravity: randomInRange(0.4, 0.6),
       scalar: randomInRange(0.8, 1.2),
-      drift: randomInRange(-0.4, 0.4)
+      drift: randomInRange(-0.4, 0.4),
+      flat: true
     });
 
     if (timeLeft > 0) {
