@@ -117,9 +117,9 @@
   {% if matched_config %}
     <script src="{{ get_url(path='site/js/birthday-intro.js') }}"></script>
     <script>
-      // 初始化开场动画 - 使用JSON格式避免.lottie文件的XMLHttpRequest错误
+      // 初始化开场动画 - 使用作者名字而不是博客标题
       initBirthdayIntro(
-        '{{ config.title }}',
+        '{{ config.extra.author }}',
         '{{ matched_config.title }}',
         '{{ matched_config.message }}',
         '{{ get_url(path="site/animations/birthday-cake-candles.json") }}'
