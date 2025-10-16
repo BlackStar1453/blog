@@ -70,26 +70,27 @@
         {# 过滤出匹配目标日期的页面 #}
         {% set_global matched_pages = [] -%}
         {% for page_item in all_pages -%}
+          {% set should_add = false %}
+
+          {# 检查date字段是否匹配 #}
           {% if page_item.date %}
             {% set page_date = page_item.date | date(format="%m-%d") %}
             {% if page_date == page.extra.target_date %}
-              {% set_global matched_pages = matched_pages | concat(with=page_item) -%}
+              {% set should_add = true %}
             {% endif %}
           {% endif %}
-          {% if page_item.updated %}
+
+          {# 如果date不匹配,检查updated字段 #}
+          {% if not should_add and page_item.updated %}
             {% set page_updated = page_item.updated | date(format="%m-%d") %}
             {% if page_updated == page.extra.target_date %}
-              {# 检查是否已经添加过这个页面 #}
-              {% set already_added = false %}
-              {% for existing in matched_pages %}
-                {% if existing.permalink == page_item.permalink %}
-                  {% set_global already_added = true %}
-                {% endif %}
-              {% endfor %}
-              {% if not already_added %}
-                {% set_global matched_pages = matched_pages | concat(with=page_item) -%}
-              {% endif %}
+              {% set should_add = true %}
             {% endif %}
+          {% endif %}
+
+          {# 添加页面 #}
+          {% if should_add %}
+            {% set_global matched_pages = matched_pages | concat(with=page_item) -%}
           {% endif %}
         {% endfor -%}
         

@@ -165,8 +165,11 @@
         if (article.year !== targetYear) return false;
 
         const articleDate = formatDate(article.date);
+        // 优先使用date字段,如果date不匹配则检查updated字段
+        if (articleDate === targetMonthDay) return true;
+
         const articleUpdated = formatDate(article.updated);
-        return articleDate === targetMonthDay || articleUpdated === targetMonthDay;
+        return articleUpdated === targetMonthDay;
       });
 
       titleText = targetYear + '年' + targetMonthDay.replace('-', '月') + '日';
@@ -177,8 +180,11 @@
 
       matchedArticles = allArticles.filter(function(article) {
         const articleDate = formatDate(article.date);
+        // 优先使用date字段,如果date不匹配则检查updated字段
+        if (articleDate === targetMonthDay) return true;
+
         const articleUpdated = formatDate(article.updated);
-        return articleDate === targetMonthDay || articleUpdated === targetMonthDay;
+        return articleUpdated === targetMonthDay;
       });
 
       titleText = targetMonthDay.replace('-', '月') + '日 (所有年份)';
