@@ -13,6 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          submodules: false  # 禁用 submodule,apple_cloud_notes_parser 仅用于本地 macOS
       - run: make install
       - name: Build Site
         run: make build
