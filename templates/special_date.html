@@ -5,7 +5,7 @@
   <link rel="stylesheet" href="{{ get_url(path='site/styles/birthday.css') }}">
   {% if special_config %}
     <link rel="stylesheet" href="{{ get_url(path='site/styles/birthday-intro-lottie.css') }}">
-    <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script>
+    <script src="{{ get_url(path='site/js/lottie-player.min.js') }}"></script>
   {% endif %}
 {% endblock extra_head %}
 
@@ -111,7 +111,12 @@
     <script src="{{ get_url(path='site/js/birthday-intro.js') }}"></script>
     <script>
       // 初始化开场动画
-      initBirthdayIntro('{{ config.title }}', '{{ special_config.title }}', '{{ special_config.message }}');
+      initBirthdayIntro(
+        '{{ config.title }}',
+        '{{ special_config.title }}',
+        '{{ special_config.message }}',
+        '{{ get_url(path="site/animations/birthday-cake.lottie") }}'
+      );
     </script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
     <script src="{{ get_url(path='site/js/birthday.js') }}"></script>

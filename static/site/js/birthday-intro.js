@@ -11,18 +11,19 @@
   }
 
   // 创建开场动画HTML
-  function createIntroHTML(blogTitle, specialTitle, specialMessage) {
+  function createIntroHTML(blogTitle, specialTitle, specialMessage, animationPath) {
     return `
       <div class="birthday-intro-overlay" id="birthdayIntro">
         <div class="birthday-lottie-container">
-          <dotlottie-player
+          <lottie-player
             id="birthdayLottie"
-            src="https://assets-v2.lottiefiles.com/a/94324332-118b-11ee-91df-6b2b59a306dd/F0GPVo1r7q.lottie"
+            src="${animationPath}"
             background="transparent"
             speed="1"
             style="width: 400px; height: 400px;"
+            loop
             autoplay>
-          </dotlottie-player>
+          </lottie-player>
         </div>
 
         <div class="birthday-message">
@@ -35,26 +36,18 @@
   }
 
   // 初始化开场动画
-  function initBirthdayIntro(blogTitle, specialTitle, specialMessage) {
+  function initBirthdayIntro(blogTitle, specialTitle, specialMessage, animationPath) {
     if (!shouldShowIntro()) {
       return;
     }
 
     // 插入HTML
-    document.body.insertAdjacentHTML('beforeend', createIntroHTML(blogTitle, specialTitle, specialMessage));
+    document.body.insertAdjacentHTML('beforeend', createIntroHTML(blogTitle, specialTitle, specialMessage, animationPath));
 
     // 暂时禁用sessionStorage标记,方便测试
     // sessionStorage.setItem('birthday-intro-shown', 'true');
 
-    // 监听Lottie动画完成事件
-    var lottiePlayer = document.getElementById('birthdayLottie');
-    if (lottiePlayer) {
-      lottiePlayer.addEventListener('complete', function () {
-        fadeOutIntro();
-      });
-    }
-
-    // 备用:5秒后强制淡出
+    // 5秒后淡出(Lottie动画会循环播放)
     setTimeout(function () {
       fadeOutIntro();
     }, 5000);
