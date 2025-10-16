@@ -118,7 +118,7 @@
         '{{ get_url(path="site/animations/birthday-confetti-balloon.lottie") }}'
       );
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+    <script src="{{ get_url(path='site/js/confetti.browser.min.js') }}"></script>
     <script src="{{ get_url(path='site/js/birthday.js') }}"></script>
   {% endif %}
 {% endblock main %}
