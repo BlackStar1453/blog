@@ -68,8 +68,8 @@ enabled = false
 [[extra.special_dates.dates]]
 month = 10
 day = 20
-title = "生日！"
-message = "这是另一个特殊日期！🎊"
+title = "生日！生日快乐！"
+message = "你可以在这个页面找到所有你生日那天发布的文章"
 banner_color = "#4a90e2"
 text_color = "#ffffff"
 

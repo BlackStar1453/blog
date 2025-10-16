@@ -35,7 +35,8 @@
       gravity: randomInRange(0.4, 0.6),
       scalar: randomInRange(0.8, 1.2),
       drift: randomInRange(-0.4, 0.4),
-      flat: true
+      flat: true,
+      opacity: 1.0
     });
 
     if (timeLeft > 0) {
