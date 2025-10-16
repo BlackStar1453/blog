@@ -125,12 +125,12 @@
   {% if matched_config %}
     <script src="{{ get_url(path='site/js/birthday-intro.js') }}"></script>
     <script>
-      // 初始化开场动画
+      // 初始化开场动画 - 使用JSON格式避免.lottie文件的XMLHttpRequest错误
       initBirthdayIntro(
         '{{ config.title }}',
         '{{ matched_config.title }}',
         '{{ matched_config.message }}',
-        '{{ get_url(path="site/animations/birthday-confetti-balloon.lottie") }}'
+        '{{ get_url(path="site/animations/birthday-celebration.json") }}'
       );
     </script>
     <script src="{{ get_url(path='site/js/confetti.browser.min.js') }}"></script>
