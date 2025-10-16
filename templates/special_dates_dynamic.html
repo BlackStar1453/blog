@@ -3,7 +3,7 @@
 
 {% block main %}
 {# 收集所有文章 #}
-{% set all_section = get_section(path="blog/_index.md") %}
+{% set all_section = get_section(path="_index.md") %}
 {% set_global all_pages = [] %}
 
 {# 添加根section的页面 #}
@@ -88,8 +88,8 @@
   // 防止重复初始化
   let initialized = false;
 
-  // 所有文章数据
-  const allArticles = [
+  // 所有文章数据（原始）
+  const allArticlesRaw = [
     {% for page_item in all_pages %}
       {% if page_item.date or page_item.updated %}
       {
@@ -104,6 +104,20 @@
     {% endfor %}
   ];
 
+  // 去重，按 permalink 去重
+  const allArticles = (function(arr) {
+    const seen = {};
+    const out = [];
+    for (const a of arr) {
+      if (!a || !a.permalink) continue;
+      if (seen[a.permalink]) continue;
+      seen[a.permalink] = 1;
+      out.push(a);
+    }
+    console.debug('[special-dates] total articles (raw, unique):', arr.length, out.length);
+    return out;
+  })(allArticlesRaw);
+
   // 从URL hash中获取日期
   // 从URL查询参数中获取日期信息
   // 支持两种格式:
@@ -112,6 +126,7 @@
   function getDateFromURL() {
     const urlParams = new URLSearchParams(window.location.search);
     const dateParam = urlParams.get('date');
+    console.debug('[special-dates] URL date param:', dateParam);
 
     if (!dateParam) {
       return null;
@@ -119,41 +134,41 @@
 
     // 格式1: YYYY-MM-DD
     if (/^\d{4}-\d{2}-\d{2}$/.test(dateParam)) {
-      return {
+      const info = {
         type: 'specific',
         year: dateParam.substring(0, 4),
         monthDay: dateParam.substring(5) // MM-DD
       };
+      console.debug('[special-dates] parsed dateInfo (specific):', info);
+      return info;
     }
 
     // 格式2: MM-DD
     if (/^\d{2}-\d{2}$/.test(dateParam)) {
-      return {
+      const info = {
         type: 'all-years',
         monthDay: dateParam
       };
+      console.debug('[special-dates] parsed dateInfo (all-years):', info);
+      return info;
     }
 
+    console.warn('[special-dates] invalid date param format:', dateParam);
     return null;
   }
 
-  // 格式化日期为 MM-DD
+  // 格式化日期为 MM-DD（使用字符串切片避免时区偏移）
   function formatDate(dateStr) {
     if (!dateStr) return null;
-    const date = new Date(dateStr);
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return month + '-' + day;
+    // 期望 ISO 字符串，如 2022-03-23T00:00:00+00:00
+    const full = dateStr.slice(0, 10); // YYYY-MM-DD
+    return full.slice(5, 10); // MM-DD
   }
 
-  // 格式化日期为 YYYY-MM-DD
+  // 格式化日期为 YYYY-MM-DD（使用字符串切片避免时区偏移）
   function formatFullDate(dateStr) {
     if (!dateStr) return null;
-    const date = new Date(dateStr);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return year + '-' + month + '-' + day;
+    return dateStr.slice(0, 10);
   }
 
   // 渲染特定日期的文章
@@ -165,6 +180,8 @@
 
     let matchedArticles;
     let titleText;
+    console.debug('[special-dates] allArticles (unique) count:', allArticles.length);
+    console.debug('[special-dates] dateInfo:', dateInfo);
 
     if (dateInfo.type === 'specific') {
       // 日历点击: 只显示特定年份+日期的内容
@@ -198,6 +215,16 @@
 
       titleText = targetMonthDay.replace('-', '月') + '日 (所有年份)';
     }
+
+    // debug
+    (function(){
+      const permas = matchedArticles.map(a => a.permalink);
+      const dupCheck = new Set();
+      const dups = [];
+      for (const p of permas) { if (dupCheck.has(p)) dups.push(p); else dupCheck.add(p); }
+      console.debug('[special-dates] matched count:', matchedArticles.length, 'duplicates:', dups.length);
+      if (dups.length) console.warn('[special-dates] duplicate permalinks detected:', dups);
+    })();
 
     if (matchedArticles.length === 0) {
       contentEl.innerHTML = '<div class="no-articles">该日期暂无内容</div>';
