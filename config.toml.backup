@@ -1,78 +1,64 @@
-base_url = "https://blog-1920.pages.dev"
+base_url = "https://yaoyaoyao111.com"
 build_search_index = false
 compile_sass = false
 default_language = "zh"
-description = "yao"
+description = "关于我的生命的一切。"
 generate_feed = true
 generate_rss = true
 taxonomies = [
   { name = "tags", feed = true, paginate_by = 50 },
   { name = "categories", feed = true, paginate_by = 50 },
 ]
-title = "yao"
+title = "Yao的博客"
 
 [markdown]
+# When set to "true", all code blocks are highlighted.
 highlight_code = true
+# highlight_theme = "material-dark"
+# Whether external links are to be opened in a new tab
+# If this is true, a `rel="noopener"` will always automatically be added for security reasons
 external_links_target_blank = true
+
+# Whether to set rel="nofollow" for all external links
 external_links_no_follow = true
+
+# Whether to set rel="noreferrer" for all external links
 external_links_no_referrer = true
 smart_punctuation = true
 
 [extra]
-author = "yao"
-email = "yao"
-prefix_url = "https://blog-1920.pages.dev"
-indieweb_url = "https://blog-1920.pages.dev"
+author = "Yao"
+email = "yaozeng1999@gmail.com"
+prefix_url = "https://yaoyaoyao111.com"
+indieweb_url = "https://yaoyaoyao111.com"
 theme_color = "#fffcf9"
-# meilisearch_url = "https://search.yourdomain.com"
-# meilisearch_api_key = "your_search_api_key"
-bio = "Your bio description here."
-edit_url_prefix = "https://github.com/moris1999/blog/edit/main/content/"
-github_user = "moris1999"
-
-# Uncomment and configure these if needed
+meilisearch_url = "https://meilisearch.yaoyaoyao111.com"
+meilisearch_api_key = "fb8ab67a7ec1d9f57008c0c610dfc0743ed0f62619097fc259921dfd7d691ea5"
+### indieweb note
+bio = "Web developer, I like reading and explore the internet, so I have collected queit a few notes in my blog."
+### THIRD PARTY
 # google_analytics = "UA-012345-67"
 # disqus = "disqus-user"
 
-[extra.nav]
-show_feed = true
-show_tags = true
-show_categories = true
-show_search = false
+### SOCIAL MEDIA
+# https://github.com/BlackStar1453/blog/edit/main/content/blog/indieweb.en.md
+edit_url_prefix = "https://github.com/BlackStar1453/blog/edit/main/content/"
+github_user = "BlackStar1453"
+image = "https://www.yaoyaoyao111.com/heading.jpg"
+"label_action_in-reply-to" = "replied"
+"label_action_like-of" = "liked"
+"label_action_mention-of" = "mentioned"
+"label_action_reply-to" = "replied"
+"label_action_repost-of" = "reposted"
+"label_action_rsvp" = "answered"
+twitter_user = "BlackStar1453"
+webmention_path = "webmentions"
+### I18N WORDS
 
-[extra.footer]
-since = 2024
-license = "CC BY-SA 4.0"
-license_link = "https://creativecommons.org/licenses/by-sa/4.0/"
-
-[extra.style]
-back_to_top = true
-blog_categorized = true
-blur_effect = true
-header_blur = false
-toc = true
-
-[extra.comments]
-enabled = false
-
-[extra.analytics]
-enabled = false
-
-[extra.social]
-# Add your social media links here
-# github = "yourusername"
-# twitter = "yourusername"
-# mastodon = "https://mastodon.social/@yourusername"
-
-[extra.special_dates]
-# 特殊日期配置 - 在特定日期显示横幅并收集往年同日内容
-[[extra.special_dates.dates]]
-month = 10
-day = 20
-title = "生日！生日快乐！"
-message = "你可以在这个页面找到所有你生日那天发布的文章"
-banner_color = "#4a90e2"
-text_color = "#ffffff"
+[slugify]
+anchors = "on"
+paths = "on"
+taxonomies = "on"
 
 [translations]
 label_toggle_more = "展开全部"
@@ -112,7 +98,7 @@ label_full_reading = "全文阅读"
 "label_repost-of" = "转发"
 label_response = "回应区"
 label_reply = "回应"
-label_response_description = "以上的响应由 [webmention.io](https://webmention.io/) 收集"
+label_response_description = "以上的响应由 [webmention.io](https://webmention.io/) 收集，我记了[一篇](/content/blog/indieweb.en.md)如何实现这个的笔记。"
 label_rss = "订阅RSS"
 "label_rsvp" = "答复"
 label_table_contents = "快速导航"
@@ -124,17 +110,15 @@ label_taxonomy = "类别"
 label_thoughts_title = "最新的[短想法](/thoughts/)："
 label_quotes_title = "最新的[摘录](/quotes/)："
 label_updated = "最后更新时间"
-
 [languages.en]
 build_search_index = false
 generate_feed = true
-description = "Your blog description in English"
-title = "yao"
+description = "Mainly focus on technology, reading, excerpts, miscellaneous, article review, tool sharing, workflow, inspiration, English learning, attention management, deep work and other directions"
 taxonomies = [
   { name = "tags", feed = true, paginate_by = 25 },
   { name = "categories", feed = true, paginate_by = 25 },
 ]
-
+title = "Yao Young's Blog"
 [languages.en.translations]
 keywords = "Focus, Reading, Tool sharing, Plain text, English learning"
 label_activity = "Activity"
@@ -155,7 +139,7 @@ label_full_reading = "Reading Time"
 label_edit = "Edit this page"
 "label_follow-of" = "Follows"
 label_home = "Home"
-label_blog_home = "Blog Home"
+label_blog_home ="Blog Home"
 "label_in-reply-to" = "Replies"
 label_latest_notes_title = "[Recently Updated Notes](/en/categories/notes/):"
 label_latest_articles_title = "[Recently Updated Posts](/en/blog/):"
@@ -173,7 +157,7 @@ label_read_more = "Continue to Read"
 label_reading = "Reading Time"
 "label_repost-of" = "Reposts"
 label_response = "Response"
-label_response_description = "The above responses are collected by the [webmention.io](https://webmention.io/) service"
+label_response_description = "The above responses are collected by the [webmention.io](https://webmention.io/) service. I also wrote [an article](/content/blog/indieweb.en.md) about how to achieve this."
 label_rss = "Subscribe RSS"
 "label_rsvp" = "RSVP"
 label_table_contents = "On this page"

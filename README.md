@@ -1,98 +1,168 @@
-# Owen's Blog
+# Personal Blog Template
 
-The blog is built with [Zola](https://www.getzola.org/), for my personal need, I've use [my forked version](https://github.com/theowenyoung/zola) to build it.
+一个功能丰富的个人博客模板，基于 [Zola](https://www.getzola.org/) 静态站点生成器构建。
 
-> The only change is that I use `/content/xxx.md` instead of `@/xxx.md` to refer the internal markdown files, so that the editor can also go to the linked file.
+## ✨ 特性
 
-> [Related docments](https://www.getzola.org/documentation/content/linking/)
->
-> [Related Issue 1](https://github.com/getzola/zola/issues/686)
+- 📝 **多种内容类型**：文章、想法、诗歌、故事、翻译、引用等
+- 🏷️ **完整的分类系统**：标签和分类支持
+- 🔍 **搜索功能**：可选的Meilisearch搜索集成
+- 📱 **响应式设计**：适配各种设备
+- 🎵 **音频播放器**：支持音频内容嵌入
+- 🔄 **自动化同步**：从Apple备忘录自动同步内容
+- 🐘 **社交媒体集成**：支持Mastodon自动发布
+- 🚀 **自动部署**：GitHub Actions自动构建部署
 
-[Visit it Online](https://www.owenyoung.com)
+## 🚀 快速开始
 
-## Install
+### 1. 克隆仓库
+
+```bash
+git clone <your-repo-url>
+cd <your-repo-name>
+```
+
+### 2. 初始化模板
+
+```bash
+# 给脚本执行权限
+chmod +x init-template.sh
+
+# 运行初始化脚本
+./init-template.sh
+```
+
+### 3. 配置个人信息
+
+编辑 `config.toml` 文件，修改以下信息：
+
+```toml
+base_url = "https://yourdomain.com"
+title = "Your Blog Title"
+description = "Your blog description"
+
+[extra]
+author = "Your Name"
+email = "your.email@example.com"
+```
+
+### 4. 安装依赖
 
 ```bash
 make install
 ```
 
-## Local Serve
+### 5. 本地预览
 
 ```bash
 make serve
 ```
 
-## Local Build
+访问 http://localhost:1111 查看你的博客。
+
+## 📝 内容创建
+
+### 手动创建内容
+
+使用内置的脚本快速创建各种类型的内容：
+
+```bash
+# 添加短想法
+./scripts/blog-helper.sh thought "你的想法内容"
+
+# 创建新文章
+./scripts/blog-helper.sh create "blog" "文章标题"
+
+# 创建诗歌
+./scripts/blog-helper.sh create "poem" "诗歌标题"
+```
+
+### 自动同步（macOS）
+
+如果你使用macOS，可以设置从Apple备忘录自动同步内容：
+
+```bash
+# 安装依赖
+./scripts/setup-dependencies.sh
+
+# 设置自动同步
+./scripts/blog-helper.sh auto-sync install
+```
+
+支持的标签类型：
+- `#thought` - 短想法
+- `#日记` - 日记
+- `#读书` - 读书笔记
+- `#诗歌` - 诗歌
+- `#故事` - 故事
+- `#技术` - 技术文章
+- 更多标签请查看 `multi_tag_config.json`
+
+## 🛠️ 构建和部署
+
+### 本地构建
 
 ```bash
 make build
 ```
 
-## Usage
+### 部署到GitHub Pages
 
-### Write
+1. 在GitHub仓库设置中启用GitHub Pages
+2. 推送代码到main分支，GitHub Actions会自动构建和部署
 
-I use [Foam Lite](https://marketplace.visualstudio.com/items?itemName=theowenyoung.foam-lite-vscode) to help me input internal links quickly.
+### 自定义域名
 
-![](https://i.imgur.com/sYmKeKO.gif)
+1. 修改 `static/CNAME` 文件
+2. 在 `config.toml` 中更新 `base_url`
 
-I also use [Simple bash to generate template markdown file for the initial blog post](/content/blog/generate-template-markdown-file-with-bash/index.en.md).
+## 🔧 高级配置
 
-### Search
+### 搜索功能
 
-I use [Meilisearch](https://github.com/meilisearch/meilisearch) to index my blog, and I introduced it in [this article](https://www.owenyoung.com/blog/add-search/).
+如果需要启用搜索功能，需要配置Meilisearch：
 
-How to init the search? the install script is in my [dotfiles](https://github.com/theowenyoung/dotfiles):
+1. 部署Meilisearch服务
+2. 在 `config.toml` 中配置搜索相关设置
+3. 运行搜索索引构建
 
-```bash
-./modules/meilisearch/install_meilisearch_debian.sh
-ca meilisearch
+### Mastodon集成
+
+配置Mastodon自动发布：
+
+1. 创建 `.env` 文件
+2. 添加Mastodon配置信息
+3. 启用自动同步
+
+## 📁 目录结构
+
+```
+├── content/              # 内容文件
+│   ├── blog/            # 博客文章
+│   ├── thoughts/        # 短想法
+│   ├── poem/            # 诗歌
+│   └── ...
+├── static/              # 静态资源
+├── templates/           # 模板文件
+├── scripts/             # 自动化脚本
+├── config.toml          # 主配置文件
+└── init-template.sh     # 模板初始化脚本
 ```
 
-Get the meilisear admin api key:
+## 🤝 贡献
 
-```bash
-# TEMP_MEILISEARCH_API_KEY is the master key
-curl \
-  -X GET 'https://meilisearch.owenyoung.com/keys' \
-  -H "Authorization: Bearer $TEMP_MEILISEARCH_API_KEY" \
-  | json_pp
-```
+欢迎提交Issue和Pull Request来改进这个模板。
 
-Then add the admin api key to [github actions secrets](https://github.com/theowenyoung/blog/settings/secrets/actions), then run [build site search index](https://github.com/theowenyoung/blog/actions/workflows/build-index-only.yml).
+## 📄 许可证
 
-Then, change the `config.toml` -> `meilisearch_api_key` to the user search api key with the above result.
+本项目采用 MIT 许可证。详见 [LICENSE](LICENSE) 文件。
 
-In the future, the [build workflow](https://github.com/theowenyoung/blog/blob/main/.github/workflows/build.yml) will take care of the search indexing automatically.
+## 🙏 致谢
 
-### Audio player
+- [Zola](https://www.getzola.org/) - 静态站点生成器
+- [APlayer](https://aplayer.js.org/) - 音频播放器
+- [Meilisearch](https://github.com/meilisearch/meilisearch) - 搜索引擎
 
-Use the `audio_player` shortcode to embed tracks in any Markdown document. The player is powered by [APlayer](https://aplayer.js.org/) and works with local assets placed under the `static/` directory or remote files hosted on a CDN.
+---
 
-```tera
-{{ audio_player(src="/media/song.mp3", title="Song title", artist="Artist name") }}
-```
-
-You can pass additional options when needed:
-
-```tera
-{{ audio_player(
-    src="https://cdn.example.com/audio/podcast.mp3",
-    title="Episode 1",
-    artist="Podcast Channel",
-    cover="/media/covers/episode-1.jpg",
-    lrc="/media/captions/episode-1.lrc",
-    autoplay=false,
-    loop="none",
-    preload="metadata",
-    fixed=false,
-    mini=false,
-    list_folded=false,
-    mutex=true,
-    volume=0.7,
-) }}
-```
-
-Only the `src` parameter is required. When `src` points to a relative path, it is resolved via `get_url`, so both `/media/example.mp3` (from `static/media/example.mp3`) and full CDN URLs work out of the box. Optional fields such as `cover` and `lrc` are also resolved in the same way, making it easy to reference artwork or lyric files that live alongside your audio.
-
-The APlayer assets that power the shortcode are vendored locally under `static/site/vendor/aplayer`. To update them, download a newer release into that folder (for example via `curl -L https://cdn.jsdelivr.net/npm/aplayer@<version>/dist/APlayer.min.{js,css}`) before running `make build`. If the JavaScript bundle cannot be loaded at runtime, the shortcode falls back to a native `<audio>` element so visitors can still listen to the track.
+如果这个模板对你有帮助，请给个⭐️！

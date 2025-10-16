@@ -1,0 +1,215 @@
+/* 侧边栏日历样式 */
+.sidebar-calendar {
+  margin-top: 1.5rem;
+}
+
+.calendar-container {
+  background: var(--colors-surface);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 0.5rem;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding: 0;
+}
+
+.calendar-month-year {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-weight: 500;
+  color: var(--colors-text);
+  font-size: 0.9rem;
+}
+
+.calendar-year-nav {
+  background: none;
+  border: none;
+  color: var(--colors-primary);
+  cursor: pointer;
+  font-size: 1.1rem;
+  padding: 0.25rem 0.5rem;
+  transition: opacity 0.2s ease;
+  font-weight: 600;
+}
+
+.calendar-year-nav:hover {
+  opacity: 0.7;
+}
+
+.calendar-nav-btn {
+  background: none;
+  border: none;
+  color: var(--colors-primary);
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0.25rem 0.5rem;
+  transition: opacity 0.2s ease;
+}
+
+.calendar-nav-btn:hover {
+  opacity: 0.7;
+}
+
+.calendar-display-text {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0 0.5rem;
+}
+
+.calendar-year-text {
+  font-weight: 600;
+  color: var(--colors-text);
+}
+
+.calendar-month-text {
+  font-weight: 500;
+  color: var(--colors-muted);
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.25rem;
+}
+
+.calendar-weekday {
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--colors-muted);
+  padding: 0.25rem;
+  font-weight: 500;
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  color: var(--colors-text);
+  border-radius: 4px;
+  cursor: default;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.calendar-day.empty {
+  visibility: hidden;
+}
+
+.calendar-day.other-month {
+  color: var(--colors-muted);
+  opacity: 0.4;
+}
+
+/* 今天 - 使用蓝色 */
+.calendar-day.today {
+  background: #4a90e2;
+  color: white;
+  font-weight: 600;
+}
+
+.calendar-day.today:hover {
+  background: #4a90e2;
+  opacity: 0.9;
+}
+
+/* 有内容的日期 - 使用浅红色 */
+.calendar-day.has-content {
+  background: rgba(204, 51, 85, 0.1);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.calendar-day.has-content:hover {
+  background: rgba(204, 51, 85, 0.2);
+  transform: scale(1.1);
+}
+
+/* 内容指示点 */
+.calendar-day.has-content::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 3px;
+  height: 3px;
+  background: var(--colors-primary);
+  border-radius: 50%;
+}
+
+/* 特殊日期 - 使用更深的红色 */
+.calendar-day.special-date {
+  background: rgba(6, 226, 43, 0.276) !important;
+  cursor: pointer;
+}
+
+.calendar-day.special-date:hover {
+  background: rgba(6, 226, 43, 0.276) !important;
+  transform: scale(1.1);
+}
+
+.calendar-day.special-date::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 5px;
+  height: 5px;
+  background: rgba(153, 0, 0, 1) !important;
+  border-radius: 50%;
+}
+
+/* 今天且有内容 - 蓝色背景,白色文字 */
+.calendar-day.today.has-content {
+  background: #4a90e2;
+  color: white;
+}
+
+.calendar-day.today.has-content::after {
+  background: white;
+}
+
+/* 今天且是特殊日期 - 蓝色背景,白色文字 */
+.calendar-day.today.special-date {
+  background: #4a90e2;
+  color: white;
+}
+
+.calendar-day.today.special-date::after {
+  background: white;
+}
+
+/* 选中状态 */
+.calendar-day.selected {
+  box-shadow: 0 0 0 2px var(--colors-primary);
+  font-weight: 700;
+}
+
+.calendar-day.selected.has-content {
+  box-shadow: 0 0 0 2px var(--colors-primary);
+}
+
+.calendar-day.selected.special-date {
+  box-shadow: 0 0 0 2px #4a90e2;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .calendar-container {
+    padding: 0.75rem;
+  }
+
+  .calendar-day {
+    font-size: 0.75rem;
+  }
+}

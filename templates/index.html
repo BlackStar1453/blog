@@ -12,37 +12,94 @@
   {% endif %}
 {% endblock before_meta %}
 {% block post_meta %}
-  {%- if config.mode=="build" -%}
+  {%- if config.extra.meilisearch_url and config.mode=="build" -%}
     <style>{{meilicss | safe}}</style>
   {%- endif -%}
+  {# 特殊日期功能样式 #}
+  <link rel="stylesheet" href="{{ get_url(path='site/styles/special-date.css', trailing_slash=false, cachebust=true) | safe }}">
 {% endblock post_meta %}
 
 {% block sidebar_top %}{% endblock sidebar_top %}
 {% block header %}
+  {# 特殊日期横幅 - 极简文本风格 #}
+  {% if config.extra.special_dates and config.extra.special_dates.dates %}
+    {% set current_time = now() %}
+    {% set current_month = current_time | date(format="%m") | int %}
+    {% set current_day = current_time | date(format="%d") | int %}
+
+    {% set_global active_special_date = false %}
+    {% for special_date in config.extra.special_dates.dates %}
+      {% if special_date.month == current_month and special_date.day == current_day %}
+        {% set_global active_special_date = special_date %}
+        {% break %}
+      {% endif %}
+    {% endfor %}
+
+    {# 极简文本横幅 #}
+    <a id="special-date-banner"
+       class="special-date-banner"
+       href="/special-dates/{{ current_month }}-{{ current_day }}/"
+       data-special-dates='{{ config.extra.special_dates.dates | json_encode() | safe }}'
+       style="{% if not active_special_date %}display: none;{% endif %}">
+      <p class="special-date-banner-text">
+        {% if active_special_date %}
+          {{ active_special_date.message | default(value='今天是特殊的一天！🎉') }}
+        {% else %}
+          今天是特殊的一天！🎉
+        {% endif %}
+      </p>
+      <p class="special-date-banner-hint">今天发生了什么？</p>
+    </a>
+  {% endif %}
+
   {% set all_section_pages = get_section(path="_index"~file_lang_path~".md") -%}
-  {% set all_pages_sort_by_date = all_section_pages.pages | sort(attribute="updated") | reverse -%}
-  {% set total_word_count = 0 -%}
+
+  {# 收集所有页面，包括子section的页面 #}
+  {% set_global all_pages = [] -%}
+  {# 添加根section的页面 #}
   {% for page_item in all_section_pages.pages -%}
+    {% set_global all_pages = all_pages | concat(with=page_item) -%}
+  {% endfor -%}
+  {# 添加所有子section的页面 #}
+  {% for subsection in all_section_pages.subsections -%}
+    {% set subsection_data = get_section(path=subsection) -%}
+    {% for page_item in subsection_data.pages -%}
+      {% set_global all_pages = all_pages | concat(with=page_item) -%}
+    {% endfor -%}
+  {% endfor -%}
+
+  {# 收集有更新时间的页面 #}
+  {% set_global pages_with_updated = [] -%}
+  {% for page_item in all_pages -%}
+    {% if page_item.updated -%}
+      {% set_global pages_with_updated = pages_with_updated | concat(with=page_item) -%}
+    {% endif -%}
+  {% endfor -%}
+  {% set all_pages_sort_by_date = pages_with_updated | sort(attribute="updated") | reverse -%}
+
+  {# 计算总字数 #}
+  {% set total_word_count = 0 -%}
+  {% for page_item in all_pages -%}
     {% set_global total_word_count = total_word_count+page_item.word_count -%}
   {% endfor -%}
       <div class="header">
         <div class="header-inner">
         {% if config.default_language != lang %}
-          <p class="index-intro">I'm Yao Young, I've written
+          <p class="index-intro">I'm {{ config.extra.author }}, I've written
             <a href="{{ get_url(path="@/pages/archive.md",lang=lang) }}">
-              {{ all_section_pages.pages | length }}</a>
-            articles so far, about {{ total_word_count }} words, last updated on
-            <time datetime="{{ all_pages_sort_by_date[0].updated }}">{{ all_pages_sort_by_date[0].updated }}</time>. I position
+              {{ all_pages | length }}</a>
+            articles so far, about {{ total_word_count }} words{% if all_pages_sort_by_date | length > 0 %}, last updated on
+            <time datetime="{{ all_pages_sort_by_date[0].updated }}">{{ all_pages_sort_by_date[0].updated }}</time>{% endif %}. I position
               this as my personal digital garden, where all my notes, ideas are stored here. Cause I'm not a English native speaker,
               so there are also
             <a href="/">many posts/notes written by Chinese</a>,
-            <a href="{{ get_url(path="@/pages/now.md") }}">click to find out what I'm doing now</a>
+            <a href="{{ get_url(path="@/pages/now.md",lang=lang) }}">click to find out what I'm doing now</a>
           </p>
         {% else %}
-          <p class="index-intro">我是<a href="/about/">Yao</a>，截止目前已写了<a href="{{ get_url(path="@/pages/archive.md",lang=lang) }}">
-              {{ all_section_pages.pages | length }}</a>
-          篇文章，大约 {{ total_word_count }} 字，最后更新时间：<time datetime="{{ all_pages_sort_by_date[0].updated }}">{{ all_pages_sort_by_date[0].updated }}</time>。 我在<a href="/thoughts">短想法</a>里记录自己随手记的一些东西，
-          在 <a href="{{ get_url(path="@/pages/about.md") }}">About</a> 页面了解更多关于我的介绍，在 <a href="{{ get_url(path="@/pages/now.md") }}">Now 页面</a>了解我最近在做什么。
+          <p class="index-intro">我是<a href="{{ get_url(path="@/pages/about.md",lang=lang) }}">{{ config.extra.author }}</a>，截止目前已写了<a href="{{ get_url(path="@/pages/archive.md",lang=lang) }}">
+              {{ all_pages | length }}</a>
+          篇文章，大约 {{ total_word_count }} 字{% if all_pages_sort_by_date | length > 0 %}，最后更新时间：<time datetime="{{ all_pages_sort_by_date[0].updated }}">{{ all_pages_sort_by_date[0].updated }}</time>{% endif %}。 我在<a href="/thoughts">短想法</a>里记录自己随手记的一些东西，
+          在 <a href="{{ get_url(path="@/pages/about.md",lang=lang) }}">About</a> 页面了解更多关于我的介绍，在 <a href="{{ get_url(path="@/pages/now.md",lang=lang) }}">Now 页面</a>了解我最近在做什么。
           </p>
 
         {% endif %}
@@ -75,20 +132,31 @@
         <p class="no-border">{{ trans(key="label_all_thoughts",lang=lang) | markdown(inline=true) | safe }}</p>
       </div>
       </details>
-            <details open class="py">
-        <summary class="by">最近在听<a href="#now-playing" id="now-playing" class="zola-anchor">🔗</a></summary>
-        <div class="articles">
-          <p class="no-border">记录最近在听的歌。</p>
-          {{ macro::music_playlist_block(
-            source="/media/",
-            manifest="music_playlist.json",
-            title="Recent Listening",
-            list_folded=false,
-            preload="metadata",
-            default_cover="/media/playlist-cover.svg"
-          ) }}
-        </div>
-      </details>
+      {# 尝试加载 music_playlist.json，如果不存在则隐藏播放器 #}
+      {% set_global has_music_playlist = false -%}
+      {% set music_data = load_data(path="static/media/music_playlist.json", required=false) -%}
+      {% if music_data -%}
+        {% if music_data is iterable and music_data | length > 0 -%}
+          {% set_global has_music_playlist = true -%}
+        {% endif -%}
+      {% endif -%}
+
+      {% if has_music_playlist %}
+        <details open class="py">
+          <summary class="by">最近在听<a href="#now-playing" id="now-playing" class="zola-anchor">🔗</a></summary>
+          <div class="articles">
+            <p class="no-border">记录最近在听的歌。</p>
+            {{ macro::music_playlist_block(
+              source="/media/",
+              manifest="music_playlist.json",
+              title="Recent Listening",
+              list_folded=false,
+              preload="metadata",
+              default_cover="/media/playlist-cover.svg"
+            ) }}
+          </div>
+        </details>
+      {% endif %}
       <details open class="py">
         <summary class="by ">{{ trans(key="label_new_posts_list_title",lang=lang) | markdown(inline=true) | safe }}:
       </summary>
@@ -152,6 +220,10 @@
   {% endblock main -%}
   {% block before_body_end %}
     {{ super() }}
+    {# 特殊日期功能 JavaScript #}
+    {% if config.extra.special_dates and config.extra.special_dates.dates %}
+      <script defer src="{{ get_url(path='site/js/special-date.js', trailing_slash=false, cachebust=true) | safe }}"></script>
+    {% endif %}
     {% if config.extra.meilisearch_url %}
       <script defer src="{{ get_url(path="site/js/docs-searchbar.min.js", trailing_slash=false,cachebust=true) | safe }}"></script>
       <script>

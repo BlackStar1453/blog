@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% import "macros.html" as macro %}
+
+{% block post_meta %}
+  <link rel="stylesheet" href="{{ get_url(path='site/styles/birthday.css') }}">
+
+  {# 检查是否有匹配的特殊日期配置 #}
+  {% if config.extra.special_dates and config.extra.special_dates.dates and page.extra.target_date %}
+    {% for date_config in config.extra.special_dates.dates %}
+      {% set month_str = date_config.month %}
+      {% if date_config.month < 10 %}
+        {% set month_str = "0" ~ date_config.month %}
+      {% endif %}
+      {% set day_str = date_config.day %}
+      {% if date_config.day < 10 %}
+        {% set day_str = "0" ~ date_config.day %}
+      {% endif %}
+      {% set config_date = month_str ~ "-" ~ day_str %}
+      {% if config_date == page.extra.target_date %}
+        <link rel="stylesheet" href="{{ get_url(path='site/styles/birthday-intro-lottie.css') }}">
+        <script src="{{ get_url(path='site/js/lottie-player.min.js') }}"></script>
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+{% endblock post_meta %}
+
+{% block main %}
+  <div class="special-date-page">
+    {# 查找当前日期的特殊日期配置 #}
+    {% set_global matched_config = false %}
+    {% if config.extra.special_dates and config.extra.special_dates.dates and page.extra.target_date %}
+      {% for date_config in config.extra.special_dates.dates %}
+        {% set month_str = date_config.month %}
+        {% if date_config.month < 10 %}
+          {% set month_str = "0" ~ date_config.month %}
+        {% endif %}
+        {% set day_str = date_config.day %}
+        {% if date_config.day < 10 %}
+          {% set day_str = "0" ~ date_config.day %}
+        {% endif %}
+        {% set config_date = month_str ~ "-" ~ day_str %}
+        {% if config_date == page.extra.target_date %}
+          {% set_global matched_config = date_config %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+
+    <div class="main-box-block">
+      <h1>{{ page.title }}</h1>
+      <p class="special-date-description">{{ page.description }}</p>
+      
+      {% if page.extra.target_date %}
+        {# 收集所有页面 #}
+        {% set all_section_pages = get_section(path="_index.md") -%}
+        {% set_global all_pages = [] -%}
+        
+        {# 添加根section的页面 #}
+        {% for page_item in all_section_pages.pages -%}
+          {% set_global all_pages = all_pages | concat(with=page_item) -%}
+        {% endfor -%}
+        
+        {# 添加所有子section的页面 #}
+        {% for subsection in all_section_pages.subsections -%}
+          {% set subsection_data = get_section(path=subsection) -%}
+          {% for page_item in subsection_data.pages -%}
+            {% set_global all_pages = all_pages | concat(with=page_item) -%}
+          {% endfor -%}
+        {% endfor -%}
+        
+        {# 过滤出匹配目标日期的页面 #}
+        {% set_global matched_pages = [] -%}
+        {% for page_item in all_pages -%}
+          {% if page_item.date %}
+            {% set page_date = page_item.date | date(format="%m-%d") %}
+            {% if page_date == page.extra.target_date %}
+              {% set_global matched_pages = matched_pages | concat(with=page_item) -%}
+            {% endif %}
+          {% endif %}
+          {% if page_item.updated %}
+            {% set page_updated = page_item.updated | date(format="%m-%d") %}
+            {% if page_updated == page.extra.target_date %}
+              {# 检查是否已经添加过这个页面 #}
+              {% set already_added = false %}
+              {% for existing in matched_pages %}
+                {% if existing.permalink == page_item.permalink %}
+                  {% set_global already_added = true %}
+                {% endif %}
+              {% endfor %}
+              {% if not already_added %}
+                {% set_global matched_pages = matched_pages | concat(with=page_item) -%}
+              {% endif %}
+            {% endif %}
+          {% endif %}
+        {% endfor -%}
+        
+        {% if matched_pages | length > 0 %}
+          {# 按年份分组显示 #}
+          {% for year, posts in matched_pages | group_by(attribute="year") %}
+            <h2>{{ year }}年</h2>
+            <ul>
+              {% for post in posts %}
+                <li>{{ macro::post_min(page=post) }}</li>
+              {% endfor %}
+            </ul>
+          {% endfor %}
+        {% else %}
+          <p>该日期暂无内容</p>
+        {% endif %}
+      {% else %}
+        <p>配置错误: 缺少 target_date 参数</p>
+      {% endif %}
+    </div>
+    {{ macro::webmentions(backlinks=page.backlinks) }}
+  </div>
+
+  {# 如果有特殊日期配置,加载生日开场动画 #}
+  {% if matched_config %}
+    <script src="{{ get_url(path='site/js/birthday-intro.js') }}"></script>
+    <script>
+      // 初始化开场动画 - 使用作者名字而不是博客标题
+      initBirthdayIntro(
+        '{{ config.extra.author }}',
+        '{{ matched_config.title }}',
+        '{{ matched_config.message }}',
+        '{{ get_url(path="site/animations/birthday-cake-candles.json") }}'
+      );
+    </script>
+  {% endif %}
+{% endblock main %}
+

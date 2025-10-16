@@ -87,18 +87,6 @@ install_nodejs() {
     log_success "Node.js 安装完成"
 }
 
-# GitHub 认证
-github_auth() {
-    if gh auth status >/dev/null 2>&1; then
-        log_success "GitHub 已认证"
-        return
-    fi
-
-    log_info "开始 GitHub 认证..."
-    gh auth login -h github.com
-    log_success "GitHub 认证完成"
-}
-
 # Cloudflare 认证
 cloudflare_auth() {
     if wrangler whoami >/dev/null 2>&1; then
@@ -111,92 +99,42 @@ cloudflare_auth() {
     log_success "Cloudflare 认证完成"
 }
 
-# Fork 和克隆仓库 - 简化版
-setup_repository() {
-    ORIGINAL_REPO="BlackStar1453/blog"
+# 下载模板（简单模式 - 使用 Git clone，无需认证，可选择是否保留 Git）
+download_template_simple() {
+    TEMPLATE_REPO="BlackStar1453/blog"
+    TEMPLATE_BRANCH="template"
 
-    log_info "Fork 并克隆仓库 $ORIGINAL_REPO..."
+    log_info "下载博客模板..."
 
-    # 获取当前用户名
-    GITHUB_USER=$(gh api user --jq .login)
-
-    # 检查是否已经fork过
-    EXISTING_FORK=$(gh api "repos/$GITHUB_USER/blog" 2>/dev/null | jq -r '.fork' 2>/dev/null || echo "false")
-
-    if [ "$EXISTING_FORK" = "true" ]; then
-        log_warning "检测到你已经fork过这个仓库，将直接使用现有fork"
-        FORK_REPO="$GITHUB_USER/blog"
-    else
-        # Fork 仓库
-        log_info "正在fork仓库..."
-        gh repo fork "$ORIGINAL_REPO" --remote=false || {
-            log_error "Fork失败，请检查网络连接或GitHub权限"
-            exit 1
-        }
-        log_success "Fork成功"
-        FORK_REPO="$GITHUB_USER/blog"
-    fi
-
-    # 克隆到本地
+    # 确定目标目录
     BLOG_DIR="$HOME/blog"
     if [ -d "$BLOG_DIR" ]; then
         log_warning "目录 $BLOG_DIR 已存在，将使用时间戳后缀"
         BLOG_DIR="$HOME/blog_$(date +%Y%m%d_%H%M%S)"
     fi
 
-    log_info "克隆仓库到 $BLOG_DIR..."
-    gh repo clone "$FORK_REPO" "$BLOG_DIR" || {
-        log_error "克隆失败"
+    # 使用 Git clone（公开仓库无需认证，只需要 git 命令）
+    log_info "正在下载模板..."
+    git clone -b "$TEMPLATE_BRANCH" "https://github.com/$TEMPLATE_REPO.git" "$BLOG_DIR" || {
+        log_error "下载失败，请检查网络连接"
         exit 1
     }
 
     cd "$BLOG_DIR"
 
-    # 配置 Git 使用 gh 作为凭证助手
-    git config --local credential.helper ""
-    git config --local --add credential.helper '!gh auth git-credential'
-    log_info "已配置 Git 使用 GitHub CLI 凭证"
-
-    # 设置 gh CLI 默认仓库为用户的 fork
-    gh repo set-default "$FORK_REPO"
-    log_info "已设置默认仓库: $FORK_REPO"
-
-    # 确保在 main 分支
-    CURRENT_BRANCH=$(git branch --show-current)
-    if [ "$CURRENT_BRANCH" != "main" ]; then
-        log_info "当前分支: $CURRENT_BRANCH，切换到 main 分支..."
-        if git show-ref --verify --quiet refs/heads/main; then
-            git checkout main
-        elif git show-ref --verify --quiet refs/remotes/origin/main; then
-            git checkout -b main origin/main
-        else
-            log_warning "未找到 main 分支，将使用当前分支: $CURRENT_BRANCH"
-        fi
-        CURRENT_BRANCH=$(git branch --show-current)
-    fi
-    log_info "当前分支: $CURRENT_BRANCH"
+    # 移除模板的 Git 历史并重新初始化为独立仓库
+    log_info "初始化本地 Git 仓库..."
+    rm -rf .git
+    git init
+    git add .
+    git commit -m "初始化博客" || log_warning "Git 提交失败"
+    log_success "已初始化本地 Git 仓库（用于版本控制）"
 
     # 设置全局变量
     export BLOG_DIR
     export GITHUB_REPO_NAME="blog"
 
-    log_success "仓库设置完成，位置：$BLOG_DIR"
-}
-
-# 运行初始化脚本
-run_initialization() {
-    log_info "运行博客初始化脚本..."
-
-    cd "$BLOG_DIR"
-
-    if [ -f "init-template.sh" ]; then
-        chmod +x init-template.sh
-        ./init-template.sh
-    else
-        log_warning "未找到初始化脚本，跳过此步骤"
-    fi
-
-    log_success "博客初始化完成"
+    log_success "模板下载完成，位置：$BLOG_DIR"
 }
 
 # 安装博客依赖
@@ -229,17 +167,28 @@ configure_blog() {
     read AUTHOR_NAME < /dev/tty
     echo -n "请输入你的邮箱: "
     read AUTHOR_EMAIL < /dev/tty
-
-    # 获取 GitHub 用户名
-    GITHUB_USERNAME=$(gh api user --jq .login)
+    echo -n "请输入你的个人简介 (bio): "
+    read AUTHOR_BIO < /dev/tty
 
     # 更新 config.toml
     if [ -f "config.toml" ]; then
-        sed -i '' "s|base_url = \".*\"|base_url = \"https://${GITHUB_USERNAME}.github.io\"|" config.toml
-        sed -i '' "s|title = \".*\"|title = \"${BLOG_TITLE}\"|" config.toml
-        sed -i '' "s|description = \".*\"|description = \"${BLOG_DESCRIPTION}\"|" config.toml
-        sed -i '' "s|author = \".*\"|author = \"${AUTHOR_NAME}\"|" config.toml
-        sed -i '' "s|email = \".*\"|email = \"${AUTHOR_EMAIL}\"|" config.toml
+        # 使用更精确的 sed 模式，只替换顶层配置
+        # 注意：不设置 base_url，将在部署到 Cloudflare Pages 后自动设置为固定域名
+
+        # 1. 替换 title（在文件开头部分，在第一个 section 之前）
+        sed -i '' '1,/^\[/s|^title = ".*"|title = "'"${BLOG_TITLE}"'"|' config.toml
+
+        # 2. 替换 description（在文件开头部分，在第一个 section 之前）
+        sed -i '' '1,/^\[/s|^description = ".*"|description = "'"${BLOG_DESCRIPTION}"'"|' config.toml
+
+        # 3. 替换 [extra] section 中的 author
+        sed -i '' '/^\[extra\]/,/^\[/{s|^author = ".*"|author = "'"${AUTHOR_NAME}"'"|;}' config.toml
+
+        # 4. 替换 [extra] section 中的 email
+        sed -i '' '/^\[extra\]/,/^\[/{s|^email = ".*"|email = "'"${AUTHOR_EMAIL}"'"|;}' config.toml
+
+        # 5. 替换 [extra] section 中的 bio
+        sed -i '' '/^\[extra\]/,/^\[/{s|^bio = ".*"|bio = "'"${AUTHOR_BIO}"'"|;}' config.toml
     fi
 
     log_success "博客配置完成"
@@ -260,26 +209,21 @@ local_preview() {
     fi
 }
 
-# 部署到 GitHub Pages
-deploy_github_pages() {
-    log_info "部署到 GitHub Pages..."
+# 验证项目名称格式
+validate_project_name() {
+    local name="$1"
 
-    cd "$BLOG_DIR"
+    # 检查长度(1-58字符)
+    if [ ${#name} -lt 1 ] || [ ${#name} -gt 58 ]; then
+        return 1
+    fi
 
-    # 提交更改
-    git add .
-    git commit -m "初始化博客配置"
-    git push origin main
+    # 检查格式:只允许小写字母、数字和连字符,不能以连字符开头或结尾
+    if ! [[ "$name" =~ ^[a-z0-9]([a-z0-9-]{0,56}[a-z0-9])?$ ]]; then
+        return 1
+    fi
 
-    # 启用 GitHub Pages
-    gh api repos/:owner/:repo/pages \
-        --method POST \
-        --field source.branch=main \
-        --field source.path=/ \
-        2>/dev/null || log_warning "GitHub Pages 可能已经启用"
-
-    GITHUB_USERNAME=$(gh api user --jq .login)
-    log_success "博客已部署到: https://${GITHUB_USERNAME}.github.io"
+    return 0
 }
 
 # 部署到 Cloudflare Pages
@@ -291,20 +235,69 @@ deploy_cloudflare_pages() {
     # 检查 Cloudflare 认证
     cloudflare_auth
 
-    echo -n "请输入 Cloudflare Pages 项目名称: "
-    read CF_PROJECT_NAME < /dev/tty
+    # 显示项目名称要求
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "📝 项目名称要求:"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "  • 长度: 1-58 个字符"
+    echo "  • 字符: 只能包含小写字母(a-z)、数字(0-9)和连字符(-)"
+    echo "  • 限制: 不能以连字符开头或结尾"
+    echo "  • 示例: my-blog, blog-2024, personal-website"
+    echo ""
 
-    # 提交所有更改
-    log_info "提交更改到Git..."
+    local CF_PROJECT_NAME
+    local attempts=0
+    local max_attempts=3
+
+    while [ $attempts -lt $max_attempts ]; do
+        echo -n "请输入 Cloudflare Pages 项目名称: "
+        read input_name < /dev/tty
+
+        if [ -z "$input_name" ]; then
+            log_error "项目名称不能为空"
+            attempts=$((attempts + 1))
+            continue
+        fi
+
+        # 自动转换为小写
+        CF_PROJECT_NAME=$(echo "$input_name" | tr '[:upper:]' '[:lower:]')
+
+        # 如果转换后与输入不同,提示用户
+        if [ "$CF_PROJECT_NAME" != "$input_name" ]; then
+            log_info "已自动转换为小写: $CF_PROJECT_NAME"
+        fi
+
+        # 验证格式
+        if validate_project_name "$CF_PROJECT_NAME"; then
+            log_success "✅ 项目名称格式正确: $CF_PROJECT_NAME"
+            break
+        else
+            log_error "❌ 项目名称格式错误"
+            echo ""
+            echo "错误原因可能是:"
+            echo "  • 包含特殊字符(只允许字母、数字和连字符)"
+            echo "  • 以连字符开头或结尾"
+            echo "  • 长度不在 1-58 字符范围内"
+            echo ""
+            attempts=$((attempts + 1))
+
+            if [ $attempts -lt $max_attempts ]; then
+                echo "请重新输入 ($((max_attempts - attempts)) 次机会剩余)..."
+                echo ""
+            fi
+        fi
+    done
+
+    if [ $attempts -eq $max_attempts ]; then
+        log_error "超过最大尝试次数,退出"
+        exit 1
+    fi
+
+    # 提交所有更改（简单模式也需要本地 git 管理）
+    log_info "提交更改到本地Git..."
     git add .
     git commit -m "准备部署到Cloudflare Pages" || log_warning "没有新的更改需要提交"
-
-    # 构建博客
-    if [ -f "Makefile" ]; then
-        make build
-    else
-        zola build
-    fi
 
     # 创建 Cloudflare Pages 项目
     log_info "创建 Cloudflare Pages 项目..."
@@ -313,9 +306,8 @@ deploy_cloudflare_pages() {
     if wrangler pages project create "$CF_PROJECT_NAME" --production-branch="$PRODUCTION_BRANCH"; then
         log_success "项目创建成功 (生产分支: $PRODUCTION_BRANCH)"
     else
-        log_warning "项目可能已存在，继续部署..."
+        log_warning "项目可能已存在，继续..."
     fi
-
 
     # 获取Cloudflare账户ID
     log_info "获取Cloudflare账户信息..."
@@ -325,141 +317,57 @@ deploy_cloudflare_pages() {
         log_error "无法获取Cloudflare账户ID"
         return 1
     fi
-    
+
     log_success "账户ID: $ACCOUNT_ID"
 
-    # 获取GitHub用户名和仓库名
-    GITHUB_USER=$(gh api user --jq .login)
-    GITHUB_REPO="${GITHUB_REPO_NAME:-$(basename "$BLOG_DIR")}"
+    # 获取项目的固定域名（在构建之前）
+    log_info "获取项目固定域名..."
+    FIXED_DOMAIN=$(wrangler pages project list 2>/dev/null | \
+        awk -v proj="$CF_PROJECT_NAME" '$2 == proj {print $4}' | \
+        grep '\.pages\.dev' | \
+        sed 's/,$//' | \
+        head -1)
 
-    # 启用GitHub Actions（fork的仓库默认禁用）
-    log_info "启用GitHub Actions..."
-
-    # 步骤1: 启用 Actions 权限
-    if gh api -X PUT "repos/$GITHUB_USER/$GITHUB_REPO/actions/permissions" \
-        -f enabled=true \
-        -f allowed_actions=all 2>/dev/null; then
-        log_success "GitHub Actions 权限已启用"
+    if [ -n "$FIXED_DOMAIN" ]; then
+        DEPLOY_URL="https://$FIXED_DOMAIN"
+        log_success "✅ 固定域名: $DEPLOY_URL"
     else
-        log_warning "无法自动启用 GitHub Actions 权限"
+        # 如果无法获取，使用项目名称构建（通常项目名就是subdomain）
+        DEPLOY_URL="https://${CF_PROJECT_NAME}.pages.dev"
+        log_info "使用默认域名: $DEPLOY_URL"
     fi
 
-    # 步骤2: 对于 fork 仓库，需要额外启用 workflows
-    # 检查是否是 fork
-    IS_FORK=$(gh api "repos/$GITHUB_USER/$GITHUB_REPO" --jq .fork 2>/dev/null || echo "false")
-    if [ "$IS_FORK" = "true" ]; then
-        log_warning "检测到 fork 仓库，workflows 默认禁用"
-        echo ""
-        echo "⚠️  重要: Fork 仓库的 workflows 需要手动启用"
-        echo ""
-        echo "请按以下步骤操作:"
-        echo "1. 浏览器会自动打开 Actions 页面"
-        echo "2. 点击绿色按钮: 'I understand my workflows, go ahead and enable them'"
-        echo "3. 完成后回到终端按回车继续"
-        echo ""
-        echo -n "按回车打开 Actions 页面..."
-        read < /dev/tty
+    # 更新config.toml中的所有URL字段（在构建之前）
+    log_info "更新config.toml中的URL..."
+    if [ -f "config.toml" ]; then
+        # 检查当前的base_url
+        CURRENT_BASE_URL=$(grep '^base_url = ' config.toml | sed 's/base_url = "\(.*\)"/\1/' || echo "")
 
-        # 打开浏览器
-        open "https://github.com/$GITHUB_USER/$GITHUB_REPO/actions" 2>/dev/null || \
-        xdg-open "https://github.com/$GITHUB_USER/$GITHUB_REPO/actions" 2>/dev/null || \
-        echo "请手动访问: https://github.com/$GITHUB_USER/$GITHUB_REPO/actions"
+        # 只有当URL发生变化时才更新
+        if [ "$CURRENT_BASE_URL" != "$DEPLOY_URL" ]; then
+            # 更新base_url
+            sed -i '' "s|^base_url = \".*\"|base_url = \"$DEPLOY_URL\"|" config.toml
 
-        echo ""
-        echo -n "启用 workflows 后按回车继续..."
-        read < /dev/tty
+            # 更新extra部分的URL（如果存在）
+            sed -i '' "s|^prefix_url = \".*\"|prefix_url = \"$DEPLOY_URL\"|" config.toml
+            sed -i '' "s|^indieweb_url = \".*\"|indieweb_url = \"$DEPLOY_URL\"|" config.toml
 
-        log_success "Workflows 已启用"
+            log_success "已更新所有URL为: $DEPLOY_URL"
 
-    # 设置GitHub Secrets
-    log_info "设置GitHub Secrets..."
-    
-    echo ""
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "📝 需要 Cloudflare API Token 用于 GitHub Actions 自动部署"
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo ""
-    echo "请按照以下步骤操作："
-    echo ""
-    echo "1️⃣  访问 Cloudflare API Tokens 页面"
-    echo "   https://dash.cloudflare.com/profile/api-tokens"
-    echo ""
-    echo "2️⃣  点击 'Create Token' 按钮"
-    echo ""
-    echo "3️⃣  选择 'Create Custom Token'"
-    echo ""
-    echo "4️⃣  配置权限："
-    echo "   - Account > Cloudflare Pages > Edit"
-    echo ""
-    echo "5️⃣  创建并复制 Token"
-    echo ""
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo ""
-    echo -n "请粘贴你的 Cloudflare API Token: "
-    read -s CF_API_TOKEN < /dev/tty
-    echo ""
-    echo ""
-    
-    if [ -z "$CF_API_TOKEN" ]; then
-        log_warning "未提供 API Token，跳过自动设置"
-        echo ""
-        echo "请稍后手动在 GitHub 仓库设置中添加以下 secrets:"
-        echo "  - CLOUDFLARE_API_TOKEN"
-        echo "  - CLOUDFLARE_ACCOUNT_ID: $ACCOUNT_ID"
-        echo ""
-        echo "访问: https://github.com/$GITHUB_USER/$GITHUB_REPO/settings/secrets/actions"
-        echo ""
-    else
-        # 设置 CLOUDFLARE_API_TOKEN
-        log_info "设置 CLOUDFLARE_API_TOKEN..."
-        if echo "$CF_API_TOKEN" | gh secret set CLOUDFLARE_API_TOKEN --repo="$GITHUB_USER/$GITHUB_REPO"; then
-            log_success "✓ CLOUDFLARE_API_TOKEN 已设置"
+            # 提交配置更改
+            git add config.toml
+            git commit -m "更新所有URL为Cloudflare Pages固定域名: $FIXED_DOMAIN" || log_warning "配置文件未发生变化"
         else
-            log_error "设置 CLOUDFLARE_API_TOKEN 失败"
-            echo "请手动设置: https://github.com/$GITHUB_USER/$GITHUB_REPO/settings/secrets/actions"
+            log_info "URL未发生变化，跳过更新"
         fi
-        
-        # 设置 CLOUDFLARE_ACCOUNT_ID
-        log_info "设置 CLOUDFLARE_ACCOUNT_ID..."
-        if echo "$ACCOUNT_ID" | gh secret set CLOUDFLARE_ACCOUNT_ID --repo="$GITHUB_USER/$GITHUB_REPO"; then
-            log_success "✓ CLOUDFLARE_ACCOUNT_ID 已设置"
-        else
-            log_error "设置 CLOUDFLARE_ACCOUNT_ID 失败"
-            echo "请手动设置: https://github.com/$GITHUB_USER/$GITHUB_REPO/settings/secrets/actions"
-        fi
-        
-        log_success "GitHub Secrets 设置完成"
-    fi        
-        if echo "$ACCOUNT_ID" | gh secret set CLOUDFLARE_ACCOUNT_ID --repo="$GITHUB_USER/$GITHUB_REPO" 2>/dev/null; then
-            log_success "已设置 CLOUDFLARE_ACCOUNT_ID"
-        else
-            log_warning "无法自动设置 CLOUDFLARE_ACCOUNT_ID，请手动设置"
-        fi
-    else
-        log_warning "跳过 GitHub Secrets 设置"
-        echo "请手动在 GitHub 仓库设置中添加以下 secrets:"
-        echo "  - CLOUDFLARE_API_TOKEN"
-        echo "  - CLOUDFLARE_ACCOUNT_ID"
-        echo "访问: https://github.com/$GITHUB_USER/$GITHUB_REPO/settings/secrets/actions"
     fi
 
-    # 更新GitHub Actions workflow文件中的项目名称
-    if [ -f ".github/workflows/build.yml" ]; then
-        CURRENT_BRANCH=$(git branch --show-current)
-        sed -i '' "s/projectName: blog/projectName: $CF_PROJECT_NAME/" .github/workflows/build.yml
-
-        git add .github/workflows/build.yml
-        git commit -m "更新GitHub Actions配置为项目: $CF_PROJECT_NAME" || true
-
-        log_success "GitHub Actions配置完成"
-        echo ""
-        echo "✅ 自动部署已设置！"
-        echo "现在每次push到 $CURRENT_BRANCH 分支时，GitHub Actions会自动："
-        echo "1. 构建博客"
-        echo "2. 部署到Cloudflare Pages"
-        echo ""
+    # 构建博客（使用更新后的 config.toml）
+    log_info "构建博客..."
+    if [ -f "Makefile" ]; then
+        make build
     else
-        log_warning "未找到GitHub Actions配置文件"
+        zola build
     fi
 
     # 部署
@@ -470,38 +378,21 @@ deploy_cloudflare_pages() {
     if wrangler pages deploy public --project-name="$CF_PROJECT_NAME" 2>&1 | tee "$DEPLOY_LOG"; then
         log_success "博客已部署到 Cloudflare Pages"
 
-        # 从部署输出中提取实际的访问地址
-        DEPLOY_URL=$(grep -o 'https://[^[:space:]]*\.pages\.dev' "$DEPLOY_LOG" | tail -1 || echo "")
-
-        # 如果没有找到完整URL，使用项目名称构建
-        if [ -z "$DEPLOY_URL" ]; then
-            DEPLOY_URL="https://${CF_PROJECT_NAME}.pages.dev"
-        fi
-
-        # 更新config.toml中的base_url
-        log_info "更新config.toml中的base_url..."
-        if [ -f "config.toml" ]; then
-            # 使用sed更新base_url
-            sed -i '' "s|^base_url = \".*\"|base_url = \"$DEPLOY_URL\"|" config.toml
-            log_success "已更新base_url为: $DEPLOY_URL"
-
-            # 提交配置更改
-            git add config.toml
-            git commit -m "更新base_url为部署地址: $DEPLOY_URL" || log_warning "配置文件未发生变化"
-        fi
-
-
         if [ -n "$ACCOUNT_ID" ]; then
             DASHBOARD_URL="https://dash.cloudflare.com/${ACCOUNT_ID}/pages/view/${CF_PROJECT_NAME}"
             echo ""
             echo "🎉 部署成功！"
-            echo "🌐 访问地址: $DEPLOY_URL"
+            echo "🌐 固定访问地址: $DEPLOY_URL"
             echo "📊 查看部署详情: $DASHBOARD_URL"
-            echo "💡 在Dashboard中可以查看部署状态和设置"
+            echo ""
+            echo "💡 提示："
+            echo "  - 固定域名已设置到 config.toml 的所有URL字段"
+            echo "  - 该域名永久有效，不会随部署变化"
+            echo "  - 在 Dashboard 中可以查看部署状态和设置"
         else
             echo ""
             echo "🎉 部署成功！"
-            echo "🌐 访问地址: $DEPLOY_URL"
+            echo "🌐 固定访问地址: $DEPLOY_URL"
             echo "📊 请访问 Cloudflare Dashboard 查看部署详情"
             echo "💡 地址: https://dash.cloudflare.com -> Pages -> $CF_PROJECT_NAME"
         fi
@@ -509,37 +400,45 @@ deploy_cloudflare_pages() {
         # 清理临时文件
         rm -f "$DEPLOY_LOG"
 
-        # 推送所有更改到远程仓库
-        log_info "推送更改到远程仓库..."
-        CURRENT_BRANCH=$(git branch --show-current)
-        if git push origin "$CURRENT_BRANCH" 2>&1; then
-            log_success "已推送到远程仓库"
-            echo ""
-            echo "📝 提示："
-            echo "  - 本地修改后执行: git add . && git commit -m '你的提交信息'"
-            echo "  - 推送到远程: git push origin $CURRENT_BRANCH"
-            echo "  - GitHub Actions会自动触发部署"
-            echo ""
-            echo "🔍 查看 GitHub Actions 运行状态:"
-            echo "  gh run list --limit 5"
-            echo "  或访问: https://github.com/$GITHUB_USER/$GITHUB_REPO/actions"
-        else
-            log_warning "推送失败"
-            echo ""
-            echo "可能的原因:"
-            echo "  1. 网络连接问题"
-            echo "  2. GitHub 认证过期"
-            echo "  3. 分支保护规则"
-            echo ""
-            echo "解决方案:"
-            echo "  1. 检查网络连接"
-            echo "  2. 刷新 GitHub 认证: gh auth refresh -h github.com -s workflow"
-            echo "  3. 手动推送: cd $BLOG_DIR && git push origin $CURRENT_BRANCH"
-            echo ""
-        fi
+        # 提示用户如何更新博客
+        echo ""
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "📝 如何更新博客内容"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo ""
+        echo "1️⃣  创建文章："
+        echo "   ./create-article.sh"
+        echo ""
+        echo "2️⃣  本地预览："
+        echo "   cd $BLOG_DIR"
+        echo "   make serve"
+        echo "   # 访问 http://localhost:1111"
+        echo ""
+        echo "3️⃣  部署更新："
+        echo "   ./deploy-to-cloudflare.sh"
+        echo ""
+        echo "💡 提示："
+        echo "   - 每次修改后都需要重新部署"
+        echo "   - 部署后访问: $DEPLOY_URL"
+        echo ""
     else
-        log_error "部署失败，请检查项目名称是否正确"
+        log_error "❌ 部署失败,请检查上方错误信息"
+        echo ""
+        echo "常见问题:"
+        echo "  • 项目名称格式错误(应该已被验证,但可能 Cloudflare 有额外限制)"
+        echo "  • 网络连接问题"
+        echo "  • Cloudflare 账户权限不足"
+        echo "  • public 目录为空或构建失败"
+        echo ""
+        echo "建议操作:"
+        echo "  1. 检查网络连接"
+        echo "  2. 确认 Cloudflare 账户已登录: wrangler whoami"
+        echo "  3. 检查 public 目录是否存在且有内容: ls -la public/"
+        echo "  4. 查看完整错误信息并根据提示操作"
+        echo "  5. 如需重新部署,可以运行: ./deploy-to-cloudflare.sh"
+        echo ""
         rm -f "$DEPLOY_LOG"
+        return 1
     fi
 }
 
@@ -547,40 +446,104 @@ deploy_cloudflare_pages() {
 main() {
     echo "🚀 博客一键设置脚本"
     echo "===================="
-    
+    echo ""
+
     log_info "开始安装必要工具..."
     install_homebrew
     install_nodejs
-    install_github_cli
     install_cloudflare_cli
-    
-    log_info "检查认证状态..."
-    github_auth
 
-    echo ""
-    echo "GitHub 认证完成！接下来设置博客..."
-    echo ""
-    
-    log_info "设置博客仓库..."
-    setup_repository
-    
-    log_info "初始化博客..."
-    run_initialization
+    log_info "下载博客模板..."
+    download_template_simple
+
+    log_info "配置博客..."
     install_blog_dependencies
     configure_blog
-    
+
     echo ""
-    echo "🎉 博客设置完成！"
+    log_info "开始部署到 Cloudflare Pages..."
     echo ""
+
+    # 部署到 Cloudflare Pages
+    deploy_cloudflare_pages
+
+    # 创建欢迎教程文章
+    log_info "创建欢迎教程文章..."
+    TUTORIAL_FILE="content/blog/欢迎使用你的新博客-完整使用教程.md"
+    CURRENT_DATE=$(date +%Y-%m-%d)
+    GITHUB_USER=$(git config user.name || echo "your-username")
+    REPO_NAME=$(basename "$BLOG_DIR")
+
+    # 复制模板并替换占位符
+    if [ -f "welcome-tutorial-template.md" ]; then
+        sed -e "s|{CURRENT_DATE}|$CURRENT_DATE|g" \
+            -e "s|{BLOG_URL}|$DEPLOY_URL|g" \
+            -e "s|{BLOG_DIR}|$BLOG_DIR|g" \
+            -e "s|{PROJECT_NAME}|$CF_PROJECT_NAME|g" \
+            -e "s|{GITHUB_USER}|$GITHUB_USER|g" \
+            -e "s|{REPO_NAME}|$REPO_NAME|g" \
+            "welcome-tutorial-template.md" > "$TUTORIAL_FILE"
+
+        log_success "✅ 教程文章已创建: $TUTORIAL_FILE"
+
+        # 重新构建并部署
+        log_info "重新构建博客（包含教程文章）..."
+        if [ -f "Makefile" ]; then
+            make build
+        else
+            zola build
+        fi
+
+        log_info "部署更新..."
+        wrangler pages deploy public --project-name="$CF_PROJECT_NAME" > /dev/null 2>&1
+
+        log_success "✅ 教程文章已发布到网站"
+    fi
+
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "🎉 博客部署完成！"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+    echo "📍 你的博客地址: $DEPLOY_URL"
+    echo ""
+    echo "🎓 我们为你创建了一篇完整的使用教程，现在将自动打开你的博客..."
+    echo "   教程文章会在首页显示，跟随教程学习如何使用博客！"
+    echo ""
+    echo "💡 提示："
+    echo "  - 教程会手把手教你创建文章、发布更新"
+    echo "  - 完成教程后可以删除教程文章"
+    echo "  - 随时运行 ./guide-blog-usage.sh 查看命令行引导"
+    echo ""
+
+    # 等待 2 秒让用户看到提示
+    sleep 2
+
+    # 自动打开浏览器
+    log_info "正在打开浏览器..."
+    if command -v open > /dev/null 2>&1; then
+        # macOS
+        open "$DEPLOY_URL"
+    elif command -v xdg-open > /dev/null 2>&1; then
+        # Linux
+        xdg-open "$DEPLOY_URL"
+    elif command -v start > /dev/null 2>&1; then
+        # Windows
+        start "$DEPLOY_URL"
+    else
+        log_warning "无法自动打开浏览器，请手动访问: $DEPLOY_URL"
+    fi
+
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo "接下来你可以选择："
-    echo "1. 本地预览博客"
-    echo "2. 部署到 GitHub Pages"
-    echo "3. 部署到 Cloudflare Pages"
-    echo "4. 退出"
+    echo "1. 👀 本地预览博客（推荐）- 在本地查看教程文章"
+    echo "2. 📖 查看命令行使用引导"
+    echo "3. 退出"
     echo ""
-    
+
     while true; do
-        echo -n "请选择操作 (1-4): "
+        echo -n "请选择操作 (1-3): "
         read choice < /dev/tty
         case $choice in
             1)
@@ -588,19 +551,27 @@ main() {
                 break
                 ;;
             2)
-                deploy_github_pages
+                log_info "启动使用引导..."
+                if [ -f "./guide-blog-usage.sh" ]; then
+                    chmod +x ./guide-blog-usage.sh
+                    ./guide-blog-usage.sh
+                else
+                    log_error "找不到引导脚本 guide-blog-usage.sh"
+                fi
                 break
                 ;;
             3)
-                deploy_cloudflare_pages
-                break
-                ;;
-            4)
                 log_success "设置完成，祝你写作愉快！"
+                echo ""
+                echo "💡 提示："
+                echo "  - 访问 $DEPLOY_URL 查看你的博客和教程"
+                echo "  - 随时运行 ./guide-blog-usage.sh 查看使用引导"
+                echo "  - 博客目录: $BLOG_DIR"
+                echo ""
                 break
                 ;;
             *)
-                log_error "无效选择，请输入 1-4"
+                log_error "无效选择，请输入 1-3"
                 ;;
         esac
     done

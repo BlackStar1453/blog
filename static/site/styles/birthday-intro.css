@@ -1,0 +1,311 @@
+/* 生日开场动画 - Lottie版本 */
+.birthday-intro-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 1;
+  transition: opacity 0.8s ease-out;
+}
+
+.birthday-intro-overlay.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.birthday-lottie-container {
+  position: relative;
+  animation: lottieAppear 0.8s ease-out;
+}
+
+@keyframes lottieAppear {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* 蛋糕底座 */
+.cake {
+  position: relative;
+  width: 200px;
+  margin: 0 auto;
+}
+
+.cake-layer {
+  position: relative;
+  margin: 0 auto;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.cake-layer-1 {
+  width: 200px;
+  height: 60px;
+  background: linear-gradient(to bottom, #ff6b9d 0%, #ff5a8d 100%);
+  border: 3px solid #ff4a7d;
+}
+
+.cake-layer-2 {
+  width: 160px;
+  height: 50px;
+  background: linear-gradient(to bottom, #ffa07a 0%, #ff8c5a 100%);
+  border: 3px solid #ff7a4a;
+  margin-top: -5px;
+}
+
+.cake-layer-3 {
+  width: 120px;
+  height: 40px;
+  background: linear-gradient(to bottom, #ffb6c1 0%, #ffa0b1 100%);
+  border: 3px solid #ff90a1;
+  margin-top: -5px;
+}
+
+/* 蛋糕装饰 */
+.cake-decoration {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+}
+
+.cake-decoration::before,
+.cake-decoration::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: #fff;
+  border-radius: 50%;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.cake-decoration::before {
+  left: 15px;
+}
+
+.cake-decoration::after {
+  right: 15px;
+}
+
+/* 蜡烛 */
+.candles {
+  position: absolute;
+  top: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 20px;
+}
+
+.candle {
+  position: relative;
+  width: 8px;
+  height: 40px;
+  background: linear-gradient(to bottom, #fff 0%, #f0f0f0 100%);
+  border-radius: 4px 4px 0 0;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.candle::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 12px;
+  height: 6px;
+  background: #ff6b9d;
+  border-radius: 50% 50% 0 0;
+}
+
+/* 火焰 */
+.flame {
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 12px;
+  height: 20px;
+  background: radial-gradient(ellipse at center, #fff 0%, #ffeb3b 30%, #ff9800 60%, #ff5722 100%);
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  animation: flicker 0.3s infinite alternate;
+  box-shadow: 0 0 10px #ff9800, 0 0 20px #ff5722;
+}
+
+@keyframes flicker {
+  0% {
+    transform: translateX(-50%) scale(1, 1);
+    opacity: 1;
+  }
+
+  50% {
+    transform: translateX(-50%) scale(0.95, 1.05);
+    opacity: 0.9;
+  }
+
+  100% {
+    transform: translateX(-50%) scale(1.05, 0.95);
+    opacity: 1;
+  }
+}
+
+/* 生日快乐文字 */
+.birthday-message {
+  margin-top: 60px;
+  text-align: center;
+  animation: messageAppear 1.5s ease-out 0.5s both;
+}
+
+@keyframes messageAppear {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+
+  50% {
+    transform: scale(1.1);
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.birthday-message h1 {
+  font-size: 48px;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  margin: 0;
+  padding: 0;
+}
+
+.birthday-message p {
+  font-size: 20px;
+  color: rgba(255, 255, 255, 0.9);
+  margin-top: 10px;
+}
+
+/* 闪烁星星 */
+.sparkles {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+
+.sparkle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: #fff;
+  border-radius: 50%;
+  animation: sparkle 2s infinite;
+}
+
+@keyframes sparkle {
+
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.sparkle:nth-child(1) {
+  top: 20%;
+  left: 10%;
+  animation-delay: 0s;
+}
+
+.sparkle:nth-child(2) {
+  top: 40%;
+  left: 20%;
+  animation-delay: 0.3s;
+}
+
+.sparkle:nth-child(3) {
+  top: 60%;
+  left: 15%;
+  animation-delay: 0.6s;
+}
+
+.sparkle:nth-child(4) {
+  top: 30%;
+  left: 80%;
+  animation-delay: 0.9s;
+}
+
+.sparkle:nth-child(5) {
+  top: 70%;
+  left: 85%;
+  animation-delay: 1.2s;
+}
+
+.sparkle:nth-child(6) {
+  top: 50%;
+  left: 90%;
+  animation-delay: 1.5s;
+}
+
+.sparkle:nth-child(7) {
+  top: 15%;
+  left: 50%;
+  animation-delay: 0.4s;
+}
+
+.sparkle:nth-child(8) {
+  top: 80%;
+  left: 50%;
+  animation-delay: 1s;
+}
+
+/* 响应式 */
+@media (max-width: 767px) {
+  .cake-layer-1 {
+    width: 160px;
+    height: 50px;
+  }
+
+  .cake-layer-2 {
+    width: 130px;
+    height: 40px;
+  }
+
+  .cake-layer-3 {
+    width: 100px;
+    height: 35px;
+  }
+
+  .birthday-message h1 {
+    font-size: 36px;
+  }
+
+  .birthday-message p {
+    font-size: 16px;
+  }
+}

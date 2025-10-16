@@ -20,6 +20,9 @@ prod-serve:
 	./bin/zola serve -p 8000
 
 build:
+	@echo "生成特殊日期页面..."
+	@./generate-date-pages.sh
+	@echo "开始构建..."
 	./bin/zola build
 
 .Phony: buildbook
