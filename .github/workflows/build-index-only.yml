@@ -8,7 +8,7 @@ jobs:
       # wait github pages publish
       - uses: actions/checkout@v3
         with:
-          submodules: false  # 禁用 submodule,apple_cloud_notes_parser 仅用于本地 macOS
+          submodules: false
       - name: Run docs-scraper
         env:
           HOST_URL: "https://meilisearch.owenyoung.com"

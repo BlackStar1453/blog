@@ -13,7 +13,7 @@ jobs:
         run: echo "NOW=$(date +'%Y-%m-%dT%H-%M-%S')" >> $GITHUB_ENV
       - uses: actions/checkout@v3
         with:
-          submodules: false  # 禁用 submodule,apple_cloud_notes_parser 仅用于本地 macOS
+          submodules: false
       - uses: denoland/setup-deno@v1
         with:
           deno-version: v1.x

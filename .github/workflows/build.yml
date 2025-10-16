@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          submodules: false  # 禁用 submodule,apple_cloud_notes_parser 仅用于本地 macOS
+          submodules: false
       - run: make install
       - name: Build Site
         run: make build
