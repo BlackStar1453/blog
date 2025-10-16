@@ -6,9 +6,8 @@
     return;
   }
 
-  // 创建蛋糕和派对形状
+  // 创建蛋糕形状
   var cake = confetti.shapeFromText({ text: '🎂', scalar: 1.5 });
-  var party = confetti.shapeFromText({ text: '🎉', scalar: 1.5 });
 
   var duration = 60 * 1000;
   var animationEnd = Date.now() + duration;
@@ -32,7 +31,7 @@
         y: Math.random() * skew - 0.2
       },
       colors: ['#ff6b9d', '#ffa07a'],
-      shapes: [cake, party],
+      shapes: [cake],
       gravity: randomInRange(0.4, 0.6),
       scalar: randomInRange(0.8, 1.2),
       drift: randomInRange(-0.4, 0.4),
