@@ -38,3 +38,6 @@ wrangler.toml
 Network Trash Folder
 Temporary Items
 .apdisk
+
+# macOS-specific tools (only for local development)
+apple_cloud_notes_parser/
