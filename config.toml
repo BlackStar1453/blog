@@ -57,7 +57,7 @@ webmention_path = "webmentions"
 [extra.special_dates]
 # 特殊日期配置 - 在特定日期显示横幅并收集往年同日内容
 [[extra.special_dates.dates]]
-month = 10
+month = 9
 day = 20
 title = "生日！生日快乐！"
 message = "你可以在这个页面找到所有你生日那天发布的文章"
