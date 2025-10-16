@@ -3,9 +3,10 @@
 
   // 检查是否应该显示开场动画
   function shouldShowIntro() {
-    if (sessionStorage.getItem('birthday-intro-shown')) {
-      return false;
-    }
+    // 暂时禁用sessionStorage检查,始终播放动画以便测试
+    // if (sessionStorage.getItem('birthday-intro-shown')) {
+    //   return false;
+    // }
     return true;
   }
 
@@ -40,22 +41,27 @@
       return;
     }
 
-    // 检查lottie-player是否已加载
-    if (typeof window.customElements === 'undefined' || !window.customElements.get('lottie-player')) {
-      console.error('[Birthday Intro] lottie-player not loaded!');
+    // 等待lottie-player Web Component注册完成
+    if (typeof window.customElements === 'undefined') {
+      console.error('[Birthday Intro] customElements not supported!');
       return;
     }
 
-    // 插入HTML
-    document.body.insertAdjacentHTML('beforeend', createIntroHTML(blogTitle, specialTitle, specialMessage, animationPath));
+    // 使用customElements.whenDefined()等待lottie-player注册
+    window.customElements.whenDefined('lottie-player').then(function () {
+      // 插入HTML
+      document.body.insertAdjacentHTML('beforeend', createIntroHTML(blogTitle, specialTitle, specialMessage, animationPath));
 
-    // 启用sessionStorage标记,避免刷新重复播放
-    sessionStorage.setItem('birthday-intro-shown', 'true');
+      // 暂时禁用sessionStorage,始终播放动画
+      // sessionStorage.setItem('birthday-intro-shown', 'true');
 
-    // 5秒后淡出(Lottie动画会循环播放)
-    setTimeout(function () {
-      fadeOutIntro();
-    }, 5000);
+      // 5秒后淡出(Lottie动画会循环播放)
+      setTimeout(function () {
+        fadeOutIntro();
+      }, 5000);
+    }).catch(function (error) {
+      console.error('[Birthday Intro] Failed to load lottie-player:', error);
+    });
   }
 
   function fadeOutIntro() {
