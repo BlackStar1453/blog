@@ -199,19 +199,39 @@
   </div>
 
     {% set all_section_pages = get_section(path="_index"~file_lang_path~".md") -%}
-    {# 收集所有页面，包括子section的页面 #}
+    {# 收集所有页面，包括子section的页面，同时收集日期信息 #}
     {% set_global sidebar_all_pages = [] -%}
+    {% set_global all_content_dates = [] %}
+
     {# 添加根section的页面 #}
     {% for page_item in all_section_pages.pages -%}
       {% set_global sidebar_all_pages = sidebar_all_pages | concat(with=page_item) -%}
+      {% if page_item.date %}
+        {% set date_str = page_item.date | date(format="%Y-%m-%d") %}
+        {% set_global all_content_dates = all_content_dates | concat(with=date_str) %}
+      {% endif %}
+      {% if page_item.updated %}
+        {% set updated_str = page_item.updated | date(format="%Y-%m-%d") %}
+        {% set_global all_content_dates = all_content_dates | concat(with=updated_str) %}
+      {% endif %}
     {% endfor -%}
+
     {# 添加所有子section的页面 #}
     {% for subsection in all_section_pages.subsections -%}
       {% set subsection_data = get_section(path=subsection) -%}
       {% for page_item in subsection_data.pages -%}
         {% set_global sidebar_all_pages = sidebar_all_pages | concat(with=page_item) -%}
+        {% if page_item.date %}
+          {% set date_str = page_item.date | date(format="%Y-%m-%d") %}
+          {% set_global all_content_dates = all_content_dates | concat(with=date_str) %}
+        {% endif %}
+        {% if page_item.updated %}
+          {% set updated_str = page_item.updated | date(format="%Y-%m-%d") %}
+          {% set_global all_content_dates = all_content_dates | concat(with=updated_str) %}
+        {% endif %}
       {% endfor -%}
     {% endfor -%}
+
   <div class="taxonomy-list-page pt">
     <div class="main-box-block">
       <div class="main-box-block">
@@ -229,37 +249,6 @@
       </div>
     </div>
   </div>
-
-  {# 收集所有有内容的日期 (完整日期 YYYY-MM-DD) #}
-  {% set_global all_content_dates = [] %}
-  {% set all_section = get_section(path="_index.md") %}
-
-  {# 遍历根 section 的所有页面 #}
-  {% for page_item in all_section.pages %}
-    {% if page_item.date %}
-      {% set date_str = page_item.date | date(format="%Y-%m-%d") %}
-      {% set_global all_content_dates = all_content_dates | concat(with=date_str) %}
-    {% endif %}
-    {% if page_item.updated %}
-      {% set updated_str = page_item.updated | date(format="%Y-%m-%d") %}
-      {% set_global all_content_dates = all_content_dates | concat(with=updated_str) %}
-    {% endif %}
-  {% endfor %}
-
-  {# 遍历所有子 section #}
-  {% for subsection_path in all_section.subsections %}
-    {% set subsection = get_section(path=subsection_path) %}
-    {% for page_item in subsection.pages %}
-      {% if page_item.date %}
-        {% set date_str = page_item.date | date(format="%Y-%m-%d") %}
-        {% set_global all_content_dates = all_content_dates | concat(with=date_str) %}
-      {% endif %}
-      {% if page_item.updated %}
-        {% set updated_str = page_item.updated | date(format="%Y-%m-%d") %}
-        {% set_global all_content_dates = all_content_dates | concat(with=updated_str) %}
-      {% endif %}
-    {% endfor %}
-  {% endfor %}
 
   {# 收集特殊日期 (MM-DD格式) #}
   {% set_global special_dates = [] %}
