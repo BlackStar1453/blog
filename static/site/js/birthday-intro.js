@@ -3,10 +3,10 @@
 
   // 检查是否应该显示开场动画
   function shouldShowIntro() {
-    // 检查sessionStorage,避免刷新页面时重复播放
-    if (sessionStorage.getItem('birthday-intro-shown')) {
-      return false;
-    }
+    // 暂时禁用sessionStorage检查,方便测试
+    // if (sessionStorage.getItem('birthday-intro-shown')) {
+    //   return false;
+    // }
     return true;
   }
 
@@ -43,8 +43,8 @@
     // 插入HTML
     document.body.insertAdjacentHTML('beforeend', createIntroHTML(blogTitle, specialTitle, specialMessage));
 
-    // 标记已显示
-    sessionStorage.setItem('birthday-intro-shown', 'true');
+    // 暂时禁用sessionStorage标记,方便测试
+    // sessionStorage.setItem('birthday-intro-shown', 'true');
 
     // 监听Lottie动画完成事件
     var lottiePlayer = document.getElementById('birthdayLottie');
