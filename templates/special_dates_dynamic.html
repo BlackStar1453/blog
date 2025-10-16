@@ -1,0 +1,326 @@
+{% extends "base.html" %}
+{% import "macros.html" as macro %}
+
+{% block main %}
+{# 收集所有文章 #}
+{% set all_section = get_section(path="_index.md") %}
+{% set_global all_pages = [] %}
+
+{# 添加根section的页面 #}
+{% for page_item in all_section.pages %}
+  {% set_global all_pages = all_pages | concat(with=page_item) %}
+{% endfor %}
+
+{# 添加所有子section的页面 #}
+{% for subsection_path in all_section.subsections %}
+  {% set subsection = get_section(path=subsection_path) %}
+  {% for page_item in subsection.pages %}
+    {% set_global all_pages = all_pages | concat(with=page_item) %}
+  {% endfor %}
+{% endfor %}
+
+<div class="main-box-block">
+  
+  <div id="special-date-content">
+    <!-- JavaScript将在这里动态渲染内容 -->
+  </div>
+</div>
+
+<style>
+.special-date-intro {
+  color: var(--colors-text-muted);
+  margin-bottom: 2rem;
+  font-size: 0.95rem;
+}
+
+.special-date-header {
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--colors-border);
+}
+
+.special-date-title {
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+  color: var(--colors-text);
+}
+
+.special-date-subtitle {
+  color: var(--colors-text-muted);
+  font-size: 0.95rem;
+}
+
+.year-group {
+  margin-bottom: 2.5rem;
+}
+
+.year-group h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: var(--colors-text);
+  border-bottom: 1px solid var(--colors-border);
+  padding-bottom: 0.5rem;
+}
+
+.year-group ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.year-group li {
+  margin-bottom: 0.8rem;
+  padding-left: 0;
+}
+
+.no-articles {
+  color: var(--colors-text-muted);
+  font-style: italic;
+  padding: 2rem 0;
+  text-align: center;
+}
+</style>
+
+<script>
+(function() {
+  'use strict';
+
+  // 防止重复初始化
+  let initialized = false;
+
+  // 所有文章数据（原始）
+  const allArticlesRaw = [
+    {% for page_item in all_pages %}
+      {% if page_item.date or page_item.updated %}
+      {
+        title: {{ page_item.title | json_encode() | safe }},
+        permalink: {{ page_item.permalink | json_encode() | safe }},
+        description: {{ page_item.description | default(value="") | json_encode() | safe }},
+        date: {% if page_item.date %}{{ page_item.date | json_encode() | safe }}{% else %}null{% endif %},
+        updated: {% if page_item.updated %}{{ page_item.updated | json_encode() | safe }}{% else %}null{% endif %},
+        year: {% if page_item.date %}{{ page_item.date | date(format="%Y") | json_encode() | safe }}{% elif page_item.updated %}{{ page_item.updated | date(format="%Y") | json_encode() | safe }}{% else %}""{% endif %}
+      },
+      {% endif %}
+    {% endfor %}
+  ];
+
+  // 去重，按 permalink 去重
+  const allArticles = (function(arr) {
+    const seen = {};
+    const out = [];
+    for (const a of arr) {
+      if (!a || !a.permalink) continue;
+      if (seen[a.permalink]) continue;
+      seen[a.permalink] = 1;
+      out.push(a);
+    }
+    console.debug('[special-dates] total articles (raw, unique):', arr.length, out.length);
+    return out;
+  })(allArticlesRaw);
+
+  // 从URL hash中获取日期
+  // 从URL查询参数中获取日期信息
+  // 支持两种格式:
+  // 1. ?date=YYYY-MM-DD (日历点击,只显示该年该日期)
+  // 2. ?date=MM-DD (特殊日期/去年今日,显示所有年份该日期)
+  function getDateFromURL() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const dateParam = urlParams.get('date');
+    console.debug('[special-dates] URL date param:', dateParam);
+
+    if (!dateParam) {
+      return null;
+    }
+
+    // 格式1: YYYY-MM-DD
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateParam)) {
+      const info = {
+        type: 'specific',
+        year: dateParam.substring(0, 4),
+        monthDay: dateParam.substring(5) // MM-DD
+      };
+      console.debug('[special-dates] parsed dateInfo (specific):', info);
+      return info;
+    }
+
+    // 格式2: MM-DD
+    if (/^\d{2}-\d{2}$/.test(dateParam)) {
+      const info = {
+        type: 'all-years',
+        monthDay: dateParam
+      };
+      console.debug('[special-dates] parsed dateInfo (all-years):', info);
+      return info;
+    }
+
+    console.warn('[special-dates] invalid date param format:', dateParam);
+    return null;
+  }
+
+  // 格式化日期为 MM-DD（使用字符串切片避免时区偏移）
+  function formatDate(dateStr) {
+    if (!dateStr) return null;
+    // 期望 ISO 字符串，如 2022-03-23T00:00:00+00:00
+    const full = dateStr.slice(0, 10); // YYYY-MM-DD
+    return full.slice(5, 10); // MM-DD
+  }
+
+  // 格式化日期为 YYYY-MM-DD（使用字符串切片避免时区偏移）
+  function formatFullDate(dateStr) {
+    if (!dateStr) return null;
+    return dateStr.slice(0, 10);
+  }
+
+  // 渲染特定日期的文章
+  function renderDateArticles(dateInfo) {
+    const contentEl = document.getElementById('special-date-content');
+    if (!contentEl) {
+      return;
+    }
+
+    let matchedArticles;
+    let titleText;
+    console.debug('[special-dates] allArticles (unique) count:', allArticles.length);
+    console.debug('[special-dates] dateInfo:', dateInfo);
+
+    if (dateInfo.type === 'specific') {
+      // 日历点击: 只显示特定年份+日期的内容
+      const targetYear = dateInfo.year;
+      const targetMonthDay = dateInfo.monthDay;
+      const targetFullDate = targetYear + '-' + targetMonthDay;
+
+      matchedArticles = allArticles.filter(function(article) {
+        // 优先使用date字段,如果date不匹配则检查updated字段
+        const articleDate = formatFullDate(article.date);
+        if (articleDate === targetFullDate) return true;
+
+        const articleUpdated = formatFullDate(article.updated);
+        return articleUpdated === targetFullDate;
+      });
+
+      titleText = targetYear + '年' + targetMonthDay.replace('-', '月') + '日';
+
+    } else {
+      // 特殊日期/去年今日: 显示所有年份该日期的内容
+      const targetMonthDay = dateInfo.monthDay;
+
+      matchedArticles = allArticles.filter(function(article) {
+        const articleDate = formatDate(article.date);
+        // 优先使用date字段,如果date不匹配则检查updated字段
+        if (articleDate === targetMonthDay) return true;
+
+        const articleUpdated = formatDate(article.updated);
+        return articleUpdated === targetMonthDay;
+      });
+
+      titleText = targetMonthDay.replace('-', '月') + '日 (所有年份)';
+    }
+
+    // debug
+    (function(){
+      const permas = matchedArticles.map(a => a.permalink);
+      const dupCheck = new Set();
+      const dups = [];
+      for (const p of permas) { if (dupCheck.has(p)) dups.push(p); else dupCheck.add(p); }
+      console.debug('[special-dates] matched count:', matchedArticles.length, 'duplicates:', dups.length);
+      if (dups.length) console.warn('[special-dates] duplicate permalinks detected:', dups);
+    })();
+
+    if (matchedArticles.length === 0) {
+      contentEl.innerHTML = '<div class="no-articles">该日期暂无内容</div>';
+      return;
+    }
+
+    // 按年份分组
+    const articlesByYear = {};
+    matchedArticles.forEach(function(article) {
+      const year = article.year;
+      if (!articlesByYear[year]) {
+        articlesByYear[year] = [];
+      }
+      articlesByYear[year].push(article);
+    });
+
+    // 获取年份并降序排列
+    const years = Object.keys(articlesByYear).sort(function(a, b) {
+      return parseInt(b) - parseInt(a);
+    });
+
+    // 构建HTML
+    let html = '<div class="special-date-header">';
+    html += '<h2 class="special-date-title">' + titleText + '</h2>';
+    html += '<p class="special-date-subtitle">共找到 ' + matchedArticles.length + ' 篇内容</p>';
+    html += '</div>';
+
+    // 如果是特定年份,不需要显示年份分组
+    if (dateInfo.type === 'specific' && years.length === 1) {
+      html += '<ul>';
+      matchedArticles.forEach(function(article) {
+        html += '<li>';
+        html += '<a href="' + article.permalink + '">' + article.title + '</a>';
+        if (article.description) {
+          html += '<p style="color: var(--colors-text-muted); font-size: 0.9rem; margin: 0.3rem 0 0 0;">' + article.description + '</p>';
+        }
+        html += '</li>';
+      });
+      html += '</ul>';
+    } else {
+      // 显示年份分组
+      years.forEach(function(year) {
+        html += '<div class="year-group">';
+        html += '<h2>' + year + '</h2>';
+        html += '<ul>';
+
+        articlesByYear[year].forEach(function(article) {
+          html += '<li>';
+          html += '<a href="' + article.permalink + '">' + article.title + '</a>';
+          if (article.description) {
+            html += '<p style="color: var(--colors-text-muted); font-size: 0.9rem; margin: 0.3rem 0 0 0;">' + article.description + '</p>';
+          }
+          html += '</li>';
+        });
+
+        html += '</ul>';
+        html += '</div>';
+      });
+    }
+
+    contentEl.innerHTML = html;
+  }
+
+  // 初始化
+  function init() {
+    const dateInfo = getDateFromURL();
+
+    if (dateInfo) {
+      renderDateArticles(dateInfo);
+    } else {
+      const contentEl = document.getElementById('special-date-content');
+      if (contentEl) {
+        contentEl.innerHTML = '<div class="no-articles">请从侧边栏日历中选择一个日期</div>';
+      }
+    }
+  }
+
+  // 不再需要监听hashchange,因为使用查询参数会触发页面重新加载
+
+  // 页面加载时初始化 - 只初始化一次
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+      if (!initialized) {
+        initialized = true;
+        // 延迟一点确保hash已经设置
+        setTimeout(init, 100);
+      }
+    });
+  } else {
+    // DOM已经加载完成，立即执行
+    if (!initialized) {
+      initialized = true;
+      setTimeout(init, 100);
+    }
+  }
+})();
+</script>
+
+{% endblock main %}

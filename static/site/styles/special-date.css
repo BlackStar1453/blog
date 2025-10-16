@@ -1,0 +1,287 @@
+/* 特殊日期功能样式 */
+
+/* ========== 极简文本横幅（增强版）========== */
+.special-date-banner {
+    display: block;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto 40px;
+    padding: 1.2rem 0;
+    text-align: center;
+    text-decoration: none;
+    background: transparent;
+    color: var(--colors-primary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    opacity: 0;
+    position: relative;
+}
+
+/* 添加上下分隔线 */
+.special-date-banner::before,
+.special-date-banner::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 1px;
+    background: linear-gradient(to right,
+            transparent,
+            var(--colors-divider) 20%,
+            var(--colors-divider) 80%,
+            transparent);
+}
+
+.special-date-banner::before {
+    top: 0;
+}
+
+.special-date-banner::after {
+    bottom: 0;
+}
+
+.special-date-banner.verified {
+    opacity: 1;
+}
+
+.special-date-banner:hover {
+    color: var(--colors-blue);
+    transform: translateY(-2px);
+}
+
+.special-date-banner:hover::before,
+.special-date-banner:hover::after {
+    background: linear-gradient(to right,
+            transparent,
+            var(--colors-blue) 20%,
+            var(--colors-blue) 80%,
+            transparent);
+}
+
+.special-date-banner-text {
+    font-size: 1.15rem;
+    margin: 0;
+    line-height: 1.6;
+    color: inherit;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+}
+
+.special-date-banner-text::before {
+    content: '✦ ';
+    color: #f2cf59;
+    /* 金色 */
+    opacity: 0.85;
+}
+
+.special-date-banner-text::after {
+    content: ' ✦';
+    color: #f2cf59;
+    /* 金色 */
+    opacity: 0.85;
+}
+
+/* 横幅提示文字 */
+.special-date-banner-hint {
+    font-size: 0.85rem;
+    margin: 0.5rem 0 0 0;
+    color: var(--colors-muted);
+    font-weight: 400;
+    letter-spacing: 0;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .special-date-banner {
+        margin: 0 15px 20px;
+        padding: 0.8rem 1rem;
+    }
+
+    .special-date-banner-text {
+        font-size: 1rem !important;
+    }
+}
+
+/* 特殊日期页面样式 */
+.special-date-page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.special-date-page header {
+    text-align: center;
+    margin-bottom: 50px;
+    padding-bottom: 20px;
+    border-bottom: 3px solid #eee;
+}
+
+.special-date-page h1 {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.special-date-page .subtitle {
+    font-size: 1.2rem;
+    color: #666;
+    margin-top: 10px;
+    font-style: italic;
+}
+
+/* 文章列表容器 */
+.articles-by-year {
+    margin-top: 40px;
+}
+
+/* 年份标题 */
+.year-header {
+    font-size: 2rem;
+    font-weight: bold;
+    margin: 50px 0 25px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #ddd;
+    color: #444;
+    position: relative;
+}
+
+.year-header::before {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 60px;
+    height: 2px;
+    background: var(--banner-color, #ff6b9d);
+}
+
+/* 年份文章容器 */
+.year-articles {
+    margin-bottom: 50px;
+}
+
+/* 文章项 */
+.article-item {
+    margin-bottom: 25px;
+    padding: 25px;
+    border-radius: 10px;
+    background: #f9f9f9;
+    border-left: 4px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.article-item:hover {
+    background: #f0f0f0;
+    border-left-color: var(--banner-color, #ff6b9d);
+    transform: translateX(5px);
+}
+
+/* 文章日期 */
+.article-item time {
+    display: block;
+    font-size: 0.9rem;
+    color: #999;
+    margin-bottom: 10px;
+    font-family: 'Courier New', monospace;
+}
+
+/* 文章标题 */
+.article-item h3 {
+    margin: 0 0 12px;
+    font-size: 1.4rem;
+    line-height: 1.4;
+}
+
+.article-item h3 a {
+    color: #333;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.article-item h3 a:hover {
+    color: var(--banner-color, #ff6b9d);
+}
+
+/* 文章摘要 */
+.article-item .summary {
+    color: #666;
+    margin: 12px 0;
+    line-height: 1.7;
+    font-size: 0.95rem;
+}
+
+/* 文章元信息 */
+.article-item .meta {
+    font-size: 0.85rem;
+    color: #999;
+    margin-top: 12px;
+    display: flex;
+    gap: 20px;
+}
+
+.article-item .meta span {
+    display: inline-flex;
+    align-items: center;
+}
+
+.article-item .meta span::before {
+    content: '•';
+    margin-right: 8px;
+    color: var(--banner-color, #ff6b9d);
+}
+
+/* 空状态 */
+.empty-state {
+    text-align: center;
+    padding: 80px 20px;
+    color: #999;
+}
+
+.empty-state p {
+    font-size: 1.2rem;
+    margin: 15px 0;
+    line-height: 1.6;
+}
+
+.empty-state p:first-child {
+    font-size: 1.4rem;
+    color: #666;
+}
+
+.empty-state p:last-child {
+    color: var(--banner-color, #ff6b9d);
+    font-weight: 500;
+}
+
+/* 深色模式支持（如果需要） */
+@media (prefers-color-scheme: dark) {
+    .special-date-page h1 {
+        color: #eee;
+    }
+
+    .special-date-page .subtitle {
+        color: #aaa;
+    }
+
+    .year-header {
+        color: #ddd;
+        border-bottom-color: #444;
+    }
+
+    .article-item {
+        background: #2a2a2a;
+    }
+
+    .article-item:hover {
+        background: #333;
+    }
+
+    .article-item h3 a {
+        color: #eee;
+    }
+
+    .article-item .summary {
+        color: #aaa;
+    }
+}

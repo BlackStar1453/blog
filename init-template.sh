@@ -296,10 +296,11 @@ EOF
 +++
 title = "欢迎使用博客模板"
 date = 2024-01-01
+updated = 2024-01-01
 description = "这是一篇示例文章，展示了博客的基本功能"
 [taxonomies]
 tags = ["欢迎", "模板"]
-categories = ["博客"]
+categories = ["Blog"]
 +++
 
 # 欢迎使用博客模板
@@ -348,6 +349,228 @@ description = "我的短想法和随想"
 ---
 
 *更多想法将会出现在这里...*
+EOF
+
+    # 创建必需的页面文件
+    mkdir -p content/pages
+
+    # 创建 archive 页面
+    cat > content/pages/archive.md << 'EOF'
++++
+title = "归档"
+description = "所有文章归档"
+template = "archive.html"
++++
+
+# 归档
+
+这里是所有文章的归档页面。
+EOF
+
+    cat > content/pages/archive.en.md << 'EOF'
++++
+title = "Archive"
+description = "All posts archive"
+template = "archive.html"
++++
+
+# Archive
+
+This is the archive page for all posts.
+EOF
+
+    # 创建 sidebar 页面
+    cat > content/pages/sidebar.md << 'EOF'
++++
+title = "侧边栏"
++++
+EOF
+
+    cat > content/pages/sidebar.en.md << 'EOF'
++++
+title = "Sidebar"
++++
+EOF
+
+    # 创建 about 页面
+    cat > content/pages/about.md << 'EOF'
++++
+title = "关于我"
+description = "关于我的介绍"
+template = "about.html"
+date = 2024-01-01
+updated = 2024-01-01
++++
+
+# 关于我
+
+这里是关于我的介绍。
+
+## 联系方式
+
+- Email: your.email@example.com
+- GitHub: yourusername
+EOF
+
+    cat > content/pages/about.en.md << 'EOF'
++++
+title = "About Me"
+description = "About me"
+template = "about.html"
+date = 2024-01-01
+updated = 2024-01-01
++++
+
+# About Me
+
+This is about me.
+
+## Contact
+
+- Email: your.email@example.com
+- GitHub: yourusername
+EOF
+
+    # 创建 now 页面
+    cat > content/pages/now.md << 'EOF'
++++
+title = "现在"
+description = "我现在在做什么"
+template = "now.html"
+date = 2024-01-01
+updated = 2024-01-01
++++
+
+# 现在
+
+这里记录我现在在做的事情。
+
+## 最近在做
+
+- 学习新技术
+- 写博客
+EOF
+
+    cat > content/pages/now.en.md << 'EOF'
++++
+title = "Now"
+description = "What I'm doing now"
+template = "now.html"
+date = 2024-01-01
+updated = 2024-01-01
++++
+
+# Now
+
+This is what I'm doing now.
+
+## Currently
+
+- Learning new technologies
+- Writing blog posts
+EOF
+
+    # 创建 index_first 页面
+    cat > content/pages/index_first.md << 'EOF'
++++
+title = "首页介绍"
++++
+
+欢迎来到我的博客！
+EOF
+
+    cat > content/pages/index_first.en.md << 'EOF'
++++
+title = "Welcome"
++++
+
+Welcome to my blog!
+EOF
+
+    # 创建 quotes 页面
+    cat > content/quotes.md << 'EOF'
++++
+title = "摘录"
+description = "我的摘录和引用"
+date = 2024-01-01
++++
+
+# 摘录
+
+这里记录我的摘录和引用。
+EOF
+
+    cat > content/quotes.en.md << 'EOF'
++++
+title = "Quotes"
+description = "My quotes and excerpts"
+date = 2024-01-01
++++
+
+# Quotes
+
+This is where I record my quotes and excerpts.
+EOF
+
+    # 创建英文版 thoughts 页面
+    cat > content/thoughts/index.en.md << 'EOF'
++++
+title = "Short Thoughts"
+description = "My short thoughts and musings"
+date = 2024-01-01
++++
+
+# Short Thoughts
+
+This is where I record my short thoughts and musings.
+
+---
+
+**2024-01-01 12:00**
+
+This is the first sample thought. You can automatically sync thoughts here through Apple Notes tags.
+
+---
+
+*More thoughts will appear here...*
+EOF
+
+    # 创建英文版示例文章
+    cat > content/blog/welcome.en.md << 'EOF'
++++
+title = "Welcome to Blog Template"
+date = 2024-01-01
+updated = 2024-01-01
+description = "This is a sample article showcasing the basic features of the blog"
+[taxonomies]
+tags = ["welcome", "template"]
+categories = ["Blog"]
++++
+
+# Welcome to Blog Template
+
+This is a sample article showcasing the basic features of this blog template.
+
+## Supported Content Types
+
+This blog template supports multiple content types:
+
+- **Articles** - Long-form blog posts
+- **Thoughts** - Short thoughts and musings
+- **Poems** - Original poetry works
+- **Stories** - Original stories and fiction
+- **Translations** - Translated works
+- **Quotes** - Article quotes and excerpts
+
+## Automation Features
+
+- Automatically sync content from Apple Notes
+- Auto-publish to Mastodon
+- Automated build and deployment
+
+## Start Writing
+
+Delete this sample article and start creating your own content!
 EOF
 
     log_success "示例内容已创建"

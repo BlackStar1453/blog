@@ -82,15 +82,23 @@
               </div>
           {% endif %}
             <div class="pb">
-              {% set page_date = page.date | date(format="%Y.%m.%d") %}
-              {% set page_updated = page.updated | date(format="%Y.%m.%d") %}
               {% if page.date %}
+                {% set page_date = page.date | date(format="%Y.%m.%d") %}
                 {{ trans(key="label_created",lang=lang) }}:&nbsp;
                 <time class="dt-published published" datetime="{{ page.date }}">{{ page.date | date(format="%Y.%m.%d") }}</time>
               {% endif %}
-              {% if page.updated and page_date != page_updated %}
-                · {{ trans(key="label_updated",lang=lang) }}:&nbsp;
-                <time class="dt-updated updated" datetime="{{ page.updated }}">{{ page.updated | date(format="%Y.%m.%d") }}</time>
+              {% if page.updated %}
+                {% set page_updated = page.updated | date(format="%Y.%m.%d") %}
+                {% if page.date %}
+                  {% set page_date_check = page.date | date(format="%Y.%m.%d") %}
+                  {% if page_date_check != page_updated %}
+                    · {{ trans(key="label_updated",lang=lang) }}:&nbsp;
+                    <time class="dt-updated updated" datetime="{{ page.updated }}">{{ page.updated | date(format="%Y.%m.%d") }}</time>
+                  {% endif %}
+                {% else %}
+                  {{ trans(key="label_updated",lang=lang) }}:&nbsp;
+                  <time class="dt-updated updated" datetime="{{ page.updated }}">{{ page.updated | date(format="%Y.%m.%d") }}</time>
+                {% endif %}
               {% endif %}
               {% if config.extra.edit_url_prefix %}
                 <a class="muted" href="{{ config.extra.edit_url_prefix~page.relative_path }}">&nbsp;📝 {{ trans(key="label_edit",lang=lang) }}</a>

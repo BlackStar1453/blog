@@ -89,6 +89,7 @@
         <link rel="stylesheet" href="{{ get_url(path="site/styles/site-zh.css", trailing_slash=false,cachebust=true) | safe }}">
       {%- endif -%}
     {%- endif -%}
+    <link rel="stylesheet" href="{{ get_url(path="site/styles/calendar.css", trailing_slash=false,cachebust=true) | safe }}">
     <link rel="me" href="https://twitter.com/Heraclitius"/>
     <link rel="me" href="https://twitter.com/Heraclitius"/>
     <link rel="me" href="https://github.com/BlackStar1453"/>
@@ -164,8 +165,21 @@
               <p class="p-note">{{ config.extra.bio }}</p>
             </div>
 
+            {# 侧边栏日历 - 在重要链接之前 #}
+            <div class="sidebar-calendar pt">
+              <div class="main-box-block">
+                <div class="calendar-container">
+                  <div class="calendar-header">
+                    <div id="calendar-month-year" class="calendar-month-year"></div>
+                  </div>
+                  <div id="calendar-body" class="calendar-grid"></div>
+                </div>
+              </div>
+            </div>
+
             {% set custom_sidebar = get_page(path="pages/sidebar"~file_lang_path~".md") %}
             {{ custom_sidebar.content | safe }}
+
               {% set all_categories = get_taxonomy(kind="categories",lang=lang) -%}
 
               <div class="taxonomy-list-page pt">
@@ -185,12 +199,24 @@
   </div>
 
     {% set all_section_pages = get_section(path="_index"~file_lang_path~".md") -%}
+    {# 收集所有页面，包括子section的页面 #}
+    {% set_global sidebar_all_pages = [] -%}
+    {# 添加根section的页面 #}
+    {% for page_item in all_section_pages.pages -%}
+      {% set_global sidebar_all_pages = sidebar_all_pages | concat(with=page_item) -%}
+    {% endfor -%}
+    {# 添加所有子section的页面 #}
+    {% for subsection in all_section_pages.subsections -%}
+      {% set subsection_data = get_section(path=subsection) -%}
+      {% for page_item in subsection_data.pages -%}
+        {% set_global sidebar_all_pages = sidebar_all_pages | concat(with=page_item) -%}
+      {% endfor -%}
+    {% endfor -%}
   <div class="taxonomy-list-page pt">
     <div class="main-box-block">
       <div class="main-box-block">
           <div class="by">{{ trans(key="label_by_time_title",lang=lang) | markdown(inline=true) | safe }}：</div>
-          {% for year, posts in
-              all_section_pages.pages | group_by(attribute="year") %}
+          {% for year, posts in sidebar_all_pages | group_by(attribute="year") %}
               <details class="pb-sm">
                 <summary class="text-bigger">{{ year }}</summary>
                 <ul>
@@ -204,6 +230,60 @@
     </div>
   </div>
 
+  {# 收集所有有内容的日期 (完整日期 YYYY-MM-DD) #}
+  {% set_global all_content_dates = [] %}
+  {% set all_section = get_section(path="_index.md") %}
+
+  {# 遍历根 section 的所有页面 #}
+  {% for page_item in all_section.pages %}
+    {% if page_item.date %}
+      {% set date_str = page_item.date | date(format="%Y-%m-%d") %}
+      {% set_global all_content_dates = all_content_dates | concat(with=date_str) %}
+    {% endif %}
+    {% if page_item.updated %}
+      {% set updated_str = page_item.updated | date(format="%Y-%m-%d") %}
+      {% set_global all_content_dates = all_content_dates | concat(with=updated_str) %}
+    {% endif %}
+  {% endfor %}
+
+  {# 遍历所有子 section #}
+  {% for subsection_path in all_section.subsections %}
+    {% set subsection = get_section(path=subsection_path) %}
+    {% for page_item in subsection.pages %}
+      {% if page_item.date %}
+        {% set date_str = page_item.date | date(format="%Y-%m-%d") %}
+        {% set_global all_content_dates = all_content_dates | concat(with=date_str) %}
+      {% endif %}
+      {% if page_item.updated %}
+        {% set updated_str = page_item.updated | date(format="%Y-%m-%d") %}
+        {% set_global all_content_dates = all_content_dates | concat(with=updated_str) %}
+      {% endif %}
+    {% endfor %}
+  {% endfor %}
+
+  {# 收集特殊日期 (MM-DD格式) #}
+  {% set_global special_dates = [] %}
+  {% if config.extra.special_dates and config.extra.special_dates.dates %}
+    {% for date_config in config.extra.special_dates.dates %}
+      {% set month_str = date_config.month %}
+      {% if date_config.month < 10 %}
+        {% set month_str = "0" ~ date_config.month %}
+      {% endif %}
+      {% set day_str = date_config.day %}
+      {% if date_config.day < 10 %}
+        {% set day_str = "0" ~ date_config.day %}
+      {% endif %}
+      {% set special_date = month_str ~ "-" ~ day_str %}
+      {% set_global special_dates = special_dates | concat(with=special_date) %}
+    {% endfor %}
+  {% endif %}
+
+  {# 去重并传递给 JavaScript #}
+  {% set unique_dates = all_content_dates | unique %}
+  <div id="sidebar-calendar"
+       data-content-dates='{{ unique_dates | json_encode() | safe }}'
+       data-special-dates='{{ special_dates | json_encode() | safe }}'
+       style="display: none;"></div>
 
             <h2>
               <a class="no-underline" title="{{ trans(key='label_tags',lang=lang) }}" href="{{ lang_prefix_path }}tags/">{{ trans(key="label_tags",lang=lang) }}</a>
@@ -231,18 +311,29 @@
       </div>
       {% endblock body_zone -%}
     </div>
-      {{ macro::music_playlist_block(
-        source="/media/",
-        manifest="music_playlist.json",
-        title="Music",
-        preload="metadata",
-        list_folded=false,
-        fixed=true,
-        mini=false,
-        autoplay=true,
-        mutex=true,
-        default_cover="/media/playlist-cover.svg"
-      ) }}
+      {# 尝试加载 music_playlist.json，如果不存在则隐藏播放器 #}
+      {% set_global has_music_playlist = false -%}
+      {% set music_data = load_data(path="static/media/music_playlist.json", required=false) -%}
+      {% if music_data -%}
+        {% if music_data is iterable and music_data | length > 0 -%}
+          {% set_global has_music_playlist = true -%}
+        {% endif -%}
+      {% endif -%}
+
+      {% if has_music_playlist %}
+        {{ macro::music_playlist_block(
+          source="/media/",
+          manifest="music_playlist.json",
+          title="Music",
+          preload="metadata",
+          list_folded=false,
+          fixed=true,
+          mini=false,
+          autoplay=true,
+          mutex=true,
+          default_cover="/media/playlist-cover.svg"
+        ) }}
+      {% endif %}
 
     <div id="bottom"></div>
     {% block before_body_end -%}
@@ -254,6 +345,7 @@
     </script>
     <script defer src="{{ get_url(path="site/js/audio-player.js", trailing_slash=false, cachebust=true) | safe }}"></script>
     <script defer src="{{ get_url(path="site/js/music-playlist.js", trailing_slash=false, cachebust=true) | safe }}"></script>
+    <script defer src="{{ get_url(path="site/js/calendar.js", trailing_slash=false, cachebust=true) | safe }}"></script>
     <script defer src="{{ get_url(path="site/js/pjax.js", trailing_slash=false, cachebust=true) | safe }}"></script>
 
     <!-- Mermaid.js for diagram rendering -->

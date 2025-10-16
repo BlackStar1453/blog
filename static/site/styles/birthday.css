@@ -1,0 +1,48 @@
+/* 生日祝福横幅 */
+.birthday-banner {
+  background: linear-gradient(135deg, #ff6b9d 0%, #ffa07a 100%);
+  color: white;
+  padding: 2rem;
+  border-radius: 12px;
+  text-align: center;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 20px rgba(255, 107, 157, 0.3);
+  animation: fadeInDown 0.8s ease-out;
+}
+
+.birthday-title {
+  font-size: 2rem;
+  margin: 0 0 1rem 0;
+  font-weight: 700;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.birthday-message {
+  font-size: 1.2rem;
+  margin: 0;
+  opacity: 0.95;
+}
+
+/* 横幅淡入动画 */
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .birthday-title {
+    font-size: 1.5rem;
+  }
+
+  .birthday-message {
+    font-size: 1rem;
+  }
+}
