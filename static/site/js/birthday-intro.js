@@ -14,43 +14,17 @@
   function createIntroHTML(blogTitle, specialTitle, specialMessage) {
     return `
       <div class="birthday-intro-overlay" id="birthdayIntro">
-        <div class="sparkles">
-          <div class="sparkle"></div>
-          <div class="sparkle"></div>
-          <div class="sparkle"></div>
-          <div class="sparkle"></div>
-          <div class="sparkle"></div>
-          <div class="sparkle"></div>
-          <div class="sparkle"></div>
-          <div class="sparkle"></div>
+        <div class="birthday-lottie-container">
+          <dotlottie-player
+            id="birthdayLottie"
+            src="https://assets-v2.lottiefiles.com/a/94324332-118b-11ee-91df-6b2b59a306dd/F0GPVo1r7q.lottie"
+            background="transparent"
+            speed="1"
+            style="width: 400px; height: 400px;"
+            autoplay>
+          </dotlottie-player>
         </div>
-        
-        <div class="birthday-cake-container">
-          <div class="cake">
-            <div class="candles">
-              <div class="candle">
-                <div class="flame"></div>
-              </div>
-              <div class="candle">
-                <div class="flame"></div>
-              </div>
-              <div class="candle">
-                <div class="flame"></div>
-              </div>
-            </div>
-            
-            <div class="cake-layer cake-layer-3">
-              <div class="cake-decoration"></div>
-            </div>
-            <div class="cake-layer cake-layer-2">
-              <div class="cake-decoration"></div>
-            </div>
-            <div class="cake-layer cake-layer-1">
-              <div class="cake-decoration"></div>
-            </div>
-          </div>
-        </div>
-        
+
         <div class="birthday-message">
           <h1>🎂 生日快乐 🎉</h1>
           <p>今天是 ${blogTitle} 的${specialTitle}!</p>
@@ -72,18 +46,30 @@
     // 标记已显示
     sessionStorage.setItem('birthday-intro-shown', 'true');
 
-    // 4秒后淡出
+    // 监听Lottie动画完成事件
+    var lottiePlayer = document.getElementById('birthdayLottie');
+    if (lottiePlayer) {
+      lottiePlayer.addEventListener('complete', function () {
+        fadeOutIntro();
+      });
+    }
+
+    // 备用:5秒后强制淡出
     setTimeout(function () {
-      var intro = document.getElementById('birthdayIntro');
-      if (intro) {
-        intro.classList.add('fade-out');
-        
-        // 淡出动画完成后移除元素
-        setTimeout(function () {
-          intro.remove();
-        }, 800);
-      }
-    }, 4000);
+      fadeOutIntro();
+    }, 5000);
+  }
+
+  function fadeOutIntro() {
+    var intro = document.getElementById('birthdayIntro');
+    if (intro && !intro.classList.contains('fade-out')) {
+      intro.classList.add('fade-out');
+
+      // 淡出动画完成后移除元素
+      setTimeout(function () {
+        intro.remove();
+      }, 800);
+    }
   }
 
   // 导出到全局

@@ -4,7 +4,8 @@
 {% block extra_head %}
   <link rel="stylesheet" href="{{ get_url(path='site/styles/birthday.css') }}">
   {% if special_config %}
-    <link rel="stylesheet" href="{{ get_url(path='site/styles/birthday-intro.css') }}">
+    <link rel="stylesheet" href="{{ get_url(path='site/styles/birthday-intro-lottie.css') }}">
+    <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script>
   {% endif %}
 {% endblock extra_head %}
 
