@@ -178,36 +178,66 @@ validate_project_name() {
     return 0
 }
 
+# 从 config.toml 获取项目名称
+get_project_name_from_config() {
+    if [ -f "config.toml" ]; then
+        # 从 base_url 提取项目名称
+        local base_url=$(grep '^base_url' config.toml | sed 's/.*"\(.*\)".*/\1/')
+        if [[ "$base_url" =~ ([a-z0-9-]+)\.pages\.dev ]]; then
+            echo "${BASH_REMATCH[1]}"
+            return 0
+        fi
+    fi
+    return 1
+}
+
 # 获取或创建项目
 get_or_create_project() {
-    log_info "检查 Cloudflare Pages 项目..."
+    log_info "检查 Cloudflare Pages 项目..." >&2
+
+    # 尝试从 config.toml 自动获取项目名称
+    local auto_project_name
+    auto_project_name=$(get_project_name_from_config)
+
+    if [ -n "$auto_project_name" ]; then
+        log_info "从 config.toml 检测到项目名称: $auto_project_name" >&2
+
+        # 验证项目是否存在
+        if wrangler pages project list 2>/dev/null | grep -q "$auto_project_name"; then
+            log_success "✅ 使用现有项目: $auto_project_name" >&2
+            echo "$auto_project_name"
+            return 0
+        else
+            log_warning "项目 $auto_project_name 不存在于 Cloudflare 账户中" >&2
+        fi
+    fi
 
     # 列出现有项目
-    echo ""
-    echo "现有的 Cloudflare Pages 项目："
-    wrangler pages project list 2>/dev/null || echo "  (无)"
-    echo ""
+    echo "" >&2
+    echo "现有的 Cloudflare Pages 项目：" >&2
+    wrangler pages project list 2>/dev/null >&2 || echo "  (无)" >&2
+    echo "" >&2
 
     # 显示项目名称要求
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "📝 项目名称要求:"
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "  • 长度: 1-58 个字符"
-    echo "  • 字符: 只能包含小写字母(a-z)、数字(0-9)和连字符(-)"
-    echo "  • 限制: 不能以连字符开头或结尾"
-    echo "  • 示例: my-blog, blog-2024, personal-website"
-    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
+    echo "📝 项目名称要求:" >&2
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
+    echo "  • 长度: 1-58 个字符" >&2
+    echo "  • 字符: 只能包含小写字母(a-z)、数字(0-9)和连字符(-)" >&2
+    echo "  • 限制: 不能以连字符开头或结尾" >&2
+    echo "  • 示例: my-blog, blog-2024, personal-website" >&2
+    echo "" >&2
 
     local project_name
     local attempts=0
     local max_attempts=3
 
     while [ $attempts -lt $max_attempts ]; do
-        echo -n "请输入项目名称（新建或使用现有）: "
+        echo -n "请输入项目名称（新建或使用现有）: " >&2
         read -r input_name < /dev/tty
 
         if [ -z "$input_name" ]; then
-            log_error "项目名称不能为空"
+            log_error "项目名称不能为空" >&2
             attempts=$((attempts + 1))
             continue
         fi
@@ -217,42 +247,42 @@ get_or_create_project() {
 
         # 如果转换后与输入不同,提示用户
         if [ "$project_name" != "$input_name" ]; then
-            log_info "已自动转换为小写: $project_name"
+            log_info "已自动转换为小写: $project_name" >&2
         fi
 
         # 验证格式
         if validate_project_name "$project_name"; then
-            log_success "✅ 项目名称格式正确: $project_name"
+            log_success "✅ 项目名称格式正确: $project_name" >&2
             break
         else
-            log_error "❌ 项目名称格式错误"
-            echo ""
-            echo "错误原因可能是:"
-            echo "  • 包含大写字母(已自动转换,但可能还有其他问题)"
-            echo "  • 包含特殊字符(只允许字母、数字和连字符)"
-            echo "  • 以连字符开头或结尾"
-            echo "  • 长度不在 1-58 字符范围内"
-            echo ""
+            log_error "❌ 项目名称格式错误" >&2
+            echo "" >&2
+            echo "错误原因可能是:" >&2
+            echo "  • 包含大写字母(已自动转换,但可能还有其他问题)" >&2
+            echo "  • 包含特殊字符(只允许字母、数字和连字符)" >&2
+            echo "  • 以连字符开头或结尾" >&2
+            echo "  • 长度不在 1-58 字符范围内" >&2
+            echo "" >&2
             attempts=$((attempts + 1))
 
             if [ $attempts -lt $max_attempts ]; then
-                echo "请重新输入 ($((max_attempts - attempts)) 次机会剩余)..."
-                echo ""
+                echo "请重新输入 ($((max_attempts - attempts)) 次机会剩余)..." >&2
+                echo "" >&2
             fi
         fi
     done
 
     if [ $attempts -eq $max_attempts ]; then
-        log_error "超过最大尝试次数,退出"
+        log_error "超过最大尝试次数,退出" >&2
         exit 1
     fi
 
     # 尝试创建项目（如果已存在会失败，但不影响后续部署）
-    log_info "准备项目: $project_name"
-    if wrangler pages project create "$project_name" --production-branch="main" 2>/dev/null; then
-        log_success "项目创建成功"
+    log_info "准备项目: $project_name" >&2
+    if wrangler pages project create "$project_name" --production-branch="main" 2>/dev/null >&2; then
+        log_success "项目创建成功" >&2
     else
-        log_info "项目已存在，将直接部署"
+        log_info "项目已存在，将直接部署" >&2
     fi
 
     echo "$project_name"
