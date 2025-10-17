@@ -1,0 +1,4 @@
+# Git submodules configuration
+# This file is intentionally empty to prevent Cloudflare deployment errors
+# apple_cloud_notes_parser is a local-only tool for macOS and should not be a submodule
+
