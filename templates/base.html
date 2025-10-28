@@ -216,21 +216,7 @@
       {% endif %}
     {% endfor -%}
 
-    {# 添加所有子section的页面 #}
-    {% for subsection in all_section_pages.subsections -%}
-      {% set subsection_data = get_section(path=subsection) -%}
-      {% for page_item in subsection_data.pages -%}
-        {% set_global sidebar_all_pages = sidebar_all_pages | concat(with=page_item) -%}
-        {% if page_item.date %}
-          {% set date_str = page_item.date | date(format="%Y-%m-%d") %}
-          {% set_global all_content_dates = all_content_dates | concat(with=date_str) %}
-        {% endif %}
-        {% if page_item.updated %}
-          {% set updated_str = page_item.updated | date(format="%Y-%m-%d") %}
-          {% set_global all_content_dates = all_content_dates | concat(with=updated_str) %}
-        {% endif %}
-      {% endfor -%}
-    {% endfor -%}
+    {# 子section页面不再加入，避免重复展示；参见 docs/2025-10-archive-index-fix.md #}
 
   <div class="taxonomy-list-page pt">
     <div class="main-box-block">

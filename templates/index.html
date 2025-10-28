@@ -53,29 +53,20 @@
   {% endif %}
 
   {% set all_section_pages = get_section(path="_index"~file_lang_path~".md") -%}
+  {% set all_pages = all_section_pages.pages -%}
 
-  {# 收集所有页面，包括子section的页面 #}
-  {% set_global all_pages = [] -%}
-  {# 添加根section的页面 #}
-  {% for page_item in all_section_pages.pages -%}
-    {% set_global all_pages = all_pages | concat(with=page_item) -%}
-  {% endfor -%}
-  {# 添加所有子section的页面 #}
-  {% for subsection in all_section_pages.subsections -%}
-    {% set subsection_data = get_section(path=subsection) -%}
-    {% for page_item in subsection_data.pages -%}
-      {% set_global all_pages = all_pages | concat(with=page_item) -%}
-    {% endfor -%}
-  {% endfor -%}
-
-  {# 收集有更新时间的页面 #}
+  {# 收集有更新时间的页面并排序 #}
   {% set_global pages_with_updated = [] -%}
   {% for page_item in all_pages -%}
-    {% if page_item.updated -%}
+    {% if page_item.updated and page_item.updated != "" -%}
       {% set_global pages_with_updated = pages_with_updated | concat(with=page_item) -%}
     {% endif -%}
   {% endfor -%}
-  {% set all_pages_sort_by_date = pages_with_updated | sort(attribute="updated") | reverse -%}
+  {% if pages_with_updated | length > 0 -%}
+    {% set all_pages_sort_by_date = pages_with_updated | sort(attribute="updated") | reverse -%}
+  {% else -%}
+    {% set all_pages_sort_by_date = [] -%}
+  {% endif -%}
 
   {# 计算总字数 #}
   {% set total_word_count = 0 -%}
@@ -114,10 +105,22 @@
   {% for cat in all_categories.items -%}
     {% set_global all_blog_pages = all_blog_pages | concat(with=cat.pages) -%}
     {% if cat.name == "Notes" -%}
-      {% set_global note_pages = cat.pages | sort(attribute="updated") | reverse -%}
+      {% set_global note_pages = [] -%}
+      {% for p in cat.pages -%}
+        {% if p.updated -%}
+          {% set_global note_pages = note_pages | concat(with=p) -%}
+        {% endif -%}
+      {% endfor -%}
+      {% set_global note_pages = note_pages | sort(attribute="updated") | reverse -%}
     {% endif -%}
   {% endfor -%}
-  {% set_global all_blog_pages = all_blog_pages | sort(attribute="updated") | reverse -%}
+  {% set_global all_blog_pages_sorted = [] -%}
+  {% for p in all_blog_pages -%}
+    {% if p.updated -%}
+      {% set_global all_blog_pages_sorted = all_blog_pages_sorted | concat(with=p) -%}
+    {% endif -%}
+  {% endfor -%}
+  {% set_global all_blog_pages_sorted = all_blog_pages_sorted | sort(attribute="updated") | reverse -%}
   <div class="index-page py">
 
       {% set index_first = get_page(path="pages/index_first"~file_lang_path~".md") %}
@@ -161,16 +164,16 @@
         <summary class="by ">{{ trans(key="label_new_posts_list_title",lang=lang) | markdown(inline=true) | safe }}:
       </summary>
       <div class="articles h-feed hfeed">
-        {% for page in all_blog_pages | slice(start=0,end=3) %}
+        {% for page in all_blog_pages_sorted | slice(start=0,end=3) %}
           {{ macro::post_max(page=page,index=loop.index) }}
         {% endfor %}
       </div>
       </details>
-      {%if all_blog_pages | slice(start=3) | length > 0%}
+      {%if all_blog_pages_sorted | slice(start=3) | length > 0%}
         <details class="py">
           <summary class="by text">{{ trans(key="label_all_posts",lang=lang) | markdown(inline=true) | safe }}</summary>
           <ul>
-            {% for page in all_blog_pages | slice(start=3) %}
+            {% for page in all_blog_pages_sorted | slice(start=3) %}
             <li>{{ macro::post_min(page=page) }}</li>
             {% endfor %}
           </ul>
@@ -192,7 +195,13 @@
             {% set_global note_pages = [] -%}
             {% for cat in all_categories.items -%}
               {% if cat.name == "Notes" -%}
-                {% set_global note_pages = cat.pages | sort(attribute="updated") | reverse -%}
+                {% set_global note_pages = [] -%}
+                {% for p in cat.pages -%}
+                  {% if p.updated -%}
+                    {% set_global note_pages = note_pages | concat(with=p) -%}
+                  {% endif -%}
+                {% endfor -%}
+                {% set_global note_pages = note_pages | sort(attribute="updated") | reverse -%}
               {% endif -%}
       {% endfor -%}
 
