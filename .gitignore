@@ -41,3 +41,7 @@ Temporary Items
 
 # macOS-specific tools (only for local development)
 apple_cloud_notes_parser/
+
+
+# Local logs (do not commit)
+logs/
