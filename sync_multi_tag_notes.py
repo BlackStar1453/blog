@@ -5,6 +5,19 @@
 
 作者: AI Assistant
 版本: 2.0.0
+
+使用示例:
+  # 同步新的带标签备忘录
+  python3 sync_multi_tag_notes.py
+
+  # 列出所有带标签的备忘录
+  python3 sync_multi_tag_notes.py --list
+
+  # 列出支持的标签类型
+  python3 sync_multi_tag_notes.py --tags
+
+  # 强制重新同步所有备忘录
+  python3 sync_multi_tag_notes.py --force
 """
 
 import os
@@ -12,7 +25,7 @@ import re
 import json
 import subprocess
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import List, Dict, Optional, Set, Tuple
 from dataclasses import dataclass
@@ -126,7 +139,7 @@ class TagHandler:
 class MultiTagSyncer:
     """多标签同步器"""
 
-    def __init__(self, config_file: str = "multi_tag_config.json", no_mastodon: bool = False, hashtags_json_path: Optional[str] = None, delete_original: bool = False, auto_extract: bool = True):
+    def __init__(self, config_file: str = "multi_tag_config.json", no_mastodon: bool = False, hashtags_json_path: Optional[str] = None, delete_original: bool = False, auto_extract: bool = True, recent_days: Optional[int] = 7, apply_recent_filter: bool = True):
         self.console = Console()
         self.config_file = Path(config_file)
         self.state_file = Path("multi_tag_sync_state.json")
@@ -139,6 +152,8 @@ class MultiTagSyncer:
         self.hashtags_map: Dict[str, List[str]] = {}
         self.delete_original = delete_original
         self.auto_extract = auto_extract
+        self.recent_days = recent_days
+        self.apply_recent_filter = apply_recent_filter
 
         # 初始化独立模块
         self.notes_extractor = NotesExtractor()
@@ -711,6 +726,16 @@ end tell'''
                 if tagged_note:
                     tagged_notes.append(tagged_note)
 
+            # 按最近 N 天过滤（应用于 list 和 sync）
+            if self.apply_recent_filter and (self.recent_days or 0) > 0:
+                cutoff = datetime.now() - timedelta(days=int(self.recent_days))
+                before_len = len(tagged_notes)
+                tagged_notes = [
+                    n for n in tagged_notes
+                    if (n.modification_date or n.creation_date or datetime.min) >= cutoff
+                ]
+                logger.info(f"最近 {self.recent_days} 天内的带标签备忘录: {len(tagged_notes)} / {before_len}")
+
             logger.info(f"找到 {len(tagged_notes)} 个带标签的备忘录")
             return tagged_notes
 
@@ -973,6 +998,16 @@ def main():
         help='禁用自动运行 apple_cloud_notes_parser 提取备忘录数据'
     )
 
+    # 最近 N 天过滤选项
+    parser.add_argument(
+        '--recent-days', type=int, default=7,
+        help='仅处理/列出最近 N 天内修改的备忘录（默认：7）'
+    )
+    parser.add_argument(
+        '--no-recent-filter', action='store_true',
+        help='禁用“最近 N 天”过滤，显示/处理全部备忘录'
+    )
+
     # 删除开关：默认不删除；--delete-original 开启删除；--no-delete-original 关闭
     delete_group = parser.add_mutually_exclusive_group()
     delete_group.add_argument('--delete-original', dest='delete_original', action='store_true', help='成功处理后删除原始备忘录（移入废纸篓）')
@@ -994,7 +1029,9 @@ def main():
             no_mastodon=args.no_mastodon,
             hashtags_json_path=args.hashtags_json,
             delete_original=args.delete_original,
-            auto_extract=not args.no_auto_extract
+            auto_extract=not args.no_auto_extract,
+            recent_days=args.recent_days,
+            apply_recent_filter=(not args.no_recent_filter)
         )
 
         # 重置状态

@@ -68,6 +68,22 @@
     {% set all_pages_sort_by_date = [] -%}
   {% endif -%}
 
+  {# 汇总所有分类下的页面（用于 header 的“最后更新时间”） #}
+  {% set all_categories_header = get_taxonomy(kind="categories",lang=lang) -%}
+  {% set_global all_blog_pages_header = [] -%}
+  {% for cat in all_categories_header.items -%}
+    {% for p in cat.pages -%}
+      {% if p.updated -%}
+        {% set_global all_blog_pages_header = all_blog_pages_header | concat(with=p) -%}
+      {% endif -%}
+    {% endfor -%}
+  {% endfor -%}
+  {% if all_blog_pages_header | length > 0 -%}
+    {% set all_blog_pages_sorted_header = all_blog_pages_header | sort(attribute="updated") | reverse -%}
+  {% else -%}
+    {% set all_blog_pages_sorted_header = [] -%}
+  {% endif -%}
+
   {# 计算总字数 #}
   {% set total_word_count = 0 -%}
   {% for page_item in all_pages -%}
@@ -79,8 +95,8 @@
           <p class="index-intro">I'm {{ config.extra.author }}, I've written
             <a href="{{ get_url(path="@/pages/archive.md",lang=lang) }}">
               {{ all_pages | length }}</a>
-            articles so far, about {{ total_word_count }} words{% if all_pages_sort_by_date | length > 0 %}, last updated on
-            <time datetime="{{ all_pages_sort_by_date[0].updated }}">{{ all_pages_sort_by_date[0].updated }}</time>{% endif %}. I position
+            articles so far, about {{ total_word_count }} words{% if all_blog_pages_sorted_header | length > 0 %}, last updated on
+            <time datetime="{{ all_blog_pages_sorted_header[0].updated }}">{{ all_blog_pages_sorted_header[0].updated }}</time>{% elif all_pages_sort_by_date | length > 0 %}, last updated on <time datetime="{{ all_pages_sort_by_date[0].updated }}">{{ all_pages_sort_by_date[0].updated }}</time>{% endif %}. I position
               this as my personal digital garden, where all my notes, ideas are stored here. Cause I'm not a English native speaker,
               so there are also
             <a href="/">many posts/notes written by Chinese</a>,
@@ -89,7 +105,7 @@
         {% else %}
           <p class="index-intro">我是<a href="{{ get_url(path="@/pages/about.md",lang=lang) }}">{{ config.extra.author }}</a>，截止目前已写了<a href="{{ get_url(path="@/pages/archive.md",lang=lang) }}">
               {{ all_pages | length }}</a>
-          篇文章，大约 {{ total_word_count }} 字{% if all_pages_sort_by_date | length > 0 %}，最后更新时间：<time datetime="{{ all_pages_sort_by_date[0].updated }}">{{ all_pages_sort_by_date[0].updated }}</time>{% endif %}。 我在<a href="/thoughts">短想法</a>里记录自己随手记的一些东西，
+          篇文章，大约 {{ total_word_count }} 字{% if all_blog_pages_sorted_header | length > 0 %}，最后更新时间：<time datetime="{{ all_blog_pages_sorted_header[0].updated }}">{{ all_blog_pages_sorted_header[0].updated }}</time>{% elif all_pages_sort_by_date | length > 0 %}，最后更新时间：<time datetime="{{ all_pages_sort_by_date[0].updated }}">{{ all_pages_sort_by_date[0].updated }}</time>{% endif %}。 我在<a href="/thoughts">短想法</a>里记录自己随手记的一些东西，
           在 <a href="{{ get_url(path="@/pages/about.md",lang=lang) }}">About</a> 页面了解更多关于我的介绍，在 <a href="{{ get_url(path="@/pages/now.md",lang=lang) }}">Now 页面</a>了解我最近在做什么。
           </p>
 

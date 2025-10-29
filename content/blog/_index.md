@@ -1,7 +1,7 @@
 ---
 paginate_by: 50
 sort_by: "date"
-sort_direction: "decending"
+sort_order: "desc"
 transparent: true
 insert_anchor_links: "right"
 generate_feed: true

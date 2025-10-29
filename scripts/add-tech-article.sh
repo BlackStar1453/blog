@@ -66,10 +66,15 @@ fi
 TEMPLATE_FILE="scripts/templates/tech.md.tmpl"
 if [ -f "$TEMPLATE_FILE" ]; then
     # 使用模板
-    sed -e "s/{{TITLE}}/$TITLE/g" \
-        -e "s/{{DATE}}/$DATETIME/g" \
-        -e "s/{{CONTENT}}/$CLEANED_CONTENT/g" \
-        "$TEMPLATE_FILE" > "$FILEPATH"
+    # 使用 awk 安全插入多行内容
+    tmp_content="$(mktemp)"
+    printf "%s" "$CLEANED_CONTENT" > "$tmp_content"
+    awk -v title="$TITLE" -v date="$DATETIME" -v cf="$tmp_content" '
+        { gsub(/\{\{TITLE\}\}/, title); gsub(/\{\{DATE\}\}/, date); }
+        /\{\{CONTENT\}\}/ { while ((getline line < cf) > 0) print line; close(cf); next; }
+        { print }
+    ' "$TEMPLATE_FILE" > "$FILEPATH"
+    rm -f "$tmp_content"
 else
     # 使用默认格式
     cat > "$FILEPATH" << EOF
