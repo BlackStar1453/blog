@@ -20,6 +20,7 @@ show_help() {
     echo "  auto-sync <命令> [选项]  - 管理自动同步定时任务"
     echo "  create <路径> <标题> [模板] [选项] - 创建新的md文档"
     echo "  commit [信息] [选项]     - 自动git提交"
+    echo "  word-count <文件|目录>   - 统计字数和预估阅读时长"
     echo "  help                     - 显示此帮助信息"
     echo ""
     echo "示例:"
@@ -97,11 +98,16 @@ case "$command" in
         # 传递所有参数给auto-commit.sh
         "${my_dir}/auto-commit.sh" "$@"
         ;;
-    
+
+    "word-count")
+        # 调用word-counter.py脚本
+        python3 "${my_dir}/word-counter.py" "$@"
+        ;;
+
     "help"|"-h"|"--help")
         show_help
         ;;
-    
+
     *)
         echo "错误: 未知命令 '$command'"
         echo ""

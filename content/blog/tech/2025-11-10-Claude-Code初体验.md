@@ -14,6 +14,10 @@ taxonomies:
     - VibeCoding
 ---
 
+### 2025.11.16更新
+
+> 我错了，大错特错！在用了一个礼拜后发现Claude Code好用太多了，不是代码质量上更强，而是在工程实践和开发体验上。我现在的使用流程是把augment和codex都作为Cluade Code的一个mcp，然后在需要进行代码方面的处理时进行调用，这样又能利用Claude Code的优势，也能利用ACMCP和Codex来提高Claude Code的编程质量（以及节省token）。
+
 # 
 
 之前一直在用Augment Code（下面简称AC），使用体验非常好，甚至现在在初步体验过Claude Code后，我是还认为Augment可能才是现在编程质量最高的Vibe Coding工具，只是因为在更换价格策略后，用AC非常不划算，，所以就想尝试一下Claude Code。
@@ -49,7 +53,7 @@ AC在未修改价格策略之前，性价比非常高，20$/150次使用次数�
 
 ## 最具性价比和质量的Vibe Coding方案
 
-综上，如果现在想要体验Vibe Coding，我觉得现在最具性价比和质量的Vibe Coding方案可能是：
+综上，如果现在想要体验Vibe Coding，我觉得最具性价比和质量的Vibe Coding方案可能是：
 
 1. Claude Code Pro。主力coding工具，20$每月。 
 2. ChatGTP Pro。用于CC解决不了的疑难问题，20$每月。
