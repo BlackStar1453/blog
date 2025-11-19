@@ -1,16 +1,13 @@
 ---
 title: Claude Code初体验
 date: 2025-11-10
-updated: 2025-11-10
+updated: 2025-11-18
 taxonomies:
   categories:
     - AI
     - 工具
-    - 开发
   tags:
     - AI
-    - 工具
-    - 开发
     - VibeCoding
 ---
 
