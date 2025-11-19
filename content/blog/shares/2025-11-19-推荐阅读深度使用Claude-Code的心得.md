@@ -19,7 +19,7 @@ extra:
 
 **注意：这并不是一篇面对新手的教程，你应该至少使用 CC 一段时间后再看这篇文章。**
 
-https://blog.sshh.io/p/how-i-use-every-claude-code-feature
+[How I use every Claude Code feature](https://blog.sshh.io/p/how-i-use-every-claude-code-feature)
 
 ## 我的使用体验
 
