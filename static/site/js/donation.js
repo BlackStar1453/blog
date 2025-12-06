@@ -13,7 +13,7 @@
         constructor(widgetElement) {
             this.widget = widgetElement;
             this.selectedAmount = 10;
-            this.selectedMethod = 'alipay';
+            this.selectedMethod = 'stripe';  // 默认选择 Stripe (Card)
             this.isCustomAmount = false;
             this.wechatQRInfo = {
                 orderId: null,
@@ -523,10 +523,12 @@
 
                 // 恢复支付方式
                 const savedMethod = localStorage.getItem('donation_method');
-                if (savedMethod && this.elements.methodTabs) {
-                    this.selectedMethod = savedMethod;
+                const methodToActivate = savedMethod || this.selectedMethod; // 如果没有保存，使用默认值 (stripe)
+
+                if (this.elements.methodTabs) {
+                    this.selectedMethod = methodToActivate;
                     this.elements.methodTabs.forEach(tab => {
-                        if (tab.dataset.method === savedMethod) {
+                        if (tab.dataset.method === methodToActivate) {
                             tab.classList.add('active');
                         } else {
                             tab.classList.remove('active');
@@ -536,7 +538,7 @@
                     // 显示对应的支付内容
                     if (this.elements.paymentContents) {
                         this.elements.paymentContents.forEach(content => {
-                            if (content.dataset.method === savedMethod) {
+                            if (content.dataset.method === methodToActivate) {
                                 content.classList.add('active');
                             } else {
                                 content.classList.remove('active');
