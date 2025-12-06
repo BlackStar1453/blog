@@ -233,10 +233,23 @@
                 });
             }
 
-            // 如果切换到微信支付，隐藏二维码区域，等待用户选择金额
-            // （不再自动生成二维码，等用户选择/确认金额后才显示和生成）
-            if (method === 'wechat' && this.elements.wechatQRWrapper) {
-                this.elements.wechatQRWrapper.style.display = 'none';
+            // 如果切换到微信支付
+            if (method === 'wechat') {
+                // 检查是否已经选择了金额（非自定义金额）
+                if (!this.isCustomAmount && this.selectedAmount > 0) {
+                    // 已有选中金额，直接生成二维码
+                    if (this.elements.wechatQRWrapper) {
+                        this.elements.wechatQRWrapper.style.display = 'block';
+                    }
+                    this.generateWeChatQR(this.selectedAmount);
+                    console.log('[Donation] 切换到微信支付，自动生成二维码，金额:', this.selectedAmount);
+                } else {
+                    // 没有选中金额或是自定义金额，隐藏二维码区域等待用户选择
+                    if (this.elements.wechatQRWrapper) {
+                        this.elements.wechatQRWrapper.style.display = 'none';
+                    }
+                    console.log('[Donation] 切换到微信支付，等待用户选择金额');
+                }
             }
 
             // 记录选择
