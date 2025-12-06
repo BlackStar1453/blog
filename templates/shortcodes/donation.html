@@ -1,0 +1,71 @@
+{%- if config.extra.donation.enable -%}
+<div class="donation-widget" id="donation-widget">
+    <!-- 极简标题 -->
+    <div class="donation-header">
+        <span class="donation-title" data-lang-zh="{{ config.extra.donation.title_zh }}" data-lang-en="{{ config.extra.donation.title_en }}">
+            {{ config.extra.donation.title_zh }}
+        </span>
+    </div>
+
+    <!-- 说明文字 -->
+    <div class="donation-message" data-lang-zh="{{ config.extra.donation.message_zh }}" data-lang-en="{{ config.extra.donation.message_en }}">
+        {{ config.extra.donation.message_zh }}
+    </div>
+
+    <!-- 国内支付方式（二维码） -->
+    <div class="donation-method donation-domestic" id="donation-domestic">
+        <div class="qr-container">
+            {%- if config.extra.donation.alipay_qr -%}
+            <div class="qr-item">
+                <img src="{{ get_url(path=config.extra.donation.alipay_qr, cachebust=true) }}"
+                     alt="支付宝"
+                     class="qr-code"
+                     loading="lazy">
+                <div class="qr-label">支付宝</div>
+            </div>
+            {%- endif -%}
+
+            {%- if config.extra.donation.wechat_qr -%}
+            <div class="qr-item">
+                <img src="{{ get_url(path=config.extra.donation.wechat_qr, cachebust=true) }}"
+                     alt="微信支付"
+                     class="qr-code"
+                     loading="lazy">
+                <div class="qr-label">微信支付</div>
+            </div>
+            {%- endif -%}
+        </div>
+    </div>
+
+    <!-- 国际支付方式（Stripe） -->
+    <div class="donation-method donation-international" id="donation-international" style="display: none;">
+        {%- if config.extra.donation.stripe_link -%}
+        <div class="stripe-container">
+            <a href="{{ config.extra.donation.stripe_link }}"
+               target="_blank"
+               rel="noopener noreferrer"
+               class="stripe-button">
+                <svg class="stripe-icon" viewBox="0 0 24 24" width="20" height="20">
+                    <path fill="currentColor" d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M11,7V13L15.28,15.54L16.5,13.88L13,11.75V7H11Z"/>
+                </svg>
+                Pay with Card
+            </a>
+            <div class="stripe-info">Secure payment via Stripe</div>
+        </div>
+        {%- else -%}
+        <div class="payment-placeholder">
+            Stripe payment link not configured
+        </div>
+        {%- endif -%}
+    </div>
+
+    <!-- 切换按钮 -->
+    <div class="donation-switch">
+        <button class="switch-button" id="donation-switch-btn"
+                data-lang-zh="{{ config.extra.donation.switch_text_zh }}"
+                data-lang-en="{{ config.extra.donation.switch_text_en }}">
+            {{ config.extra.donation.switch_text_zh }}
+        </button>
+    </div>
+</div>
+{%- endif -%}

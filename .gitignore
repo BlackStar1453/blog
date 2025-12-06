@@ -45,3 +45,6 @@ apple_cloud_notes_parser/
 
 # Local logs (do not commit)
 logs/
+
+# Temporary files
+.tmp/

@@ -90,6 +90,9 @@
       {%- endif -%}
     {%- endif -%}
     <link rel="stylesheet" href="{{ get_url(path="site/styles/calendar.css", trailing_slash=false,cachebust=true) | safe }}">
+    {%- if config.extra.donation.enable -%}
+      <link rel="stylesheet" href="{{ get_url(path="site/styles/donation.css", trailing_slash=false,cachebust=true) | safe }}">
+    {%- endif -%}
     <link rel="me" href="https://twitter.com/Heraclitius"/>
     <link rel="me" href="https://twitter.com/Heraclitius"/>
     <link rel="me" href="https://github.com/BlackStar1453"/>
@@ -164,6 +167,13 @@
               <a class="p-name u-url u-uid" href="{{ config.extra.indieweb_url }}" rel="me">{{ config.extra.author }}</a>
               <p class="p-note">{{ config.extra.bio }}</p>
             </div>
+
+            {# 侧边栏打赏组件 #}
+            {% if config.extra.donation.enable and config.extra.donation.show_in_sidebar %}
+              <div class="sidebar-donation">
+                {{ macro::donation_widget() }}
+              </div>
+            {% endif %}
 
             {# 侧边栏日历 - 在重要链接之前 #}
             <div class="sidebar-calendar pt">
@@ -322,6 +332,9 @@
     <script defer src="{{ get_url(path="site/js/music-playlist.js", trailing_slash=false, cachebust=true) | safe }}"></script>
     <script defer src="{{ get_url(path="site/js/calendar.js", trailing_slash=false, cachebust=true) | safe }}"></script>
     <script defer src="{{ get_url(path="site/js/pjax.js", trailing_slash=false, cachebust=true) | safe }}"></script>
+    {%- if config.extra.donation.enable -%}
+      <script defer src="{{ get_url(path="site/js/donation.js", trailing_slash=false, cachebust=true) | safe }}"></script>
+    {%- endif -%}
 
     <!-- Mermaid.js for diagram rendering -->
     <script defer src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>

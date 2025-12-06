@@ -1,0 +1,734 @@
+/* 优雅极简主义打赏组件样式 */
+
+/* 根变量定义 */
+:root {
+    --donation-primary: #2C2C2C;
+    --donation-bg: #FAFAF8;
+    --donation-border: rgba(0, 0, 0, 0.06);
+    --donation-text-primary: #2C2C2C;
+    --donation-text-secondary: #666;
+    --donation-text-muted: #999;
+    --donation-hover-bg: #1a1a1a;
+    --donation-shadow: 0 2px 20px rgba(0, 0, 0, 0.04);
+    --donation-transition: all 0.25s ease;
+}
+
+/* 主容器 */
+.donation-widget {
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+    background: var(--donation-bg);
+    padding: 48px 40px;
+    border-radius: 4px;
+    max-width: 380px;
+    margin: 3rem auto;
+    box-shadow: var(--donation-shadow);
+    border: 1px solid var(--donation-border);
+    position: relative;
+    transition: var(--donation-transition);
+}
+
+/* 文章中的打赏组件 */
+.page-body .donation-widget {
+    margin: 3rem 0;
+}
+
+/* 侧边栏打赏组件 - 更紧凑 */
+.sidebar .donation-widget {
+    padding: 32px 24px;
+    margin: 2rem 0;
+    max-width: 100%;
+}
+
+.sidebar .donation-widget .donation-title {
+    font-size: 14px;
+}
+
+.sidebar .donation-widget .donation-subtitle {
+    font-size: 13px;
+}
+
+.sidebar .donation-widget .donation-amount-btn {
+    padding: 10px 0;
+    font-size: 13px;
+}
+
+/* 顶部装饰线 */
+.donation-decoration-line {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 2px;
+    background: var(--donation-primary);
+}
+
+/* 头部区域 */
+.donation-header {
+    text-align: center;
+    margin-bottom: 36px;
+}
+
+.donation-icon-wrapper {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    margin-bottom: 20px;
+    color: var(--donation-primary);
+    transition: var(--donation-transition);
+}
+
+.donation-widget:hover .donation-icon-wrapper {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.donation-icon {
+    width: 24px;
+    height: 24px;
+}
+
+.donation-title {
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--donation-text-primary);
+    margin: 0 0 8px 0;
+}
+
+.donation-subtitle {
+    font-size: 15px;
+    color: var(--donation-text-secondary);
+    margin: 0;
+    font-style: italic;
+}
+
+/* 通用section标签 */
+.donation-section-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--donation-text-muted);
+    margin-bottom: 12px;
+}
+
+/* 金额选择 */
+.donation-amounts {
+    margin-bottom: 28px;
+}
+
+.donation-amount-grid {
+    display: flex;
+    gap: 10px;
+}
+
+.donation-amount-btn {
+    flex: 1;
+    padding: 14px 0;
+    background: transparent;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--donation-text-primary);
+    border-radius: 2px;
+    transition: var(--donation-transition);
+    font-family: inherit;
+}
+
+.donation-amount-btn:hover {
+    border-color: var(--donation-primary);
+    background: rgba(0, 0, 0, 0.02);
+}
+
+.donation-amount-btn.active {
+    background: var(--donation-primary);
+    border-color: var(--donation-primary);
+    color: #fff;
+}
+
+/* 支付方式标签 */
+.donation-methods {
+    margin-bottom: 28px;
+}
+
+.donation-method-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.donation-method-tab {
+    flex: 1;
+    padding: 16px 0;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #AAA;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: var(--donation-transition);
+    font-family: inherit;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.donation-method-tab:hover {
+    color: var(--donation-text-secondary);
+}
+
+.donation-method-tab.active {
+    color: var(--donation-primary);
+    border-bottom-color: var(--donation-primary);
+}
+
+.method-icon {
+    width: 20px;
+    height: 20px;
+}
+
+/* 自定义金额输入 */
+.donation-custom-amount {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    margin-top: 16px;
+    animation: fadeIn 0.3s ease;
+}
+
+.donation-custom-input {
+    flex: 1;
+    padding: 14px 16px;
+    background: transparent;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 2px;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--donation-text-primary);
+    font-family: inherit;
+    transition: var(--donation-transition);
+    outline: none;
+}
+
+.donation-custom-input:focus {
+    border-color: var(--donation-primary);
+    background: rgba(0, 0, 0, 0.02);
+}
+
+.donation-custom-input::placeholder {
+    color: var(--donation-text-muted);
+    font-weight: 400;
+}
+
+.donation-confirm-btn {
+    padding: 14px 24px;
+    background: var(--donation-primary);
+    border: none;
+    border-radius: 2px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--donation-transition);
+    font-family: inherit;
+    white-space: nowrap;
+}
+
+.donation-confirm-btn:hover {
+    background: var(--donation-hover-bg);
+    transform: translateY(-1px);
+}
+
+/* 支付内容容器 */
+.donation-payment-container {
+    min-height: 240px;
+    margin-bottom: 24px;
+}
+
+.donation-payment-content {
+    display: none;
+    width: 100%;
+}
+
+.donation-payment-content.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+/* 二维码包装器 */
+.donation-qr-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    text-align: center;
+    padding: 20px;
+}
+
+.donation-qr-code {
+    max-width: 180px;
+    width: 100%;
+    height: auto;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 4px;
+    padding: 8px;
+    background: #fff;
+}
+
+/* 提示文本 */
+.donation-hint {
+    font-size: 13px;
+    color: var(--donation-text-secondary);
+    margin: 8px 0 0 0;
+}
+
+/* 加载状态 */
+.donation-loading {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 40px 20px;
+    min-height: 200px;
+}
+
+.donation-loading p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--donation-text-secondary);
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(0, 0, 0, 0.1);
+    border-top-color: var(--donation-primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* 错误状态 */
+.donation-error {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 40px 20px;
+    min-height: 200px;
+    text-align: center;
+}
+
+.error-message {
+    margin: 0;
+    font-size: 14px;
+    color: #d32f2f;
+}
+
+.retry-btn {
+    padding: 12px 24px;
+    background: transparent;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 2px;
+    color: var(--donation-text-primary);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--donation-transition);
+    font-family: inherit;
+}
+
+.retry-btn:hover {
+    border-color: var(--donation-primary);
+    background: rgba(0, 0, 0, 0.02);
+}
+
+/* 刷新按钮 */
+.donation-refresh-btn {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: transparent;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 2px;
+    color: var(--donation-text-secondary);
+    font-size: 12px;
+    cursor: pointer;
+    transition: var(--donation-transition);
+    font-family: inherit;
+    margin-top: 12px;
+}
+
+.donation-refresh-btn:hover {
+    border-color: var(--donation-primary);
+    color: var(--donation-primary);
+    background: rgba(0, 0, 0, 0.02);
+}
+
+/* 多个Stripe按钮布局 */
+.donation-stripe-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 20px;
+}
+
+/* Stripe支付按钮 */
+.donation-stripe-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 16px 24px;
+    background: var(--donation-primary);
+    color: #fff !important;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    transition: var(--donation-transition);
+    border-radius: 2px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    width: 100%;
+}
+
+.donation-stripe-btn svg {
+    width: 18px;
+    height: 18px;
+    color: #fff;
+    fill: #fff;
+}
+
+.donation-stripe-btn:hover {
+    background: var(--donation-hover-bg);
+    color: #fff !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.donation-stripe-btn:visited {
+    color: #fff !important;
+}
+
+.donation-stripe-btn.donation-stripe-custom {
+    background: transparent;
+    border: 1px solid var(--donation-primary);
+    color: var(--donation-primary) !important;
+}
+
+.donation-stripe-btn.donation-stripe-custom:hover {
+    background: var(--donation-primary);
+    color: #fff !important;
+}
+
+/* 底部提示 */
+.donation-footer {
+    text-align: center;
+    font-size: 11px;
+    color: #BBB;
+}
+
+/* 动画 */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 深色模式支持 */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --donation-primary: rgba(255, 255, 255, 0.95);
+        --donation-bg: #1C1C1E;
+        --donation-border: rgba(255, 255, 255, 0.06);
+        --donation-text-primary: rgba(255, 255, 255, 0.95);
+        --donation-text-secondary: rgba(255, 255, 255, 0.5);
+        --donation-text-muted: rgba(255, 255, 255, 0.35);
+        --donation-hover-bg: rgba(255, 255, 255, 0.18);
+        --donation-shadow: 0 25px 80px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+
+    .donation-widget {
+        background: linear-gradient(165deg, #1C1C1E 0%, #141416 100%);
+        box-shadow: var(--donation-shadow);
+    }
+
+    .donation-decoration-line {
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+        height: 1px;
+    }
+
+    .donation-icon-wrapper {
+        background: linear-gradient(145deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+        border-color: rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+
+    .donation-amount-btn {
+        border-color: rgba(255, 255, 255, 0.08);
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    .donation-amount-btn:hover {
+        border-color: rgba(255, 255, 255, 0.15);
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .donation-amount-btn.active {
+        background: linear-gradient(145deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.06) 100%);
+        border-color: rgba(255, 255, 255, 0.2);
+        color: #fff;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+
+    .donation-method-tabs {
+        border-bottom-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .donation-method-tab {
+        color: rgba(255, 255, 255, 0.4);
+    }
+
+    .donation-method-tab.active {
+        color: rgba(255, 255, 255, 0.95);
+        border-bottom-color: rgba(255, 255, 255, 0.95);
+    }
+
+    .donation-qr-code {
+        border-color: rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .donation-stripe-btn {
+        background: linear-gradient(145deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.06) 100%);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+
+    .donation-stripe-btn:hover {
+        background: linear-gradient(145deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.1) 100%);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 40px rgba(255, 255, 255, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    }
+
+    .donation-footer {
+        color: rgba(255, 255, 255, 0.25);
+    }
+
+    /* 自定义金额输入 - 深色模式 */
+    .donation-custom-input {
+        border-color: rgba(255, 255, 255, 0.08);
+        color: rgba(255, 255, 255, 0.95);
+    }
+
+    .donation-custom-input:focus {
+        border-color: rgba(255, 255, 255, 0.15);
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .donation-confirm-btn {
+        background: linear-gradient(145deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.06) 100%);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+
+    .donation-confirm-btn:hover {
+        background: linear-gradient(145deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.1) 100%);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    }
+
+    /* 加载状态 - 深色模式 */
+    .loading-spinner {
+        border-color: rgba(255, 255, 255, 0.1);
+        border-top-color: rgba(255, 255, 255, 0.95);
+    }
+
+    /* 错误状态 - 深色模式 */
+    .error-message {
+        color: #ef5350;
+    }
+
+    .retry-btn {
+        border-color: rgba(255, 255, 255, 0.08);
+        color: rgba(255, 255, 255, 0.95);
+    }
+
+    .retry-btn:hover {
+        border-color: rgba(255, 255, 255, 0.15);
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    /* 刷新按钮 - 深色模式 */
+    .donation-refresh-btn {
+        border-color: rgba(255, 255, 255, 0.08);
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    .donation-refresh-btn:hover {
+        border-color: rgba(255, 255, 255, 0.15);
+        color: rgba(255, 255, 255, 0.95);
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    /* Stripe自定义按钮 - 深色模式 */
+    .donation-stripe-btn.donation-stripe-custom {
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: rgba(255, 255, 255, 0.95) !important;
+    }
+
+    .donation-stripe-btn.donation-stripe-custom:hover {
+        background: linear-gradient(145deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.06) 100%);
+        color: #fff !important;
+    }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .donation-widget {
+        padding: 32px 24px;
+        margin: 2rem 0;
+    }
+
+    .donation-title {
+        font-size: 12px;
+        letter-spacing: 3px;
+    }
+
+    .donation-subtitle {
+        font-size: 14px;
+    }
+
+    .donation-amount-btn {
+        font-size: 14px;
+        padding: 12px 0;
+    }
+
+    .donation-qr-code {
+        max-width: 150px;
+    }
+
+    /* 自定义金额输入 - 移动端 */
+    .donation-custom-input {
+        font-size: 14px;
+        padding: 12px 14px;
+    }
+
+    .donation-confirm-btn {
+        padding: 12px 20px;
+        font-size: 13px;
+    }
+
+    /* 支付容器 - 移动端 */
+    .donation-payment-container {
+        min-height: 200px;
+    }
+
+    .donation-qr-wrapper {
+        padding: 15px;
+    }
+
+    /* Stripe按钮 - 移动端 */
+    .donation-stripe-buttons {
+        padding: 15px;
+        gap: 10px;
+    }
+
+    .donation-stripe-btn {
+        padding: 14px 20px;
+        font-size: 11px;
+        letter-spacing: 1px;
+    }
+
+    /* 加载和错误状态 - 移动端 */
+    .donation-loading,
+    .donation-error {
+        padding: 30px 15px;
+        min-height: 180px;
+    }
+
+    .loading-spinner {
+        width: 32px;
+        height: 32px;
+    }
+}
+
+/* 紧凑内联版本 - 可选样式 */
+.donation-widget.compact-inline {
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    max-width: 480px;
+}
+
+.donation-widget.compact-inline .donation-header {
+    margin: 0;
+    text-align: left;
+    flex: 1;
+}
+
+.donation-widget.compact-inline .donation-icon-wrapper {
+    width: 40px;
+    height: 40px;
+    margin: 0;
+}
+
+.donation-widget.compact-inline .donation-decoration-line,
+.donation-widget.compact-inline .donation-amounts,
+.donation-widget.compact-inline .donation-qr-container,
+.donation-widget.compact-inline .donation-footer {
+    display: none;
+}
+
+.donation-widget.compact-inline .donation-methods {
+    margin: 0;
+}
+
+.donation-widget.compact-inline .donation-method-tabs {
+    gap: 8px;
+    border: none;
+}
+
+.donation-widget.compact-inline .donation-method-tab {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.donation-widget.compact-inline .donation-method-tab span {
+    display: none;
+}
+
+.donation-widget.compact-inline .donation-method-tab.active {
+    background: var(--donation-primary);
+    border-color: var(--donation-primary);
+    color: #fff;
+}
