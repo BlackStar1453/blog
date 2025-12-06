@@ -48,3 +48,6 @@ logs/
 
 # Temporary files
 .tmp/
+
+# Python dependencies (for local development only, macOS-specific)
+requirements.txt
