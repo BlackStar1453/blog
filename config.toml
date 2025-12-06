@@ -54,6 +54,44 @@ image = "https://www.yaoyaoyao111.com/heading.jpg"
 twitter_user = "BlackStar1453"
 webmention_path = "webmentions"
 
+[extra.donation]
+# 打赏功能配置
+enable = true                               # 是否启用打赏功能
+show_in_posts = true                        # 是否在文章末尾显示
+show_in_sidebar = true                      # 是否在侧边栏显示
+show_floating_button = true                 # 是否显示浮动按钮
+
+# 支付方式开关
+enable_alipay = false                       # 是否启用支付宝（已禁用）
+enable_wechat = true                        # 是否启用微信支付
+enable_stripe = true                        # 是否启用Stripe支付
+use_static_qr = false                       # 是否使用静态二维码（false=使用动态二维码）
+
+# 静态二维码配置（仅在 use_static_qr = true 时使用）
+alipay_qr = "images/alipay-qr.svg"         # 支付宝二维码路径（相对于static目录）
+wechat_qr = "images/wechat-qr.jpg"         # 微信二维码路径（静态收款码，用户扫码后手动输入金额）
+
+# Stripe Payment Links（美元 USD）
+# 请在 Stripe Dashboard 创建对应的 Payment Links 并填入实际链接
+stripe_link_5 = "https://buy.stripe.com/bJe28r54vgoTaEz7dg5J608"       # $5 USD
+stripe_link_10 = "https://buy.stripe.com/fZu7sL0Of4Gb7sn4145J603"      # $10 USD
+stripe_link_custom = "https://buy.stripe.com/bJe6oH2Wn6OjdQL8hk5J605"  # 自定义金额
+
+# 微信支付动态二维码 API（通过 Cloudflare Workers）
+wechat_api_endpoint = "/api/donation/wechat-qr"  # Workers API 端点
+
+# 金额配置（人民币）
+amounts = [10, 25]                          # 预设金额选项（人民币 ¥）
+custom_amount_enabled = true                # 是否启用自定义金额
+min_amount = 10                             # 最低金额（人民币 ¥）
+usd_to_cny_rate = 7.2                       # 美元到人民币汇率
+
+# 文字配置
+title_zh = "支持我的创作"                   # 中文标题
+title_en = "Support My Work"                # 英文标题
+message_zh = "如果您觉得我的内容对您有帮助，欢迎请我喝杯咖啡 ☕"
+message_en = "If you find my content helpful, consider buying me a coffee ☕"
+
 [extra.special_dates]
 # 特殊日期配置 - 在特定日期显示横幅并收集往年同日内容
 [[extra.special_dates.dates]]

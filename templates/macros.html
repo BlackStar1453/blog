@@ -6,6 +6,203 @@
   {% endif %}
 {% endmacro get_reading_time %}
 
+{% macro donation_widget() %}
+{%- if config.extra.donation.enable -%}
+<div class="donation-widget elegant-light"
+     data-wechat-api="{{ config.extra.donation.wechat_api_endpoint }}"
+     data-amounts='{{ config.extra.donation.amounts | json_encode() }}'
+     data-min-amount="{{ config.extra.donation.min_amount }}">
+    <!-- 顶部装饰线 -->
+    <div class="donation-decoration-line"></div>
+
+    <!-- 头部 -->
+    <div class="donation-header">
+        <div class="donation-icon-wrapper">
+            <svg class="donation-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 8h1a4 4 0 110 8h-1"/>
+                <path d="M3 8h14v9a4 4 0 01-4 4H7a4 4 0 01-4-4V8z"/>
+                <path d="M6 2v3"/>
+                <path d="M10 2v3"/>
+                <path d="M14 2v3"/>
+            </svg>
+        </div>
+        <h3 class="donation-title">支持我的创作</h3>
+        <p class="donation-subtitle">您的支持是我持续创作的动力</p>
+    </div>
+
+    <!-- 支付方式 -->
+    <div class="donation-methods">
+        <div class="donation-section-label">支付方式</div>
+        <div class="donation-method-tabs">
+            {%- if config.extra.donation.enable_wechat -%}
+            <button class="donation-method-tab active" data-method="wechat">
+                <svg class="method-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 01.213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.29.295a.32.32 0 00.167-.054l1.903-1.114a.864.864 0 01.717-.098 10.16 10.16 0 002.837.403c.276 0 .543-.027.811-.05-.857-2.578.157-4.972 1.932-6.446 1.703-1.415 3.882-1.98 5.853-1.838-.576-3.583-4.196-6.348-8.596-6.348zM5.785 5.991c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 01-1.162 1.178A1.17 1.17 0 014.623 7.17c0-.651.52-1.18 1.162-1.18zm5.813 0c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 01-1.162 1.178 1.17 1.17 0 01-1.162-1.178c0-.651.52-1.18 1.162-1.18zm5.34 2.867c-1.797-.052-3.746.512-5.28 1.786-1.72 1.428-2.687 3.72-1.78 6.22.942 2.453 3.666 4.229 6.884 4.229.826 0 1.622-.12 2.361-.336a.722.722 0 01.598.082l1.584.926a.272.272 0 00.14.047c.134 0 .24-.111.24-.247 0-.06-.023-.12-.038-.177l-.327-1.233a.49.49 0 01.176-.553C23.054 18.574 24 16.89 24 14.977c0-3.176-3.054-5.972-7.062-6.12zm-1.827 2.812c.535 0 .969.44.969.982a.976.976 0 01-.969.983.976.976 0 01-.969-.983c0-.542.434-.982.97-.982zm4.844 0c.535 0 .969.44.969.982a.976.976 0 01-.969.983.976.976 0 01-.969-.983c0-.542.434-.982.97-.982z"/>
+                </svg>
+                <span>微信</span>
+            </button>
+            {%- endif -%}
+
+            {%- if config.extra.donation.enable_stripe -%}
+            <button class="donation-method-tab" data-method="stripe">
+                <svg class="method-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <rect x="2" y="5" width="20" height="14" rx="2"/>
+                    <path d="M2 10h20"/>
+                    <path d="M6 15h4"/>
+                </svg>
+                <span>Card</span>
+            </button>
+            {%- endif -%}
+        </div>
+    </div>
+
+    <!-- 支付内容区域 -->
+    <div class="donation-payment-container">
+        {%- if config.extra.donation.enable_wechat -%}
+        <div class="donation-payment-content active" data-method="wechat">
+            <!-- 微信支付金额选择 -->
+            <div class="donation-amounts">
+                <div class="donation-section-label">选择金额</div>
+                <div class="donation-amount-grid">
+                    <button class="donation-amount-btn active" data-amount="10">¥10</button>
+                    <button class="donation-amount-btn" data-amount="25">¥25</button>
+                    {%- if config.extra.donation.custom_amount_enabled -%}
+                    <button class="donation-amount-btn" data-amount="custom">自定义</button>
+                    {%- endif -%}
+                </div>
+
+                <!-- 自定义金额输入框 -->
+                {%- if config.extra.donation.custom_amount_enabled -%}
+                <div class="donation-custom-amount" style="display: none;">
+                    <input type="number"
+                           class="donation-custom-input"
+                           placeholder="输入金额（最低 ¥{{ config.extra.donation.min_amount }}）"
+                           min="{{ config.extra.donation.min_amount }}"
+                           step="1">
+                    <button class="donation-confirm-btn">确认</button>
+                </div>
+                {%- endif -%}
+            </div>
+
+            <!-- 二维码区域 -->
+            <div class="donation-qr-wrapper" style="display: none;">
+                <!-- 动态二维码 -->
+                <img src=""
+                     alt="微信支付二维码"
+                     class="donation-qr-code wechat-dynamic-qr"
+                     style="display: none;">
+
+                <!-- 静态二维码（作为回退方案） -->
+                {%- if config.extra.donation.wechat_qr -%}
+                <img src="{{ get_url(path=config.extra.donation.wechat_qr, cachebust=true) }}"
+                     alt="微信二维码"
+                     class="donation-qr-code wechat-static-qr"
+                     loading="lazy"
+                     style="display: none;">
+                {%- endif -%}
+
+                <!-- 加载状态 -->
+                <div class="donation-loading wechat-loading" style="display: none;">
+                    <div class="loading-spinner"></div>
+                    <p>生成二维码中...</p>
+                </div>
+
+                <!-- 错误提示 -->
+                <div class="donation-error wechat-error" style="display: none;">
+                    <p class="error-message"></p>
+                    <button class="retry-btn wechat-retry-btn">重试</button>
+                </div>
+
+                <p class="donation-hint wechat-hint" style="display: none;">扫描二维码完成支付</p>
+
+                <!-- 刷新按钮（二维码生成后显示） -->
+                <button class="donation-refresh-btn wechat-refresh-btn" style="display: none;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+                    </svg>
+                    刷新二维码
+                </button>
+            </div>
+        </div>
+        {%- endif -%}
+
+        {%- if config.extra.donation.enable_stripe -%}
+        <div class="donation-payment-content" data-method="stripe">
+            <!-- Stripe 金额选择 -->
+            <div class="donation-amounts">
+                <div class="donation-section-label">选择金额</div>
+                <div class="donation-amount-grid">
+                    {%- if config.extra.donation.stripe_link_5 -%}
+                    <button class="donation-amount-btn stripe-amount-btn active" data-amount="5" data-usd-amount="5">$5</button>
+                    {%- endif -%}
+                    {%- if config.extra.donation.stripe_link_10 -%}
+                    <button class="donation-amount-btn stripe-amount-btn" data-amount="10" data-usd-amount="10">$10</button>
+                    {%- endif -%}
+                    {%- if config.extra.donation.stripe_link_custom -%}
+                    <button class="donation-amount-btn stripe-amount-btn" data-amount="custom">自定义</button>
+                    {%- endif -%}
+                </div>
+            </div>
+
+            <!-- Stripe 支付按钮区域 -->
+            <div class="donation-stripe-buttons">
+                {%- if config.extra.donation.stripe_link_5 -%}
+                <a href="{{ config.extra.donation.stripe_link_5 }}"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="donation-stripe-btn stripe-pay-btn active"
+                   data-amount="5"
+                   data-usd-amount="5">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                    支付 $5 USD
+                </a>
+                {%- endif -%}
+
+                {%- if config.extra.donation.stripe_link_10 -%}
+                <a href="{{ config.extra.donation.stripe_link_10 }}"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="donation-stripe-btn stripe-pay-btn"
+                   data-amount="10"
+                   data-usd-amount="10"
+                   style="display: none;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                    支付 $10 USD
+                </a>
+                {%- endif -%}
+
+                {%- if config.extra.donation.stripe_link_custom -%}
+                <a href="{{ config.extra.donation.stripe_link_custom }}"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="donation-stripe-btn stripe-pay-btn donation-stripe-custom"
+                   data-amount="custom"
+                   style="display: none;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                    自定义金额 (USD)
+                </a>
+                {%- endif -%}
+            </div>
+
+            <p class="donation-hint stripe-hint">点击按钮跳转到 Stripe 安全支付页面</p>
+        </div>
+        {%- endif -%}
+    </div>
+
+    <!-- 底部提示 -->
+    <div class="donation-footer">
+        <span>安全支付 · 随时取消</span>
+    </div>
+</div>
+{%- endif -%}
+{% endmacro donation_widget %}
+
 {% macro music_playlist_block(source, manifest="", title="", preload="metadata", loop="none", order="", autoplay=false, fixed=false, mini=false, list_folded=false, mutex=false, volume="", extensions="mp3,ogg,flac,wav", theme="", default_cover="") %}
   {%- set raw_source = source | default(value="") | trim -%}
   {%- if raw_source == "" -%}
