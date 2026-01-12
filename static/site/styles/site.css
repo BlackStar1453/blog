@@ -410,17 +410,138 @@ p {
   vertical-align: baseline;
 }
 
+/* Thoughts页面优化：极简版本，日期右下角显示 */
 blockquote {
   margin: 2rem 0;
   position: relative;
   border-radius: 6px;
-  background-color: var(--colors-quote-background);
-  /* background-color: #efefef; */
-  /* background-color: hsl(60, 9%, 87%); */
-  padding: 1.4rem 1.4rem 0rem 1.4rem;
-  border-top: 1px solid var(--colors-divider);
+  background-color: transparent;
+  padding: 1.2rem 1.5rem 1.8rem 1.5rem;
+  border: 1px solid var(--colors-divider);
   box-sizing: border-box;
-  overflow: auto;
+  overflow: visible;
+  transition: all 0.2s ease;
+}
+
+blockquote:hover {
+  background-color: var(--colors-quote-background);
+}
+
+/* 日期样式 - 移至右下角，默认隐藏，hover时显示 */
+blockquote ul:last-child {
+  position: absolute;
+  bottom: 0.4rem;
+  right: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+blockquote ul:last-child li {
+  margin: 0;
+  padding: 0.2rem 0.4rem;
+  font-size: 0.75rem;
+  color: var(--colors-muted);
+  background-color: var(--colors-background);
+  border-radius: 3px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+blockquote:hover ul:last-child li {
+  opacity: 0.9;
+}
+
+/* 响应式调整 - 移动端优化 */
+@media (max-width: 768px) {
+  blockquote {
+    padding: 0.6rem 0.8rem 0.6rem 0.8rem;
+    margin: 1.5rem 0;
+  }
+
+  blockquote ul:last-child {
+    bottom: 0.3rem;
+    right: 0.4rem;
+  }
+
+  blockquote ul:last-child li {
+    font-size: 0.7rem;
+    padding: 0.15rem 0.3rem;
+  }
+}
+
+/* blockquote 内的图片缩略图样式 */
+blockquote img {
+  max-width: 240px;
+  height: auto;
+  cursor: zoom-in;
+  border-radius: 4px;
+  transition: opacity 0.2s ease;
+}
+
+blockquote img:hover {
+  opacity: 0.85;
+}
+
+/* 图片模态框 */
+.image-lightbox-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+}
+
+.image-lightbox-modal.active {
+  display: flex;
+  animation: fadeIn 0.2s ease;
+}
+
+.image-lightbox-modal img {
+  max-width: 90%;
+  max-height: 90vh;
+  object-fit: contain;
+  cursor: auto;
+  border-radius: 6px;
+}
+
+.image-lightbox-modal .close-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  transition: background 0.2s ease;
+}
+
+.image-lightbox-modal .close-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* 暗黑模式适配 */
+@media (prefers-color-scheme: dark) {
+  .image-lightbox-modal {
+    background: rgba(0, 0, 0, 0.8);
+  }
 }
 
 /* blockquote p { */
