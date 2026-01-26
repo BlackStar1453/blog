@@ -93,6 +93,9 @@
     {%- if config.extra.donation.enable -%}
       <link rel="stylesheet" href="{{ get_url(path="site/styles/donation.css", trailing_slash=false,cachebust=true) | safe }}">
     {%- endif -%}
+    {%- if config.extra.giscus.enable -%}
+      <link rel="stylesheet" href="{{ get_url(path="site/styles/giscus.css", trailing_slash=false,cachebust=true) | safe }}">
+    {%- endif -%}
     <link rel="me" href="https://twitter.com/Heraclitius"/>
     <link rel="me" href="https://twitter.com/Heraclitius"/>
     <link rel="me" href="https://github.com/BlackStar1453"/>

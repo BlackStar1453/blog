@@ -633,3 +633,42 @@
         </div>
       {% endif %}
     {% endmacro webmentions %}
+
+    {# Giscus评论系统宏 #}
+    {% macro giscus_comments(lang="zh") %}
+      {% if config.extra.giscus and config.extra.giscus.enable %}
+        {# 根据语言设置Giscus界面语言 #}
+        {% set giscus_lang = config.extra.giscus.lang %}
+        {% if lang == "en" %}
+          {% set giscus_lang = "en" %}
+        {% endif %}
+
+        <div class="giscus-comments-section">
+          <hr/>
+          <h2>
+            {% if lang == "en" %}
+              Comments
+            {% else %}
+              评论
+            {% endif %}
+            <a href="#comments" id="comments" class="zola-anchor">🔗</a>
+          </h2>
+
+          <script src="https://giscus.app/client.js"
+                  data-repo="{{ config.extra.giscus.repo }}"
+                  data-repo-id="{{ config.extra.giscus.repo_id }}"
+                  data-category="{{ config.extra.giscus.category }}"
+                  data-category-id="{{ config.extra.giscus.category_id }}"
+                  data-mapping="{{ config.extra.giscus.mapping }}"
+                  data-strict="0"
+                  data-reactions-enabled="{{ config.extra.giscus.reactions_enabled }}"
+                  data-emit-metadata="{{ config.extra.giscus.emit_metadata }}"
+                  data-input-position="{{ config.extra.giscus.input_position }}"
+                  data-theme="{{ config.extra.giscus.theme }}"
+                  data-lang="{{ giscus_lang }}"
+                  crossorigin="anonymous"
+                  async>
+          </script>
+        </div>
+      {% endif %}
+    {% endmacro giscus_comments %}
