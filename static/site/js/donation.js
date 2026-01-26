@@ -671,6 +671,7 @@
         generateQR(amount) {
             return this.generateWeChatQR(amount || this.selectedAmount);
         }
+
     }
 
     /**

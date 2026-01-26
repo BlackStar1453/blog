@@ -197,7 +197,9 @@
 
     <!-- 底部提示 -->
     <div class="donation-footer">
-        <span>安全支付 · 随时取消</span>
+        <span>
+            {%- if lang == "en" -%}Secure Payment · Cancel Anytime{%- else -%}安全支付 · 随时取消{%- endif -%}
+        </span>
     </div>
 </div>
 {%- endif -%}
