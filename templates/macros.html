@@ -635,15 +635,19 @@
     {% endmacro webmentions %}
 
     {# Giscus评论系统宏 #}
-    {% macro giscus_comments(lang="zh") %}
-      {% if config.extra.giscus and config.extra.giscus.enable %}
-        {# 根据语言设置Giscus界面语言 #}
-        {% set giscus_lang = config.extra.giscus.lang %}
-        {% if lang == "en" %}
-          {% set giscus_lang = "en" %}
+    {% macro waline_comments(lang="zh") %}
+      {% if config.extra.waline and config.extra.waline.enable %}
+        {# 根据页面语言设置Waline界面语言 #}
+        {% set waline_lang = config.extra.waline.lang %}
+        {% if config.extra.waline.locale_mapping %}
+          {% if lang == "en" %}
+            {% set waline_lang = "en" %}
+          {% elif lang == "zh" %}
+            {% set waline_lang = "zh-CN" %}
+          {% endif %}
         {% endif %}
 
-        <div class="giscus-comments-section">
+        <div class="waline-comments-section">
           <hr/>
           <h2>
             {% if lang == "en" %}
@@ -654,21 +658,37 @@
             <a href="#comments" id="comments" class="zola-anchor">🔗</a>
           </h2>
 
-          <script src="https://giscus.app/client.js"
-                  data-repo="{{ config.extra.giscus.repo }}"
-                  data-repo-id="{{ config.extra.giscus.repo_id }}"
-                  data-category="{{ config.extra.giscus.category }}"
-                  data-category-id="{{ config.extra.giscus.category_id }}"
-                  data-mapping="{{ config.extra.giscus.mapping }}"
-                  data-strict="0"
-                  data-reactions-enabled="{{ config.extra.giscus.reactions_enabled }}"
-                  data-emit-metadata="{{ config.extra.giscus.emit_metadata }}"
-                  data-input-position="{{ config.extra.giscus.input_position }}"
-                  data-theme="{{ config.extra.giscus.theme }}"
-                  data-lang="{{ giscus_lang }}"
-                  crossorigin="anonymous"
-                  async>
+          <div id="waline"></div>
+          <script src="https://unpkg.com/@waline/client@3/dist/waline.umd.js"></script>
+          <script>
+            if (typeof Waline !== 'undefined') {
+              Waline.init({
+              el: '#waline',
+              serverURL: '{{ config.extra.waline.server_url | safe }}',
+              lang: '{{ waline_lang }}',
+              dark: '{{ config.extra.waline.dark }}',
+              meta: {{ config.extra.waline.meta | json_encode() | safe }},
+              requiredMeta: {{ config.extra.waline.required_meta | json_encode() | safe }},
+              login: '{{ config.extra.waline.login }}',
+              wordLimit: {{ config.extra.waline.word_limit }},
+              pageSize: {{ config.extra.waline.page_size }},
+              avatar: '{{ config.extra.waline.avatar }}',
+              avatarCDN: '{{ config.extra.waline.avatar_cdn | safe }}',
+              highlight: {{ config.extra.waline.highlight }},
+              mathTagSupport: {{ config.extra.waline.math_tag_support }},
+              emoji: {{ config.extra.waline.emoji | json_encode() | safe }},
+              search: {{ config.extra.waline.search }},
+              reaction: {{ config.extra.waline.reaction }},
+              locale: {
+                {% if lang == "en" %}
+                placeholder: 'Leave a comment (nickname only required, fully anonymous)',
+                {% else %}
+                placeholder: '留下评论（仅需昵称，完全匿名）',
+                {% endif %}
+              }
+            });
+            }
           </script>
         </div>
       {% endif %}
-    {% endmacro giscus_comments %}
+    {% endmacro waline_comments %}

@@ -102,19 +102,25 @@ message = "你可以在这个页面找到所有你生日那天发布的文章"
 banner_color = "#4a90e2"
 text_color = "#ffffff"
 
-[extra.giscus]
-# Giscus评论系统配置
-enable = true                           # 是否启用Giscus评论系统
-repo = "BlackStar1453/blog"             # GitHub仓库（格式：用户名/仓库名）
-repo_id = "R_kgDONeJR0g"                # 仓库ID，需要从 https://giscus.app/zh-CN 获取
-category = "Comments"                   # GitHub Discussions分类名称
-category_id = "DIC_kwDONeJR0s4C1dC9"        # 分类ID，需要从 https://giscus.app/zh-CN 获取
-mapping = "pathname"                    # 页面-discussion映射方式（pathname/url/title等）
-reactions_enabled = "1"                 # 启用反应表情（1=启用，0=禁用）
-emit_metadata = "0"                     # 是否发送元数据（0=不发送，1=发送）
-input_position = "bottom"                  # 评论框位置（top=顶部，bottom=底部）
-theme = "preferred_color_scheme"        # 主题（自动跟随系统亮/暗模式）
-lang = "zh-CN"                          # 界面语言（zh-CN=简体中文，en=英文）
+[extra.waline]
+# Waline评论系统配置
+enable = true                           # 是否启用Waline评论系统
+server_url = "https://walline-eight.vercel.app"          # Waline服务器地址，部署完成后填入（例如：https://your-waline.vercel.app）
+dark = "auto"                           # 暗黑模式（auto=自动，true=强制暗黑，false=强制明亮）
+meta = ["nick", "mail"]                 # 评论者信息（nick=昵称，mail=邮箱，link=网址）
+required_meta = ["nick"]                # 必填字段（仅昵称必填，实现匿名评论）
+login = "disable"                       # 登录方式（disable=禁用登录，enable=启用社交登录，force=强制登录）
+word_limit = 0                          # 评论字数限制（0=不限制）
+page_size = 10                          # 每页评论数
+avatar = "mp"                           # 头像样式（mp/identicon/monsterid/wavatar/retro/robohash/hide）
+avatar_cdn = "https://sdn.geekzu.org/avatar/" # 头像CDN（使用国内可访问的镜像）
+lang = "zh-CN"                          # 界面语言（zh-CN/en/jp等）
+locale_mapping = true                   # 是否根据页面语言自动切换（true=自动，false=固定）
+highlight = true                        # 代码高亮
+math_tag_support = true                 # 数学公式支持
+emoji = ["//unpkg.com/@waline/emojis@1.2.0/weibo"]  # 表情包CDN
+search = false                          # 搜索功能（需要服务端配置）
+reaction = true                         # 文章反应（点赞等）
 
 ### I18N WORDS
 
