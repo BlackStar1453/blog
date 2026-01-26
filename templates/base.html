@@ -175,13 +175,6 @@
               <p class="p-note">{{ config.extra.bio }}</p>
             </div>
 
-            {# 侧边栏打赏组件 #}
-            {% if config.extra.donation.enable and config.extra.donation.show_in_sidebar %}
-              <div class="sidebar-donation">
-                {{ macro::donation_widget() }}
-              </div>
-            {% endif %}
-
             {# 侧边栏日历 - 在重要链接之前 #}
             <div class="sidebar-calendar pt">
               <div class="main-box-block">
