@@ -106,17 +106,15 @@
             </div>
           </div>
       {% endif %}
-      {# 打赏组件 - 在文章末尾显示 #}
-      {% if config.extra.donation.enable and config.extra.donation.show_in_posts %}
-        {% if not page.extra or page.extra.show_donation is undefined or page.extra.show_donation != false %}
-          {{ macro::donation_widget() }}
-        {% endif %}
-      {% endif %}
       {{ macro::backlink(pages=page.backlinks) }}
       <iframe src="https://embeds.beehiiv.com/482231fd-f9a5-4134-8237-6f00fdadf0e1?slim=true" data-test-id="beehiiv-embed" height="52" frameborder="0" scrolling="no" style="margin: 0; border-radius: 0px !important; background-color: transparent;"></iframe>
 
-      {# Waline评论系统 #}
-      {{ macro::waline_comments(lang=lang) }}
+      {# 评论和打赏标签页 #}
+      {% if config.extra.waline.enable or config.extra.donation.enable %}
+        {% if not page.extra or page.extra.show_donation is undefined or page.extra.show_donation != false %}
+          {{ macro::comments_donation_tabs(lang=lang) }}
+        {% endif %}
+      {% endif %}
 
   </div>
 </div>

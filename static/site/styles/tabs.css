@@ -1,0 +1,110 @@
+/* 标签页容器样式 */
+.tabs-container {
+  margin-top: 3rem;
+  margin-bottom: 2rem;
+}
+
+/* 标签页头部 */
+.tabs-header {
+  display: flex;
+  border-bottom: 2px solid var(--border-color, #e5e7eb);
+  margin-bottom: 0;
+  gap: 0;
+}
+
+/* 标签按钮 */
+.tab-button {
+  flex: 1;
+  padding: 1rem 2rem;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-muted, #6b7280);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  bottom: -2px;
+}
+
+.tab-button:hover {
+  color: var(--text-color, #111827);
+  background: var(--bg-hover, #f9fafb);
+}
+
+.tab-button.active {
+  color: var(--primary-color, #3b82f6);
+  border-bottom-color: var(--primary-color, #3b82f6);
+  font-weight: 600;
+}
+
+/* 标签内容区域 */
+.tabs-content {
+  position: relative;
+}
+
+.tab-panel {
+  display: none !important;
+  animation: fadeIn 0.3s ease-in;
+}
+
+.tab-panel.active {
+  display: block !important;
+}
+
+/* 淡入动画 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 暗黑模式适配 */
+@media (prefers-color-scheme: dark) {
+  .tabs-header {
+    border-bottom-color: var(--border-color-dark, #374151);
+  }
+
+  .tab-button {
+    color: var(--text-muted-dark, #9ca3af);
+  }
+
+  .tab-button:hover {
+    color: var(--text-color-dark, #f9fafb);
+    background: var(--bg-hover-dark, #1f2937);
+  }
+
+  .tab-button.active {
+    color: var(--primary-color-dark, #60a5fa);
+    border-bottom-color: var(--primary-color-dark, #60a5fa);
+  }
+}
+
+/* 响应式设计 - 移动端优化 */
+@media (max-width: 768px) {
+  .tab-button {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .tabs-container {
+    margin-top: 2rem;
+  }
+}
+
+/* 修复标签页内的组件样式 */
+.tab-panel .waline-comments-section,
+.tab-panel > div {
+  margin-top: 0;
+  padding-top: 1.5rem;
+}
+
+.tab-panel .waline-comments-section hr {
+  display: none;
+}
