@@ -1,0 +1,148 @@
+/* 标签页容器样式 - 扁平极简风格 */
+.tabs-container {
+  margin-top: 3rem;
+  margin-bottom: 2rem;
+}
+
+/* 标签页头部 */
+.tabs-header {
+  display: flex;
+  border-bottom: 3px solid #e5e7eb;
+  gap: 0;
+}
+
+/* 标签按钮 */
+.tab-button {
+  flex: 1;
+  padding: 14px 24px;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  font-size: 15px;
+  font-weight: 500;
+  color: #9ca3af;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  bottom: -3px;
+}
+
+.tab-button:hover {
+  color: #374151;
+  background: #fafafa;
+}
+
+.tab-button.active {
+  color: #111827;
+  border-bottom-color: #3b82f6;
+  font-weight: 600;
+}
+
+/* 标签内容区域 */
+.tabs-content {
+  margin-top: 24px;
+}
+
+.tab-panel {
+  display: none !important;
+}
+
+.tab-panel.active {
+  display: block !important;
+  animation: flatFadeIn 0.25s ease;
+}
+
+/* 淡入动画 - 扁平简洁 */
+@keyframes flatFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* 暗黑模式适配 - 扁平极简 */
+@media (prefers-color-scheme: dark) {
+  .tabs-header {
+    border-bottom-color: #374151;
+  }
+
+  .tab-button {
+    color: #6b7280;
+  }
+
+  .tab-button:hover {
+    color: #d1d5db;
+    background: #1f2937;
+  }
+
+  .tab-button.active {
+    color: #f9fafb;
+    border-bottom-color: #60a5fa;
+  }
+}
+
+/* 响应式设计 - 移动端优化 */
+@media (max-width: 768px) {
+  .tab-button {
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+
+  .tabs-container {
+    margin-top: 2rem;
+  }
+
+  .tabs-header {
+    border-bottom-width: 2px;
+  }
+
+  .tab-button {
+    border-bottom-width: 2px;
+    bottom: -2px;
+  }
+}
+
+/* 修复标签页内的组件样式 */
+.tab-panel .waline-comments-section,
+.tab-panel > div {
+  margin-top: 0;
+  padding-top: 1.5rem;
+}
+
+.tab-panel .waline-comments-section hr {
+  display: none;
+}
+
+/* 订阅区域样式 */
+.subscribe-section {
+  padding: 2rem 0;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.subscribe-section h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: var(--text-color, #111827);
+}
+
+.subscribe-description {
+  color: var(--text-muted, #6b7280);
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+/* 暗黑模式下的订阅区域 */
+@media (prefers-color-scheme: dark) {
+  .subscribe-section h3 {
+    color: var(--text-color-dark, #f9fafb);
+  }
+
+  .subscribe-description {
+    color: var(--text-muted-dark, #9ca3af);
+  }
+}

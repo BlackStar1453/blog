@@ -1,0 +1,73 @@
+/* Waline 评论系统样式 */
+
+.waline-comments-section {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border-color, #e5e7eb);
+}
+
+.waline-comments-section h2 {
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.waline-comments-section hr {
+  margin-bottom: 2rem;
+  border: none;
+  border-top: 1px solid var(--border-color, #e5e7eb);
+}
+
+/* Waline 容器基础样式 */
+#waline {
+  width: 100%;
+  margin-top: 1rem;
+}
+
+/* Waline 默认样式微调 */
+#waline .wl-panel {
+  border-radius: 8px;
+}
+
+#waline .wl-editor {
+  min-height: 120px;
+}
+
+/* 暗黑模式适配 */
+@media (prefers-color-scheme: dark) {
+  .waline-comments-section {
+    border-top-color: var(--border-color-dark, #374151);
+  }
+
+  .waline-comments-section hr {
+    border-top-color: var(--border-color-dark, #374151);
+  }
+}
+
+/* 响应式设计 - 移动端优化 */
+@media (max-width: 768px) {
+  .waline-comments-section {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+  }
+
+  .waline-comments-section h2 {
+    font-size: 1.25rem;
+  }
+
+  #waline .wl-editor {
+    min-height: 100px;
+  }
+}
+
+/* 匿名评论提示样式优化 */
+#waline .wl-login-info {
+  font-size: 0.875rem;
+  color: var(--text-secondary, #6b7280);
+}
+
+/* 评论框焦点样式 */
+#waline .wl-editor:focus-within {
+  border-color: var(--primary-color, #3b82f6);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}

@@ -102,6 +102,26 @@ message = "你可以在这个页面找到所有你生日那天发布的文章"
 banner_color = "#4a90e2"
 text_color = "#ffffff"
 
+[extra.waline]
+# Waline评论系统配置
+enable = true                           # 是否启用Waline评论系统
+server_url = "https://walline-eight.vercel.app"          # Waline服务器地址，部署完成后填入（例如：https://your-waline.vercel.app）
+dark = "auto"                           # 暗黑模式（auto=自动，true=强制暗黑，false=强制明亮）
+meta = ["nick", "mail"]                 # 评论者信息（nick=昵称，mail=邮箱，link=网址）
+required_meta = ["nick"]                # 必填字段（仅昵称必填，实现匿名评论）
+login = "disable"                       # 登录方式（disable=禁用登录，enable=启用社交登录，force=强制登录）
+word_limit = 0                          # 评论字数限制（0=不限制）
+page_size = 10                          # 每页评论数
+avatar = "mp"                           # 头像样式（mp/identicon/monsterid/wavatar/retro/robohash/hide）
+avatar_cdn = "https://sdn.geekzu.org/avatar/" # 头像CDN（使用国内可访问的镜像）
+lang = "zh-CN"                          # 界面语言（zh-CN/en/jp等）
+locale_mapping = true                   # 是否根据页面语言自动切换（true=自动，false=固定）
+highlight = true                        # 代码高亮
+math_tag_support = true                 # 数学公式支持
+emoji = ["//unpkg.com/@waline/emojis@1.2.0/weibo"]  # 表情包CDN
+search = false                          # 搜索功能（需要服务端配置）
+reaction = true                         # 文章反应（点赞等）
+
 ### I18N WORDS
 
 [slugify]

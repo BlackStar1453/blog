@@ -93,6 +93,13 @@
     {%- if config.extra.donation.enable -%}
       <link rel="stylesheet" href="{{ get_url(path="site/styles/donation.css", trailing_slash=false,cachebust=true) | safe }}">
     {%- endif -%}
+    {%- if config.extra.waline.enable -%}
+      <link rel="stylesheet" href="{{ get_url(path="site/styles/waline.css", trailing_slash=false,cachebust=true) | safe }}">
+      <link rel="stylesheet" href="https://unpkg.com/@waline/client@v3/dist/waline.css">
+    {%- endif -%}
+    {%- if config.extra.waline.enable or config.extra.donation.enable -%}
+      <link rel="stylesheet" href="{{ get_url(path="site/styles/tabs.css", trailing_slash=false,cachebust=true) | safe }}">
+    {%- endif -%}
     <link rel="me" href="https://twitter.com/Heraclitius"/>
     <link rel="me" href="https://twitter.com/Heraclitius"/>
     <link rel="me" href="https://github.com/BlackStar1453"/>
@@ -167,13 +174,6 @@
               <a class="p-name u-url u-uid" href="{{ config.extra.indieweb_url }}" rel="me">{{ config.extra.author }}</a>
               <p class="p-note">{{ config.extra.bio }}</p>
             </div>
-
-            {# 侧边栏打赏组件 #}
-            {% if config.extra.donation.enable and config.extra.donation.show_in_sidebar %}
-              <div class="sidebar-donation">
-                {{ macro::donation_widget() }}
-              </div>
-            {% endif %}
 
             {# 侧边栏日历 - 在重要链接之前 #}
             <div class="sidebar-calendar pt">
@@ -289,6 +289,11 @@
               <a title="Previous" href="https://xn--sr8hvo.ws/%F0%9F%93%AE%F0%9F%86%99%F0%9F%93%A9/previous">←</a>
               An IndieWeb Webring 🕸💍
               <a title="Next" href="https://xn--sr8hvo.ws/%F0%9F%93%AE%F0%9F%86%99%F0%9F%93%A9/next">→</a>
+            </div>
+
+            {# 邮箱订阅 #}
+            <div class="pt">
+              <iframe src="https://embeds.beehiiv.com/482231fd-f9a5-4134-8237-6f00fdadf0e1?slim=true" data-test-id="beehiiv-embed" height="52" frameborder="0" scrolling="no" style="margin: 0; border-radius: 0px !important; background-color: transparent;"></iframe>
             </div>
           </aside>
           {% endblock sidebar %}

@@ -197,7 +197,9 @@
 
     <!-- 底部提示 -->
     <div class="donation-footer">
-        <span>安全支付 · 随时取消</span>
+        <span>
+            {%- if lang == "en" -%}Secure Payment · Cancel Anytime{%- else -%}安全支付 · 随时取消{%- endif -%}
+        </span>
     </div>
 </div>
 {%- endif -%}
@@ -633,3 +635,145 @@
         </div>
       {% endif %}
     {% endmacro webmentions %}
+
+    {# Giscus评论系统宏 #}
+    {% macro waline_comments(lang="zh") %}
+      {% if config.extra.waline and config.extra.waline.enable %}
+        {# 根据页面语言设置Waline界面语言 #}
+        {% set waline_lang = config.extra.waline.lang %}
+        {% if config.extra.waline.locale_mapping %}
+          {% if lang == "en" %}
+            {% set waline_lang = "en" %}
+          {% elif lang == "zh" %}
+            {% set waline_lang = "zh-CN" %}
+          {% endif %}
+        {% endif %}
+
+        <div class="waline-comments-section">
+          <hr/>
+          <h2>
+            {% if lang == "en" %}
+              Comments
+            {% else %}
+              评论
+            {% endif %}
+            <a href="#comments" id="comments" class="zola-anchor">🔗</a>
+          </h2>
+
+          <div id="waline"></div>
+          <script src="https://unpkg.com/@waline/client@3/dist/waline.umd.js"></script>
+          <script>
+            if (typeof Waline !== 'undefined') {
+              Waline.init({
+              el: '#waline',
+              serverURL: '{{ config.extra.waline.server_url | safe }}',
+              lang: '{{ waline_lang }}',
+              dark: '{{ config.extra.waline.dark }}',
+              meta: {{ config.extra.waline.meta | json_encode() | safe }},
+              requiredMeta: {{ config.extra.waline.required_meta | json_encode() | safe }},
+              login: '{{ config.extra.waline.login }}',
+              wordLimit: {{ config.extra.waline.word_limit }},
+              pageSize: {{ config.extra.waline.page_size }},
+              avatar: '{{ config.extra.waline.avatar }}',
+              avatarCDN: '{{ config.extra.waline.avatar_cdn | safe }}',
+              highlight: {{ config.extra.waline.highlight }},
+              mathTagSupport: {{ config.extra.waline.math_tag_support }},
+              emoji: {{ config.extra.waline.emoji | json_encode() | safe }},
+              search: {{ config.extra.waline.search }},
+              reaction: {{ config.extra.waline.reaction }},
+              locale: {
+                {% if lang == "en" %}
+                placeholder: 'Leave a comment (nickname only required, fully anonymous)',
+                {% else %}
+                placeholder: '留下评论（仅需昵称，完全匿名）',
+                {% endif %}
+              }
+            });
+            }
+          </script>
+        </div>
+      {% endif %}
+    {% endmacro waline_comments %}
+
+    {# 评论、打赏和订阅标签页组件 #}
+    {% macro comments_donation_tabs(lang="zh") %}
+      <div class="tabs-container">
+        <div class="tabs-header">
+          <button class="tab-button active" data-tab="comments">
+            {% if lang == "en" %}
+              Comments
+            {% else %}
+              评论
+            {% endif %}
+          </button>
+          <button class="tab-button" data-tab="donation">
+            {% if lang == "en" %}
+              Support
+            {% else %}
+              打赏
+            {% endif %}
+          </button>
+          <button class="tab-button" data-tab="subscribe">
+            {% if lang == "en" %}
+              Subscribe
+            {% else %}
+              订阅
+            {% endif %}
+          </button>
+        </div>
+
+        <div class="tabs-content">
+          <div id="tab-comments" class="tab-panel active">
+            {{ self::waline_comments(lang=lang) }}
+          </div>
+
+          <div id="tab-donation" class="tab-panel">
+            {% if config.extra.donation.enable %}
+              {{ self::donation_widget() }}
+            {% endif %}
+          </div>
+
+          <div id="tab-subscribe" class="tab-panel">
+            <div class="subscribe-section">
+              <h3>
+                {% if lang == "en" %}
+                  Subscribe to Newsletter
+                {% else %}
+                  订阅邮件通知
+                {% endif %}
+              </h3>
+              <p class="subscribe-description">
+                {% if lang == "en" %}
+                  Get notified when new articles are published
+                {% else %}
+                  当有新文章发布时，我会通过邮件通知您
+                {% endif %}
+              </p>
+              <iframe src="https://embeds.beehiiv.com/482231fd-f9a5-4134-8237-6f00fdadf0e1?slim=true" data-test-id="beehiiv-embed" height="52" frameborder="0" scrolling="no" style="margin: 0; border-radius: 0px !important; background-color: transparent; width: 100%;"></iframe>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        // 标签页切换功能
+        document.addEventListener('DOMContentLoaded', function() {
+          const tabButtons = document.querySelectorAll('.tab-button');
+          const tabPanels = document.querySelectorAll('.tab-panel');
+
+          tabButtons.forEach(button => {
+            button.addEventListener('click', function() {
+              const targetTab = this.getAttribute('data-tab');
+
+              // 移除所有active状态
+              tabButtons.forEach(btn => btn.classList.remove('active'));
+              tabPanels.forEach(panel => panel.classList.remove('active'));
+
+              // 添加active状态到当前标签
+              this.classList.add('active');
+              document.getElementById('tab-' + targetTab).classList.add('active');
+            });
+          });
+        });
+      </script>
+    {% endmacro comments_donation_tabs %}
