@@ -693,7 +693,7 @@
       {% endif %}
     {% endmacro waline_comments %}
 
-    {# 评论和打赏标签页组件 #}
+    {# 评论、打赏和订阅标签页组件 #}
     {% macro comments_donation_tabs(lang="zh") %}
       <div class="tabs-container">
         <div class="tabs-header">
@@ -711,6 +711,13 @@
               打赏
             {% endif %}
           </button>
+          <button class="tab-button" data-tab="subscribe">
+            {% if lang == "en" %}
+              Subscribe
+            {% else %}
+              订阅
+            {% endif %}
+          </button>
         </div>
 
         <div class="tabs-content">
@@ -722,6 +729,26 @@
             {% if config.extra.donation.enable %}
               {{ self::donation_widget() }}
             {% endif %}
+          </div>
+
+          <div id="tab-subscribe" class="tab-panel">
+            <div class="subscribe-section">
+              <h3>
+                {% if lang == "en" %}
+                  Subscribe to Newsletter
+                {% else %}
+                  订阅邮件通知
+                {% endif %}
+              </h3>
+              <p class="subscribe-description">
+                {% if lang == "en" %}
+                  Get notified when new articles are published
+                {% else %}
+                  当有新文章发布时，我会通过邮件通知您
+                {% endif %}
+              </p>
+              <iframe src="https://embeds.beehiiv.com/482231fd-f9a5-4134-8237-6f00fdadf0e1?slim=true" data-test-id="beehiiv-embed" height="52" frameborder="0" scrolling="no" style="margin: 0; border-radius: 0px !important; background-color: transparent; width: 100%;"></iframe>
+            </div>
           </div>
         </div>
       </div>
