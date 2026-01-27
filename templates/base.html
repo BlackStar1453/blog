@@ -100,6 +100,7 @@
     {%- if config.extra.waline.enable or config.extra.donation.enable -%}
       <link rel="stylesheet" href="{{ get_url(path="site/styles/tabs.css", trailing_slash=false,cachebust=true) | safe }}">
     {%- endif -%}
+    <script async src="https://subscribe-forms.beehiiv.com/embed.js"></script>
     <link rel="me" href="https://twitter.com/Heraclitius"/>
     <link rel="me" href="https://twitter.com/Heraclitius"/>
     <link rel="me" href="https://github.com/BlackStar1453"/>
@@ -293,7 +294,7 @@
 
             {# 邮箱订阅 #}
             <div class="pt">
-              <iframe src="https://embeds.beehiiv.com/482231fd-f9a5-4134-8237-6f00fdadf0e1?slim=true" data-test-id="beehiiv-embed" height="52" frameborder="0" scrolling="no" style="margin: 0; border-radius: 0px !important; background-color: transparent;"></iframe>
+              <iframe src="https://subscribe-forms.beehiiv.com/ba3f35b6-f640-44b6-945b-03f9ec992008" class="beehiiv-embed" data-test-id="beehiiv-embed" frameborder="0" scrolling="no" style="margin: 0; border-radius: 0px !important; background-color: transparent;"></iframe>
             </div>
           </aside>
           {% endblock sidebar %}
