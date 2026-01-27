@@ -124,14 +124,6 @@
       <h2 class="pt0">{{ trans(key="label_table_contents",lang=lang) }}</h2>
       {{ macro::page_toc(toc=page.toc,lang_prefix_path=lang_prefix_path) }}
     {% endif %}
-    {# 侧边栏打赏组件 #}
-    {% if config.extra.donation.enable and config.extra.donation.show_in_sidebar %}
-      {% if not page.extra or page.extra.show_donation is undefined or page.extra.show_donation != false %}
-        <div class="sidebar-donation">
-          {{ macro::donation_widget() }}
-        </div>
-      {% endif %}
-    {% endif %}
   </aside>
 {% endblock sidebar %}
 
