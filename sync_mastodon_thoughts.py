@@ -106,7 +106,12 @@ def format_thought_entry(content, date_str, images=None):
     return '\n'.join(formatted_lines)
 
 def insert_thoughts_to_file(thoughts_by_date, thoughts_file):
-    """将新的 thoughts 插入到文件中，按年份和月份组织"""
+    """将新的 thoughts 插入到文件中，按年份组织。
+
+    若目标年份的 `## 年份` 标题已存在，则把新条目插入到该标题正下方
+    （增量同步拉取的都是更新的内容，置于该年份区块顶部即保持日期倒序）；
+    否则按年份倒序在正确位置新建标题。这样可避免出现重复的年份标题。
+    """
     with open(thoughts_file, 'r', encoding='utf-8') as f:
         content = f.read()
 
@@ -114,69 +119,63 @@ def insert_thoughts_to_file(thoughts_by_date, thoughts_file):
 
     # 找到 frontmatter 的结束位置
     frontmatter_end = 0
-    in_frontmatter = False
     dash_count = 0
-
     for i, line in enumerate(lines):
         if line.strip() == '---':
             dash_count += 1
-            if dash_count == 1:
-                in_frontmatter = True
-            elif dash_count == 2:
+            if dash_count == 2:
                 frontmatter_end = i + 1
                 break
 
-    # 按年份和日期组织
-    thoughts_by_year_month = {}
+    # 按年份组织新 thoughts（thoughts_by_date 已按日期倒序，年份内条目也随之倒序）
+    thoughts_by_year = {}
     for date_key, thought_list in sorted(thoughts_by_date.items(), reverse=True):
-        date_obj = datetime.strptime(date_key, '%Y.%m.%d')
-        year = date_obj.year
-        month = date_obj.month
+        year = datetime.strptime(date_key, '%Y.%m.%d').year
+        thoughts_by_year.setdefault(year, []).extend(thought_list)
 
-        if year not in thoughts_by_year_month:
-            thoughts_by_year_month[year] = {}
-        if month not in thoughts_by_year_month[year]:
-            thoughts_by_year_month[year][month] = []
+    # 逐年插入（从最新年份开始）
+    for year in sorted(thoughts_by_year.keys(), reverse=True):
+        # 构建该年份的新条目块（每条后跟一个空行）
+        block = []
+        for thought in thoughts_by_year[year]:
+            block.append(thought)
+            block.append('')
 
-        thoughts_by_year_month[year][month].extend(thought_list)
+        heading = f"## {year}"
 
-    # 构建新内容
-    new_lines = lines[:frontmatter_end]
-    new_lines.append('')
-    new_lines.append('')
+        # 查找已存在的同年份标题
+        existing_idx = None
+        for i, line in enumerate(lines):
+            if line.strip() == heading:
+                existing_idx = i
+                break
 
-    # 处理每一年
-    for year in sorted(thoughts_by_year_month.keys(), reverse=True):
-        year_header = f"## {year}"
-        new_lines.append(year_header)
-        new_lines.append('')
-
-        # 处理该年的每个月
-        for month in sorted(thoughts_by_year_month[year].keys(), reverse=True):
-            # 添加月份标题（如果需要）
-            # 注意：根据现有格式，月份标题是可选的
-            # 这里我们暂时不添加月份标题，直接添加 thoughts
-
-            for thought in thoughts_by_year_month[year][month]:
-                new_lines.append(thought)
-                new_lines.append('')
-
-    # 找到现有内容的年份部分，跳过新添加的年份
-    rest_content_start = frontmatter_end
-    for i in range(frontmatter_end, len(lines)):
-        line = lines[i].strip()
-        if line.startswith('## '):
-            # 找到第一个年份标题
-            rest_content_start = i
-            break
-
-    # 将剩余的原有内容追加
-    if rest_content_start < len(lines):
-        new_lines.extend(lines[rest_content_start:])
+        if existing_idx is not None:
+            # 已存在：插入到标题正下方（跳过标题后紧邻的一个空行）
+            insert_at = existing_idx + 1
+            if insert_at < len(lines) and lines[insert_at].strip() == '':
+                insert_at += 1
+            lines[insert_at:insert_at] = block
+        else:
+            # 不存在：在第一个更小年份标题之前新建（保持年份倒序）
+            new_block = [heading, ''] + block
+            target = None
+            for i in range(frontmatter_end, len(lines)):
+                m = re.match(r'^##\s+(\d{4})\s*$', lines[i])
+                if m and int(m.group(1)) < year:
+                    target = i
+                    break
+            if target is not None:
+                lines[target:target] = new_block
+            else:
+                # 没有更小的年份，追加到文件末尾
+                if lines and lines[-1].strip() != '':
+                    lines.append('')
+                lines.extend(new_block)
 
     # 写回文件
     with open(thoughts_file, 'w', encoding='utf-8') as f:
-        f.write('\n'.join(new_lines))
+        f.write('\n'.join(lines))
 
 def main():
     # 解析命令行参数
