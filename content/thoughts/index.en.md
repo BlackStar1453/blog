@@ -7,6 +7,8 @@ taxonomies:
     - Notes
   tags:
     - Tweets
+extra:
+  layout: thoughts-garden
 ---
 
 

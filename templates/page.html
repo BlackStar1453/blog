@@ -55,7 +55,7 @@
       </div>
     {% endif %}
     <div id="start"></div>
-    <article class="e-content entry-content">
+    <article class="e-content entry-content{% if page.extra.layout %} {{ page.extra.layout }}{% endif %}">
       {{ page.content | safe }}
       {% block after_content %}{% endblock after_content %}
       <div class="display-none"><a class="u-bridgy-fed" href="https://fed.brid.gy/"></a></div>

@@ -1164,3 +1164,137 @@ ul.text-sm:lang(en) {
 .audio-player-native-list a:hover {
   text-decoration: underline;
 }
+
+/* ============================================================
+   Thoughts「数字花园」样式  ——  仅作用于 /thoughts/（.thoughts-garden）
+   作用域隔离：只覆盖 .thoughts-garden 内的 blockquote，
+   不改动全局 blockquote{}，其它页面的引用块保持原样。
+   钩子来自 page.html 的 article class + frontmatter extra.layout。
+   ============================================================ */
+.thoughts-garden {
+  /* 暖色纸底 + 时间线颜色（局部变量，不污染全局） */
+  --paper: #fffcf9;
+  --tl-line: var(--colors-divider);
+  --tl-node: #c9b58c;
+  background: var(--paper);
+  border-radius: 10px;
+  padding: clamp(20px, 4vw, 40px) clamp(18px, 4vw, 40px) clamp(10px, 3vw, 24px);
+  /* 衬线正文：et-book 负责拉丁/数字，CJK 落到中文衬线 */
+  font-family: "et-book", "Source Han Serif SC", "Noto Serif SC",
+    "Songti SC", STSong, SimSun, Georgia, "Times New Roman", serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  .thoughts-garden {
+    --paper: hsl(30, 6%, 12%);
+    --tl-node: #8a7a56;
+  }
+}
+
+/* 年份分节标记，落在同一条竖线上；margin:0 + padding 撑间距 → 竖线连续 */
+.thoughts-garden h2 {
+  margin: 0;
+  padding: 2.2rem 0 1.1rem 26px;
+  border-left: 1px solid var(--tl-line);
+  font-size: 1.45rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--colors-text);
+}
+.thoughts-garden h2:first-child {
+  padding-top: 0.4rem;
+}
+
+/* 每条想法：去卡片、挂在竖线上；flex 纵向以便把日期提到顶部 */
+.thoughts-garden blockquote {
+  margin: 0;
+  padding: 4px 0 30px 26px;
+  border: 0;
+  border-left: 1px solid var(--tl-line);
+  border-radius: 0;
+  background: transparent;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+  transition: none;
+}
+.thoughts-garden blockquote:hover {
+  background: transparent;
+}
+/* 时间线节点（小圆点，居中在竖线上） */
+.thoughts-garden blockquote::before {
+  content: "";
+  position: absolute;
+  left: -5px;
+  top: 10px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--paper);
+  border: 1.5px solid var(--tl-node);
+}
+
+/* 正文排印 */
+.thoughts-garden blockquote p {
+  margin: 0 0 1rem;
+  font-size: 1.1rem;
+  line-height: 1.95;
+  letter-spacing: 0.01em;
+  color: var(--colors-text);
+}
+.thoughts-garden blockquote p:last-of-type {
+  margin-bottom: 0;
+}
+
+/* 日期：从末尾 ul:last-child 用 order 提到条目顶部，常显，等宽小字 */
+.thoughts-garden blockquote ul:last-child {
+  order: -1;
+  position: static;
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+}
+.thoughts-garden blockquote ul:last-child li {
+  position: static;
+  opacity: 1;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+  font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  color: var(--colors-muted);
+}
+
+/* 图片：收敛、左对齐、圆角；保留 image-lightbox.js 点击放大 */
+.thoughts-garden blockquote img {
+  max-width: 320px;
+  width: 100%;
+  margin: 12px 0 4px;
+  border-radius: 6px;
+}
+
+/* 窄屏 */
+@media (max-width: 768px) {
+  .thoughts-garden {
+    padding: 18px 16px 10px;
+  }
+  .thoughts-garden h2 {
+    padding-left: 20px;
+  }
+  .thoughts-garden blockquote {
+    padding: 4px 0 24px 20px;
+  }
+  .thoughts-garden blockquote p {
+    font-size: 1.05rem;
+    line-height: 1.85;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thoughts-garden * {
+    transition: none !important;
+  }
+}

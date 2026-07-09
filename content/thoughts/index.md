@@ -10,6 +10,8 @@ taxonomies:
   tags:
     - Tweets
     - Random Book
+extra:
+  layout: thoughts-garden
 ---
 
 
