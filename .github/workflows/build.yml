@@ -24,12 +24,10 @@ jobs:
       #     publish_dir: ./public
       #     github_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Publish to pages
-        uses: cloudflare/pages-action@1
+        uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: blog # e.g. 'my-project'
-          directory: ./public # e.g. 'dist'
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          command: pages deploy ./public --project-name=blog --branch=main
 
 
