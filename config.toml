@@ -1,4 +1,4 @@
-base_url = "https://blog-diq.pages.dev"
+base_url = "https://yaoyaoyao111.com"
 build_search_index = false
 compile_sass = false
 default_language = "zh"
@@ -29,15 +29,15 @@ smart_punctuation = true
 [extra]
 author = "Yao"
 email = "yaozeng1999@gmail.com"
-prefix_url = "https://blog-diq.pages.dev"
-indieweb_url = "https://blog-diq.pages.dev"
+prefix_url = "https://yaoyaoyao111.com"
+indieweb_url = "https://yaoyaoyao111.com"
 theme_color = "#fffcf9"
 meilisearch_url = "https://meilisearch.yaoyaoyao111.com"
 meilisearch_api_key = "fb8ab67a7ec1d9f57008c0c610dfc0743ed0f62619097fc259921dfd7d691ea5"
 ### indieweb note
 bio = "Web developer, I like reading and explore the internet, so I have collected queit a few notes in my blog."
 ### THIRD PARTY
-# google_analytics = "UA-012345-67"
+google_analytics = "G-BBYKGQX3YC"
 # disqus = "disqus-user"
 
 ### SOCIAL MEDIA
