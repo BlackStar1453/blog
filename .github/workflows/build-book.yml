@@ -60,18 +60,14 @@ jobs:
             ./owen-blog-archive-dist/owen-blog-archive-html.zip
             ./owen-blog-archive-dist/owen-blog-archive.epub
       - name: Publish
-        uses: cloudflare/pages-action@1
+        uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: book # e.g. 'my-project'
-          directory: ./owen-blog-dist # e.g. 'dist'
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          command: pages deploy ./owen-blog-dist --project-name=book --branch=main
       - name: Publish Archive
-        uses: cloudflare/pages-action@1
+        uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: archive-book # e.g. 'my-project'
-          directory: ./book-dist/owen-blog-archive/book/html # e.g. 'dist'
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          command: pages deploy ./book-dist/owen-blog-archive/book/html --project-name=archive-book --branch=main

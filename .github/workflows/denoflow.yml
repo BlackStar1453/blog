@@ -24,13 +24,11 @@ jobs:
       - name: Build Site
         run: make build
       - name: Publish to pages 
-        uses: cloudflare/pages-action@1
+        uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: blog # e.g. 'my-project'
-          directory: ./public # e.g. 'dist'
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          command: pages deploy ./public --project-name=blog --branch=main
       - name: Debug Environment
         run: |
           echo "Running in environment: ${{ env.GITHUB_ENV }}"
